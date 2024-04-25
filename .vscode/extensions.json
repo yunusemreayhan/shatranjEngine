@@ -1,0 +1,20 @@
+{
+    "recommendations": [
+    "ahmadawais.shades-of-purple",
+    "codeium.codeium",
+    "disroop.conan",
+    "eamodio.gitlens",
+    "formulahendry.code-runner",
+    "llvm-vs-code-extensions.vscode-clangd",
+    "mhutchie.git-graph",
+    "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode-remote.remote-ssh",
+    "ms-vscode-remote.remote-ssh-edit",
+    "ms-vscode.cmake-tools",
+    "ms-vscode.cpptools",
+    "ms-vscode.makefile-tools",
+    "ms-vscode.remote-explorer",
+    "usernamehw.errorlens"
+]
+}
