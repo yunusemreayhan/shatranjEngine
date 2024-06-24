@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-namespace Shatranj
+namespace shatranj
 {
 class Position
 {
@@ -39,12 +39,23 @@ class Position
         return x_ == other.x_ && y_ == other.y_;
     }
 
+    bool operator!=(const Position &other) const
+    {
+        return !(*this == other);
+    }
+
     std::pair<int, int> Diff(const Position &other) const
     {
         return {x_ - other.x_, y_ - other.y_};
     }
 
+    void Move(const std::pair<int, int> &step)
+    {
+        x_ = x_ + step.first;
+        y_ = y_ + step.second;
+    }
+
   private:
     int x_, y_;
 };
-} // namespace Shatranj
+} // namespace shatranj

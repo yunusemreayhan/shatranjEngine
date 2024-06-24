@@ -3,7 +3,7 @@
 #include "position.h"
 #include "shatranc_piece.h"
 #include <iterator>
-namespace Shatranj
+namespace shatranj
 {
 class PieceGroup
 {
@@ -58,4 +58,4 @@ class PieceGroup
   private:
     std::vector<std::shared_ptr<Piece>> pieces_;
 };
-} // namespace Shatranj
+} // namespace shatranj

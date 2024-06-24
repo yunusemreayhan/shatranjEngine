@@ -6,7 +6,7 @@
 
 #include "piece_group.h"
 #include "types.h"
-namespace Shatranj
+namespace shatranj
 {
 class Piece;
 class Position;
@@ -36,4 +36,4 @@ class Player
     std::string name_;
     std::shared_ptr<PieceGroup> pieces_;
 };
-} // namespace Shatranj
+} // namespace shatranj

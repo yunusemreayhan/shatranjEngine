@@ -1,7 +1,7 @@
 #include "player.h"
 #include "position.h"
 
-namespace Shatranj
+namespace shatranj
 {
 std::shared_ptr<PieceGroup> &Player::GetPieces()
 {

@@ -7,7 +7,7 @@
 #include "player.h"
 #include "position.h"
 #include "types.h"
-namespace Shatranj
+namespace shatranj
 {
 class Board;
 class Player;
@@ -30,12 +30,16 @@ class Piece : public std::enable_shared_from_this<Piece>
         return player_;
     }
 
-    bool CanMove(Position pos, std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
 
     std::shared_ptr<Piece> GetSharedFromThis()
     {
         return shared_from_this();
     }
+
+    virtual ~Piece() = default;
 
   private:
     Position pos_;
@@ -160,4 +164,4 @@ class Shah : public Piece
     {
     }
 };
-} // namespace Shatranj
+} // namespace shatranj

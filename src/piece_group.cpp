@@ -1,5 +1,5 @@
 #include "piece_group.h"
-namespace Shatranj
+namespace shatranj
 {
 bool PieceGroup::AddPiece(const std::shared_ptr<Piece> &piece)
 {
@@ -55,4 +55,4 @@ std::optional<std::shared_ptr<Piece>> PieceGroup::GetPiece(const Position &pos)
     }
     return std::nullopt;
 }
-} // namespace Shatranj
+} // namespace shatranj
