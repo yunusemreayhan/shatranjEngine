@@ -1,12 +1,19 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <utility>
 
 #include "board.h"
 #include "player.h"
 #include "shatranc_piece.h"
 
-ShatranjPiece::ShatranjPiece(Position pos, const std::weak_ptr<Player> &player) : pos_(pos), player_(player)
+ShatranjPiece::ShatranjPiece(Position pos, const std::weak_ptr<Player> &player, std::string name, char symbol,
+                             bool multipleMove, bool canJumpOverOthers, bool moved,
+                             std::vector<std::pair<int, int>> possibleRegularMoves,
+                             std::vector<std::pair<int, int>> possibleCaptureMoves)
+    : pos_(pos), player_(player), name_(std::move(name)), symbol_(symbol), multipleMove_(multipleMove),
+      canJumpOverOthers_(canJumpOverOthers), moved_(moved), possibleRegularMoves_(std::move(possibleRegularMoves)),
+      possibleCaptureMoves_(std::move(possibleCaptureMoves))
 {
 }
 
@@ -72,4 +79,15 @@ bool ShatranjPiece::CanMove(Position pos, std::shared_ptr<Board> &board, bool ct
     }
 
     return true;
+}
+
+Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)
+    : ShatranjPiece(pos, player, "Piyade", 'P', false, false, false, {}, {}), direction_{+1}
+{
+    if (auto p_sp = player.lock())
+    {
+        direction_ = p_sp->GetColor() == Color::kWhite ? +1 : -1;
+    }
+    possibleRegularMoves_ = {{0, direction_}};
+    possibleCaptureMoves_ = {{1, direction_}, {-1, direction_}};
 }

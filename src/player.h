@@ -25,6 +25,11 @@ class Player
         return color_ == other.color_ && name_ == other.name_;
     }
 
+    Color GetColor()
+    {
+        return color_;
+    }
+
   private:
     Color color_;
     std::string name_;

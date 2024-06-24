@@ -10,6 +10,7 @@
 class PieceGroup;
 class Player;
 class ShatranjPiece;
+class Position;
 
 class Board
 {

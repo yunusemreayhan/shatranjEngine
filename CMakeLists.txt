@@ -6,7 +6,4 @@ cmake_minimum_required(VERSION 3.8)
 project(genericcpp)
 
 enable_testing()
-add_subdirectory(gtestsamples)
-add_subdirectory(empty_template)
-add_subdirectory(performance_tests)
 add_subdirectory(src)
