@@ -1,6 +1,7 @@
 #include "piece_group.h"
-
-bool PieceGroup::AddPiece(const std::shared_ptr<ShatranjPiece> &piece)
+namespace Shatranj
+{
+bool PieceGroup::AddPiece(const std::shared_ptr<Piece> &piece)
 {
     if (HasPiece(piece->GetPos()))
     {
@@ -22,10 +23,10 @@ void PieceGroup::RemovePiece(const Position &pos)
     }
 }
 
-void PieceGroup::RemovePiece(const std::shared_ptr<ShatranjPiece> &piece)
+void PieceGroup::RemovePiece(const std::shared_ptr<Piece> &piece)
 {
     pieces_.erase(std::remove_if(pieces_.begin(), pieces_.end(),
-                                 [&piece](const std::shared_ptr<ShatranjPiece> &current) -> bool {
+                                 [&piece](const std::shared_ptr<Piece> &current) -> bool {
                                      return current->GetPos() == piece->GetPos();
                                  }),
                   pieces_.end());
@@ -43,7 +44,7 @@ bool PieceGroup::HasPiece(const Position &pos)
     return false;
 }
 
-std::optional<std::shared_ptr<ShatranjPiece>> PieceGroup::GetPiece(const Position &pos)
+std::optional<std::shared_ptr<Piece>> PieceGroup::GetPiece(const Position &pos)
 {
     for (auto it = pieces_.begin(); it != pieces_.end(); it++)
     {
@@ -54,3 +55,4 @@ std::optional<std::shared_ptr<ShatranjPiece>> PieceGroup::GetPiece(const Positio
     }
     return std::nullopt;
 }
+} // namespace Shatranj

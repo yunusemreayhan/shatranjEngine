@@ -2,8 +2,10 @@
 #include "position.h"
 #include <optional>
 
+namespace Shatranj
+{
 // would be in check if I move piece to pos
-bool Board::WouldBeInCheck(const std::shared_ptr<ShatranjPiece>& piece, Position pos)
+bool Board::WouldBeInCheck(const std::shared_ptr<Piece> &piece, Position pos)
 {
     /*
         def wouldBeInCheck(self, piece, x, y):
@@ -31,7 +33,7 @@ bool Board::WouldBeInCheck(const std::shared_ptr<ShatranjPiece>& piece, Position
     const auto captured_piece = GetPieces()->GetPiece(pos);
     if (captured_piece)
     {
-        const auto& captured_piece_sp = (*captured_piece);
+        const auto &captured_piece_sp = (*captured_piece);
         if (auto captured_player_sp = captured_piece_sp->GetPlayer().lock())
         {
             captured_player_sp->GetPieces()->RemovePiece(pos);
@@ -44,8 +46,9 @@ bool Board::WouldBeInCheck(const std::shared_ptr<ShatranjPiece>& piece, Position
 
     bool ret_is_check = IsCheck(player_sp);
 
-    if (captured_piece) {
-        const auto& captured_piece_sp = (*captured_piece);
+    if (captured_piece)
+    {
+        const auto &captured_piece_sp = (*captured_piece);
         // TODO(yunus): put back the captured piece after check
 
         if (auto captured_player_sp = captured_piece_sp->GetPlayer().lock())
@@ -65,6 +68,9 @@ bool Board::WouldBeInCheck(const std::shared_ptr<ShatranjPiece>& piece, Position
     return ret_is_check;
 }
 
-bool Board::IsCheck(std::shared_ptr<Player>& player) const {
+bool Board::IsCheck(std::shared_ptr<Player> &player) const
+{
     return false;
 }
+
+} // namespace Shatranj

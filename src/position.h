@@ -1,14 +1,19 @@
 #pragma once
 
 #include <string>
-
-class Position {
-public:
-    explicit Position(std::string fromString) {
+namespace Shatranj
+{
+class Position
+{
+  public:
+    explicit Position(std::string fromString)
+    {
         x_ = fromString[0] - 'a';
         y_ = fromString[1] - '1';
     }
-    explicit Position (std::pair<int, int> posvalues) : x_(posvalues.first), y_(posvalues.second) {}
+    explicit Position(std::pair<int, int> posvalues) : x_(posvalues.first), y_(posvalues.second)
+    {
+    }
 
     [[nodiscard]] auto IsValid() const -> bool
     {
@@ -20,17 +25,26 @@ public:
         return {static_cast<char>(x_ + 'a'), static_cast<char>(y_ + '1')};
     }
 
-    [[nodiscard]] int Getx() const { return x_; }
-    [[nodiscard]] int Gety() const { return y_; }
+    [[nodiscard]] int Getx() const
+    {
+        return x_;
+    }
+    [[nodiscard]] int Gety() const
+    {
+        return y_;
+    }
 
-    bool operator==(const Position &other) const {
+    bool operator==(const Position &other) const
+    {
         return x_ == other.x_ && y_ == other.y_;
     }
 
-    std::pair<int, int> Diff(const Position &other) const {
+    std::pair<int, int> Diff(const Position &other) const
+    {
         return {x_ - other.x_, y_ - other.y_};
     }
 
-private:
+  private:
     int x_, y_;
 };
+} // namespace Shatranj

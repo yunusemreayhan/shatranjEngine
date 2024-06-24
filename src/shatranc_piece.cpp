@@ -6,8 +6,9 @@
 #include "board.h"
 #include "player.h"
 #include "shatranc_piece.h"
-
-ShatranjPiece::ShatranjPiece(Position pos, const std::weak_ptr<Player> &player, std::string name, char symbol,
+namespace Shatranj
+{
+Piece::Piece(Position pos, const std::weak_ptr<Player> &player, std::string name, char symbol,
                              bool multipleMove, bool canJumpOverOthers, bool moved,
                              std::vector<std::pair<int, int>> possibleRegularMoves,
                              std::vector<std::pair<int, int>> possibleCaptureMoves)
@@ -17,7 +18,7 @@ ShatranjPiece::ShatranjPiece(Position pos, const std::weak_ptr<Player> &player, 
 {
 }
 
-bool ShatranjPiece::CanMove(Position pos, std::shared_ptr<Board> &board, bool ctrlCheck)
+bool Piece::CanMove(Position pos, std::shared_ptr<Board> &board, bool ctrlCheck)
 {
     if (pos_ == pos)
     {
@@ -82,7 +83,7 @@ bool ShatranjPiece::CanMove(Position pos, std::shared_ptr<Board> &board, bool ct
 }
 
 Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)
-    : ShatranjPiece(pos, player, "Piyade", 'P', false, false, false, {}, {}), direction_{+1}
+    : Piece(pos, player, "Piyade", 'P', false, false, false, {}, {}), direction_{+1}
 {
     if (auto p_sp = player.lock())
     {
@@ -91,3 +92,4 @@ Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)
     possibleRegularMoves_ = {{0, direction_}};
     possibleCaptureMoves_ = {{1, direction_}, {-1, direction_}};
 }
+} // namespace Shatranj

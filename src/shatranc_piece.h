@@ -7,17 +7,18 @@
 #include "player.h"
 #include "position.h"
 #include "types.h"
-
+namespace Shatranj
+{
 class Board;
 class Player;
 
-class ShatranjPiece : public std::enable_shared_from_this<ShatranjPiece>
+
+class Piece : public std::enable_shared_from_this<Piece>
 {
   public:
-    explicit ShatranjPiece(Position pos, const std::weak_ptr<Player> &player, std::string name, char symbol,
-                           bool multipleMove, bool canJumpOverOthers, bool moved,
-                           std::vector<std::pair<int, int>> possibleRegularMoves,
-                           std::vector<std::pair<int, int>> possibleCaptureMoves);
+    explicit Piece(Position pos, const std::weak_ptr<Player> &player, std::string name, char symbol, bool multipleMove,
+                   bool canJumpOverOthers, bool moved, std::vector<std::pair<int, int>> possibleRegularMoves,
+                   std::vector<std::pair<int, int>> possibleCaptureMoves);
 
     Position GetPos()
     {
@@ -31,7 +32,7 @@ class ShatranjPiece : public std::enable_shared_from_this<ShatranjPiece>
 
     bool CanMove(Position pos, std::shared_ptr<Board> &board, bool ctrlCheck = true);
 
-    std::shared_ptr<ShatranjPiece> GetSharedFromThis()
+    std::shared_ptr<Piece> GetSharedFromThis()
     {
         return shared_from_this();
     }
@@ -50,7 +51,7 @@ class ShatranjPiece : public std::enable_shared_from_this<ShatranjPiece>
     std::vector<std::pair<int, int>> possibleCaptureMoves_;
 };
 
-class Rook : public ShatranjPiece
+class Rook : public Piece
 {
     /*
     class Rook(ShatranjPiece):
@@ -63,12 +64,12 @@ class Rook : public ShatranjPiece
           self.symbol = 'R'*/
 
     Rook(Position pos, const std::weak_ptr<Player> &player)
-        : ShatranjPiece(pos, player, "Rook", 'R', true, false, false, {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}, {})
+        : Piece(pos, player, "Rook", 'R', true, false, false, {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}, {})
     {
     }
 };
 
-class Piyade : public ShatranjPiece
+class Piyade : public Piece
 {
     /*class Piyade(ShatranjPiece):
       def __init__(self, player, pos):
@@ -87,7 +88,7 @@ class Piyade : public ShatranjPiece
   private:
     int direction_;
 };
-class Horse : public ShatranjPiece
+class Horse : public Piece
 {
     /*        super().__init__(player, pos)
           self.possibleRegularMoves = self.possibleCaptureMoves = [
@@ -102,12 +103,12 @@ class Horse : public ShatranjPiece
           self.symbol = 'H'*/
   public:
     Horse(Position pos, const std::weak_ptr<Player> &player)
-        : ShatranjPiece(pos, player, "Horse", 'H', false, true, false,
-                        {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1}, {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}}, {})
+        : Piece(pos, player, "Horse", 'H', false, true, false,
+                {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1}, {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}}, {})
     {
     }
 };
-class Fil : public ShatranjPiece
+class Fil : public Piece
 {
     /**class Fil(ShatranjPiece):
       def __init__(self, player, pos):
@@ -118,11 +119,11 @@ class Fil : public ShatranjPiece
           self.symbol = 'F' */
   public:
     Fil(Position pos, const std::weak_ptr<Player> &player)
-        : ShatranjPiece(pos, player, "Fil", 'F', false, true, false, {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}}, {})
+        : Piece(pos, player, "Fil", 'F', false, true, false, {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}}, {})
     {
     }
 };
-class Vizier : public ShatranjPiece
+class Vizier : public Piece
 {
     /**class Vizier(ShatranjPiece):
       def __init__(self, player, pos):
@@ -135,11 +136,11 @@ class Vizier : public ShatranjPiece
 
   public:
     Vizier(Position pos, const std::weak_ptr<Player> &player)
-        : ShatranjPiece(pos, player, "Vizier", 'V', false, false, false, {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {})
+        : Piece(pos, player, "Vizier", 'V', false, false, false, {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {})
     {
     }
 };
-class Shah : public ShatranjPiece
+class Shah : public Piece
 {
     /*class Shah(ShatranjPiece):
       def __init__(self, player, pos):
@@ -154,8 +155,9 @@ class Shah : public ShatranjPiece
 
   public:
     Shah(Position pos, const std::weak_ptr<Player> &player)
-        : ShatranjPiece(pos, player, "Shah", 'S', false, false, false,
-                        {{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {})
+        : Piece(pos, player, "Shah", 'S', false, false, false,
+                {{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {})
     {
     }
 };
+} // namespace Shatranj
