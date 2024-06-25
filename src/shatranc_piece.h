@@ -47,11 +47,11 @@ class Piece : public std::enable_shared_from_this<Piece>
     std::weak_ptr<Player> player_;
 
   protected:
+    std::string name_;
+    char symbol_;
+    bool multipleMove_ = false;
     bool canJumpOverOthers_ = false;
     bool moved_ = false;
-    bool multipleMove_ = false;
-    char symbol_;
-    std::string name_;
     std::vector<std::pair<int, int>> possibleRegularMoves_;
     std::vector<std::pair<int, int>> possibleCaptureMoves_;
 };

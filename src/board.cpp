@@ -78,7 +78,7 @@ bool Board::IsCheck(const std::shared_ptr<Player> &player)
     std::shared_ptr<Piece> shah = nullptr;
     for (const auto &piece : *player->GetPieces())
     {
-        if (Shah *found = dynamic_cast<Shah *>(piece.get()))
+        if (dynamic_cast<Shah *>(piece.get()) != nullptr)
         {
             shah = piece;
         }
@@ -140,7 +140,6 @@ bool Board::MovePiece(std::shared_ptr<Piece> &piece, Position pos)
         return false;
     }
     const auto from = piece->GetPos();
-    const auto &topos = pos;
     const bool can_move = piece->CanMove(pos, GetSharedFromThis());
     const bool can_capture = piece->CanCapture(pos, GetSharedFromThis());
     if (!can_move && !can_capture)
@@ -161,7 +160,7 @@ bool Board::MovePiece(std::shared_ptr<Piece> &piece, Position pos)
         }
     }
     piece->Move(pos);
-    if (auto *piyade = dynamic_cast<Piyade *>(piece.get()))
+    if (nullptr != dynamic_cast<Piyade *>(piece.get()))
     {
         if (pos.Gety() == 0 || pos.Gety() == 7)
         {
@@ -182,7 +181,7 @@ void Board::MoveSuccesful(const std::shared_ptr<Piece> &piece,
                           const Position & /*toPos*/)
 {
     // TODO(yunus) :  not sure if needed but last move textual iformation could be saved later
-    if (auto *piyade = dynamic_cast<Piyade *>(piece.get()))
+    if (nullptr != dynamic_cast<Piyade *>(piece.get()))
     {
         halfMoveClock_ = 0;
     }
@@ -225,8 +224,9 @@ bool Board::IsCheckmate(const std::shared_ptr<Player> &player)
             for (int yitr = 0; yitr < 8; yitr++)
             {
                 const Position pos(std::make_pair(xitr, yitr));
-                if (piece->CanMove(pos, GetSharedFromThis(), false) ||
-                    piece->CanCapture(pos, GetSharedFromThis(), false) && !WouldBeInCheck(piece, pos))
+                if ((piece->CanMove(pos, GetSharedFromThis(), false) ||
+                     piece->CanCapture(pos, GetSharedFromThis(), false)) &&
+                    !WouldBeInCheck(piece, pos))
                 {
                     return false;
                 }

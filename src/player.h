@@ -31,8 +31,8 @@ class Player
     }
 
   private:
-    Color color_;
     std::string name_;
+    Color color_;
     std::shared_ptr<PieceGroup> pieces_;
 };
 } // namespace shatranj
