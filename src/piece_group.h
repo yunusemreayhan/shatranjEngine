@@ -9,6 +9,7 @@ namespace shatranj
 class PieceGroup
 {
   public:
+    PieceGroup() {pieces_ = std::vector<std::shared_ptr<Piece>>();}
     using iterator = std::vector<std::shared_ptr<Piece>>::iterator;
     using cons_iterator = std::vector<std::shared_ptr<Piece>>::const_iterator;
     using reverse_iterator = std::vector<std::shared_ptr<Piece>>::reverse_iterator;

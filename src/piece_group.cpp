@@ -37,6 +37,10 @@ void PieceGroup::RemovePiece(const std::shared_ptr<Piece> &piece)
 
 bool PieceGroup::HasPiece(const Position &pos)
 {
+    if (empty())
+    {
+        return false;
+    }
     for (auto it = pieces_.begin(); it != pieces_.end(); it++)
     {
         if ((*it)->GetPos() == pos)

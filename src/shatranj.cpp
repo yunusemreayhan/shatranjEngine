@@ -12,36 +12,37 @@ namespace shatranj
 Shatranj::Shatranj(std::shared_ptr<Player> player1, std::shared_ptr<Player> player2)
     : board_(std::make_shared<Board>(std::move(player1), std::move(player2)))
 {
+    InitializeBoard();
 }
 void Shatranj::InitializeBoard()
 {
-    board_->GetPieces()->AddPiece(std::make_shared<Rook>(Position("a1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Rook>(Position("h1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Horse>(Position("b1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Horse>(Position("g1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Fil>(Position("c1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Fil>(Position("f1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Vizier>(Position("d1"), board_->GetPlayers()[0]));
-    board_->GetPieces()->AddPiece(std::make_shared<Shah>(Position("e1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Rook>(Position("a1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Rook>(Position("h1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Horse>(Position("b1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Horse>(Position("g1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Fil>(Position("c1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Fil>(Position("f1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Vizier>(Position("d1"), board_->GetPlayers()[0]));
+    board_->AddPiece(std::make_shared<Shah>(Position("e1"), board_->GetPlayers()[0]));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
         ssinst << citr << "2";
-        board_->GetPieces()->AddPiece(std::make_shared<Piyade>(Position(ssinst.str()), board_->GetPlayers()[0]));
+        board_->AddPiece(std::make_shared<Piyade>(Position(ssinst.str()), board_->GetPlayers()[0]));
     }
-    board_->GetPieces()->AddPiece(std::make_shared<Rook>(Position("a8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Rook>(Position("h8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Horse>(Position("b8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Horse>(Position("g8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Fil>(Position("c8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Fil>(Position("f8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Vizier>(Position("d8"), board_->GetPlayers()[1]));
-    board_->GetPieces()->AddPiece(std::make_shared<Shah>(Position("e8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Rook>(Position("a8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Rook>(Position("h8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Horse>(Position("b8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Horse>(Position("g8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Fil>(Position("c8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Fil>(Position("f8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Vizier>(Position("d8"), board_->GetPlayers()[1]));
+    board_->AddPiece(std::make_shared<Shah>(Position("e8"), board_->GetPlayers()[1]));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
         ssinst << citr << "7";
-        board_->GetPieces()->AddPiece(std::make_shared<Piyade>(Position(ssinst.str()), board_->GetPlayers()[1]));
+        board_->AddPiece(std::make_shared<Piyade>(Position(ssinst.str()), board_->GetPlayers()[1]));
     }
 }
 std::optional<std::pair<std::string, std::string>> Shatranj::ParseInput(const std::string &input)
@@ -97,5 +98,6 @@ void Shatranj::Run()
         }
     }
     std::cout << *(board_->Winner()) << " win" << std::endl;
+    std::cout << *board_ << std::endl;
 }
 } // namespace shatranj

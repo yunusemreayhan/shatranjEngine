@@ -358,13 +358,13 @@ std::string Board::BoardToString() const
             ret += "  ";
             for (int xitr = 0; xitr < 8; xitr++)
             {
-                ret += std::to_string(xitr + 1);
+                ret += static_cast<char>(xitr + 'a');
                 ret += ' ';
             }
             ret += '\n';
         }
 
-        ret += std::to_string(yitr + 1);
+        ret += std::to_string(1 + yitr);
         ret += ' ';
 
         for (int xitr = 0; xitr < 8; xitr++)
@@ -375,7 +375,52 @@ std::string Board::BoardToString() const
         ret += '\n';
     }
 
+    ret += "  ";
+    for (int xitr = 0; xitr < 8; xitr++)
+    {
+        ret += static_cast<char>(xitr + 'a');
+        ret += ' ';
+    }
+    ret += '\n';
+
+    ret += "  current turn : " + currentTurn_.lock()->GetName() + " color " +
+           std::string(currentTurn_.lock()->GetColor() == Color::kWhite ? "White which is uppercase"
+                                                                        : "Black which is lowercase") +
+           '\n';
+    ret += "  current move count : " + std::to_string(fullMoveNumber_) + '\n';
+    ret += "  half move count : " + std::to_string(halfMoveClock_) + '\n';
+
     return ret;
+}
+
+std::shared_ptr<Player> Board::GetWhitePlayer()
+{
+    for (const auto &player : players_)
+    {
+        if (player->GetColor() == Color::kWhite)
+        {
+            return player;
+        }
+    }
+    return nullptr;
+}
+
+bool Board::AddPiece(const std::shared_ptr<Piece> &piece)
+{
+    auto res = pieces_->AddPiece(piece);
+    if (!res)
+    {
+        return false;
+    }
+
+    res = piece->GetPlayer().lock()->GetPieces()->AddPiece(piece);
+    return res;
+}
+
+void Board::RemovePiece(const std::shared_ptr<Piece> &piece)
+{
+    pieces_->RemovePiece(piece);
+    piece->GetPlayer().lock()->GetPieces()->RemovePiece(piece);
 }
 
 } // namespace shatranj

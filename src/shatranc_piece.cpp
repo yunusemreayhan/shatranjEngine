@@ -23,12 +23,12 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
     {
         return false;
     }
-    if (pos.IsValid())
+    if (!pos.IsValid())
     {
         return false;
     }
 
-    auto diff = pos_.Diff(pos);
+    auto diff = pos.Diff(pos_);
     if (!multipleMove_)
     {
         if (std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), diff) == possibleRegularMoves_.end())
@@ -36,25 +36,28 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
             return false;
         }
     }
-    bool check = false;
-    for (int i = 1; i < 8; i++)
+    else
     {
-        if (diff.first % i == 0 && diff.second % i == 0)
+        bool check = false;
+        for (int i = 1; i < 8; i++)
         {
-            const auto multiplemoveinstance = std::make_pair(static_cast<int>(std::floor(diff.first / i)),
-                                                             static_cast<int>(std::floor(diff.second / i)));
-            const auto findres =
-                std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), multiplemoveinstance);
-            if (findres == possibleRegularMoves_.end())
+            if (diff.first % i == 0 && diff.second % i == 0)
             {
-                check = true;
-                break;
+                const auto multiplemoveinstance = std::make_pair(static_cast<int>(std::floor(diff.first / i)),
+                                                                 static_cast<int>(std::floor(diff.second / i)));
+                const auto findres =
+                    std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), multiplemoveinstance);
+                if (findres == possibleRegularMoves_.end())
+                {
+                    check = true;
+                    break;
+                }
             }
         }
-    }
-    if (!check)
-    {
-        return false;
+        if (!check)
+        {
+            return false;
+        }
     }
     const auto piece = board->GetPieces()->GetPiece(pos);
     if (piece)
@@ -83,7 +86,7 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
     {
         return false;
     }
-    if (pos.IsValid())
+    if (!pos.IsValid())
     {
         return false;
     }

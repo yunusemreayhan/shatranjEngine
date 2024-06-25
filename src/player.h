@@ -15,7 +15,7 @@ class PieceGroup;
 class Player
 {
   public:
-    Player(const std::string &name, Color color) : name_(name), color_(color)
+    Player(const std::string &name, Color color) : name_(name), color_(color), pieces_(std::make_shared<PieceGroup>())
     {
     }
 
