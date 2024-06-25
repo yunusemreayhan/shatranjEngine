@@ -16,7 +16,7 @@ class Position;
 class Board : public std::enable_shared_from_this<Board>
 {
   public:
-    Board(std::shared_ptr<Player> &player1, std::shared_ptr<Player> &player2)
+    Board(std::shared_ptr<Player> player1, std::shared_ptr<Player> player2)
         : players_({std::move(player1), std::move(player2)})
     {
     }
@@ -36,9 +36,9 @@ class Board : public std::enable_shared_from_this<Board>
     std::shared_ptr<Player> Opponent(const std::shared_ptr<Player>& player);
     void SwitchTurn();
     bool IsPathClear(const Position& from, const Position& target);
-    bool IsUnderAttack(int posx, int posy, Player *player);
+    bool IsUnderAttack(int posx, int posy, Player *player); // not used yet
     bool Play(std::string from_pos, std::string to_pos);
-    std::string BoardToString();
+    std::string BoardToString() const;
     std::shared_ptr<PieceGroup> &GetPieces()
     {
         return pieces_;
@@ -47,6 +47,17 @@ class Board : public std::enable_shared_from_this<Board>
     std::shared_ptr<Board> GetSharedFromThis()
     {
         return shared_from_this();
+    }
+
+    friend std::ostream &operator<<(std::ostream &ostr, const Board &board)
+    {
+        ostr << board.BoardToString();
+        return ostr;
+    }
+
+    const std::vector<std::shared_ptr<Player>> &GetPlayers() const
+    {
+        return players_;
     }
 
   private:

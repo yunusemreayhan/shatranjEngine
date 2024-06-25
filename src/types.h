@@ -1,6 +1,10 @@
 #pragma once
 
-enum class Color {
+namespace shatranj
+{
+enum class Color
+{
     kWhite,
     kBlack
 };
+} // namespace shatranj

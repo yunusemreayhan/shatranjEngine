@@ -12,7 +12,6 @@ namespace shatranj
 class Board;
 class Player;
 
-
 class Piece : public std::enable_shared_from_this<Piece>
 {
   public:
@@ -42,6 +41,11 @@ class Piece : public std::enable_shared_from_this<Piece>
 
     virtual ~Piece() = default;
 
+    char GetSymbol() const
+    {
+        return symbol_;
+    }
+
   private:
     Position pos_;
     std::weak_ptr<Player> player_;
@@ -67,7 +71,7 @@ class Rook : public Piece
           self.possibleRegularMoves = self.possibleCaptureMoves = [(0, 1), (1, 0), (0, -1), (-1, 0)]
           self.name = 'Rook'
           self.symbol = 'R'*/
-
+  public:
     Rook(Position pos, const std::weak_ptr<Player> &player)
         : Piece(pos, player, "Rook", 'R', true, false, false, {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}, {})
     {

@@ -1,7 +1,9 @@
 #include "board.h"
 #include "position.h"
 #include "shatranc_piece.h"
+#include "types.h"
 #include <algorithm>
+#include <cctype>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -318,6 +320,62 @@ bool Board::IsDraw()
 std::shared_ptr<Player> Board::Opponent(const std::shared_ptr<Player> &player)
 {
     return players_[0] == player ? players_[1] : players_[0];
+}
+
+bool Board::Play(std::string from_pos, std::string to_pos)
+{
+    const Position from_pos_local(std::move(from_pos));
+    const Position to_pos_local(std::move(to_pos));
+    if (!from_pos_local.IsValid() || !to_pos_local.IsValid())
+    {
+        return false;
+    }
+
+    std::optional<std::shared_ptr<Piece>> piece = pieces_->GetPiece(from_pos_local);
+    if (!piece || (*piece)->GetPlayer().lock() != currentTurn_.lock())
+    {
+        return false;
+    }
+
+    return MovePiece(*piece, to_pos_local);
+}
+
+std::string Board::BoardToString() const
+{
+    std::vector<std::vector<char>> board(8, std::vector<char>(8, '.'));
+    for (const auto &piece : *pieces_)
+    {
+        const auto pos = piece->GetPos();
+        board[pos.Getx()][pos.Gety()] = piece->GetPlayer().lock()->GetColor() == Color::kWhite
+                                            ? std::toupper(piece->GetSymbol())
+                                            : std::tolower(piece->GetSymbol());
+    }
+    std::string ret;
+    for (int yitr = 0; yitr < 8; yitr++)
+    {
+        if (yitr == 0)
+        {
+            ret += "  ";
+            for (int xitr = 0; xitr < 8; xitr++)
+            {
+                ret += std::to_string(xitr + 1);
+                ret += ' ';
+            }
+            ret += '\n';
+        }
+
+        ret += std::to_string(yitr + 1);
+        ret += ' ';
+
+        for (int xitr = 0; xitr < 8; xitr++)
+        {
+            ret += board[xitr][yitr];
+            ret += ' ';
+        }
+        ret += '\n';
+    }
+
+    return ret;
 }
 
 } // namespace shatranj
