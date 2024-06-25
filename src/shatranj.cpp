@@ -63,6 +63,10 @@ std::string Shatranj::GetInput()
 bool Shatranj::Play(const std::string &input)
 {
     std::cout << "play: " << input << std::endl;
+    if (input == "valids") {
+        board_->PrintValidMoves();
+        return true;
+    }
     std::optional<std::pair<std::string, std::string>> parsed_input = ParseInput(input);
     if (parsed_input)
     {
@@ -83,14 +87,15 @@ void Shatranj::Run()
     while (!board_->IsGameOver())
     {
         std::cout << *board_ << std::endl;
-        auto res = Play(GetInput());
+        std::string input = GetInput();
+        auto res = Play(input);
         if (!res)
         {
             std::cout << "Invalid input. Please try again." << std::endl;
         }
         else
         {
-            std::cout << "Move successful" << std::endl;
+            std::cout << "Move successful " << input << std::endl;
         }
         if (board_->IsDraw())
         {

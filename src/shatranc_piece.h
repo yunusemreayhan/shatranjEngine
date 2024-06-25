@@ -33,6 +33,7 @@ class Piece : public std::enable_shared_from_this<Piece>
     bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool Move(Position pos);
+    std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
 
     std::shared_ptr<Piece> GetSharedFromThis()
     {
@@ -45,6 +46,8 @@ class Piece : public std::enable_shared_from_this<Piece>
     {
         return symbol_;
     }
+
+    virtual bool IsPiyade() const { return false; }
 
   private:
     Position pos_;
@@ -93,6 +96,11 @@ class Piyade : public Piece
 
   public:
     Piyade(Position pos, const std::weak_ptr<Player> &player);
+
+    bool IsPiyade() const override
+    {
+        return true;
+    }
 
   private:
     int direction_;

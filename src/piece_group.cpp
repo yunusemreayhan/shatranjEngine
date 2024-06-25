@@ -62,4 +62,15 @@ std::optional<std::shared_ptr<Piece>> PieceGroup::GetPiece(const Position &pos)
     }
     return std::nullopt;
 }
+
+std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(const std::shared_ptr<Board> &board) {
+    std::vector<std::pair<Position, Position>> ret;
+    for (const auto& piece : pieces_) {
+        auto insertable = piece->GetPossibleMoves(board);
+        for (auto it = insertable.begin(); it != insertable.end(); it++) {
+            ret.push_back(*it);
+        }
+    }
+    return ret;
+}
 } // namespace shatranj

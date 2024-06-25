@@ -5,6 +5,7 @@
 
 #include "board.h"
 #include "player.h"
+#include "position.h"
 #include "shatranc_piece.h"
 namespace shatranj
 {
@@ -47,7 +48,7 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
                                                                  static_cast<int>(std::floor(diff.second / i)));
                 const auto findres =
                     std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), multiplemoveinstance);
-                if (findres == possibleRegularMoves_.end())
+                if (findres != possibleRegularMoves_.end())
                 {
                     check = true;
                     break;
@@ -90,7 +91,7 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
     {
         return false;
     }
-    auto diff = pos_.Diff(pos);
+    auto diff = pos.Diff(pos_);
     if (!multipleMove_)
     {
         if (std::find(possibleCaptureMoves_.begin(), possibleCaptureMoves_.end(), diff) == possibleCaptureMoves_.end())
@@ -109,7 +110,7 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
                                                                  static_cast<int>(std::floor(diff.second / i)));
                 const auto findres =
                     std::find(possibleCaptureMoves_.begin(), possibleCaptureMoves_.end(), multiplemoveinstance);
-                if (findres == possibleCaptureMoves_.end())
+                if (findres != possibleCaptureMoves_.end())
                 {
                     check = true;
                     break;
@@ -162,6 +163,54 @@ bool Piece::Move(Position pos)
     pos_ = pos;
     moved_ = true;
     return true;
+}
+
+std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::shared_ptr<Board> &board)
+{
+    std::vector<std::pair<Position, Position>> possible_moves;
+    for (const auto &diff : possibleRegularMoves_)
+    {
+        Position pos = pos_;
+        pos.Move(diff);
+        if (pos_.IsValid())
+        {
+            if (!multipleMove_)
+            {
+                if (CanMove(pos, board))
+                {
+                    possible_moves.push_back(std::make_pair(pos_, pos));
+                }
+            }
+            else
+            {
+                for (int i = 1; i < 8; i++)
+                {
+                    const Position multiplemoveinstance{std::make_pair(static_cast<int>(std::floor(diff.first * i)),
+                                                                       static_cast<int>(std::floor(diff.second * i)))};
+                    if (CanMove(multiplemoveinstance, board))
+                    {
+                        possible_moves.push_back(std::make_pair(pos_, multiplemoveinstance));
+                    }
+                }
+            }
+        }
+    }
+    if (IsPiyade())
+    {
+        for (const auto &diff : possibleCaptureMoves_)
+        {
+            Position pos = pos_;
+            pos.Move(diff);
+            if (pos_.IsValid())
+            {
+                if (CanCapture(pos, board))
+                {
+                    possible_moves.push_back(std::make_pair(pos_, pos));
+                }
+            }
+        }
+    }
+    return possible_moves;
 }
 
 Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)

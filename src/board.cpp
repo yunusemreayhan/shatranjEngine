@@ -2,6 +2,8 @@
 #include "position.h"
 #include "shatranc_piece.h"
 #include "types.h"
+
+#include <iostream>
 #include <algorithm>
 #include <cctype>
 #include <memory>
@@ -153,13 +155,10 @@ bool Board::MovePiece(std::shared_ptr<Piece> &piece, Position pos)
         return false;
     }
     const auto captured_piece = GetPieces()->GetPiece(pos);
-    if (captured_piece && can_capture)
+    if (captured_piece)
     {
-        GetPieces()->RemovePiece(pos);
-        if (auto captured_player_sp = (*captured_piece)->GetPlayer().lock())
-        {
-            captured_player_sp->GetPieces()->RemovePiece(pos);
-        }
+        if ((piece->IsPiyade() && can_capture) || (!piece->IsPiyade() && can_move))
+            RemovePiece(*captured_piece);
     }
     piece->Move(pos);
     if (nullptr != dynamic_cast<Piyade *>(piece.get()))
@@ -167,10 +166,8 @@ bool Board::MovePiece(std::shared_ptr<Piece> &piece, Position pos)
         if (pos.Gety() == 0 || pos.Gety() == 7)
         {
             auto promoted_piece = PromotePiyade(piece);
-            GetPieces()->RemovePiece(pos);
-            GetPieces()->AddPiece(promoted_piece);
-            piece_player_sp->GetPieces()->RemovePiece(pos);
-            piece_player_sp->GetPieces()->AddPiece(promoted_piece);
+            RemovePiece(piece);
+            AddPiece(promoted_piece);
         }
     }
 
@@ -421,6 +418,16 @@ void Board::RemovePiece(const std::shared_ptr<Piece> &piece)
 {
     pieces_->RemovePiece(piece);
     piece->GetPlayer().lock()->GetPieces()->RemovePiece(piece);
+}
+
+void Board::PrintValidMoves() {
+    const auto& moves = currentTurn_.lock()->GetPieces()->GetPossibleMoves(GetSharedFromThis());
+
+    for (const auto& move : moves) {
+        std::cout << move.first.ToString() << "" << move.second.ToString() << " ";
+    }
+
+    std::cout << std::endl;
 }
 
 } // namespace shatranj

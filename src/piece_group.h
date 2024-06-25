@@ -81,6 +81,8 @@ class PieceGroup
     {
         return pieces_[index];
     }
+    
+    std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
 
   private:
     std::vector<std::shared_ptr<Piece>> pieces_;

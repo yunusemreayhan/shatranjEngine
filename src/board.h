@@ -47,6 +47,7 @@ class Board : public std::enable_shared_from_this<Board>
     {
         return pieces_;
     }
+    void PrintValidMoves();
     bool AddPiece(const std::shared_ptr<Piece> &piece);
 
     void RemovePiece(const std::shared_ptr<Piece> &piece);
