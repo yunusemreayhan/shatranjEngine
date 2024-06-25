@@ -33,6 +33,7 @@ class Piece : public std::enable_shared_from_this<Piece>
     bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool Move(Position pos);
 
     std::shared_ptr<Piece> GetSharedFromThis()
     {

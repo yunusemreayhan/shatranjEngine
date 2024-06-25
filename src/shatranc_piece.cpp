@@ -150,6 +150,17 @@ bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool c
     return canJumpOverOthers_ || board->IsPathClear(pos_, pos);
 }
 
+bool Piece::Move(Position pos)
+{
+    if (!pos.IsValid())
+    {
+        return false;
+    }
+    pos_ = pos;
+    moved_ = true;
+    return true;
+}
+
 Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)
     : Piece(pos, player, "Piyade", 'P', false, false, false, {}, {}), direction_{+1}
 {

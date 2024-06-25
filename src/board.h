@@ -22,10 +22,10 @@ class Board : public std::enable_shared_from_this<Board>
     }
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
-    bool MoveSuccesful(std::shared_ptr<Piece> &piece, std::shared_ptr<Piece> &targetPiece, int fromX, int fromY,
-                       int toX, int toY);
-    bool MovePiece(std::shared_ptr<Piece> &piece, int posx, int posy);
-    bool PromotePiyade(std::shared_ptr<Piece> &piyade);
+    void MoveSuccesful(const std::shared_ptr<Piece> &piece, const std::optional<std::shared_ptr<Piece>> &targetPiece,
+                       const Position &frompos, const Position &topos);
+    bool MovePiece(std::shared_ptr<Piece> &piece, Position pos);
+    static std::shared_ptr<Piece> PromotePiyade(std::shared_ptr<Piece> &piyade);
     bool WouldBeInCheck(const std::shared_ptr<Piece> &piece, Position pos);
     bool IsCheck(const std::shared_ptr<Player> &player);
     bool IsCheckmate(Player *player);
@@ -53,5 +53,7 @@ class Board : public std::enable_shared_from_this<Board>
     std::shared_ptr<PieceGroup> pieces_;
     std::weak_ptr<Player> currentTurn_;
     std::vector<std::shared_ptr<Player>> players_;
+    int halfMoveClock_ = 0;
+    int fullMoveNumber_ = 0;
 };
 } // namespace shatranj
