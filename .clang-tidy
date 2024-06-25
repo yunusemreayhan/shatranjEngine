@@ -21,6 +21,7 @@
 Checks: >
   -*,
   bugprone-*,
+  bugprone-easily-swappable-parameters: -oc=1
   google-*,
   misc-*,
   performance-*,

@@ -2,6 +2,7 @@
 
 #include "position.h"
 #include "shatranc_piece.h"
+#include <cstddef>
 #include <iterator>
 namespace shatranj
 {
@@ -53,6 +54,31 @@ class PieceGroup
     auto rend() const -> const_reverse_iterator
     {
         return pieces_.rend();
+    }
+
+    size_t size() const
+    {
+        return pieces_.size();
+    }
+
+    bool empty() const
+    {
+        return pieces_.empty();
+    }
+
+    template<typename T>
+    bool is_all_instance_of() const {
+        for (const auto &piece : pieces_) {
+            if (!std::dynamic_pointer_cast<T>(piece)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    std::shared_ptr<Piece> get(size_t index) const
+    {
+        return pieces_[index];
     }
 
   private:

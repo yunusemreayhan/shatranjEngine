@@ -28,12 +28,12 @@ class Board : public std::enable_shared_from_this<Board>
     static std::shared_ptr<Piece> PromotePiyade(std::shared_ptr<Piece> &piyade);
     bool WouldBeInCheck(const std::shared_ptr<Piece> &piece, Position pos);
     bool IsCheck(const std::shared_ptr<Player> &player);
-    bool IsCheckmate(Player *player);
+    bool IsCheckmate(const std::shared_ptr<Player>& player);
     bool IsGameOver();
-    Player *Winner();
+    std::shared_ptr<Player> Winner();
     bool IsDraw();
-    bool IsStalemate(Player *player);
-    Player *Opponent(Player *player);
+    bool IsStalemate(const std::shared_ptr<Player>& player);
+    std::shared_ptr<Player> Opponent(const std::shared_ptr<Player>& player);
     void SwitchTurn();
     bool IsPathClear(const Position& from, const Position& target);
     bool IsUnderAttack(int posx, int posy, Player *player);
@@ -54,6 +54,6 @@ class Board : public std::enable_shared_from_this<Board>
     std::weak_ptr<Player> currentTurn_;
     std::vector<std::shared_ptr<Player>> players_;
     int halfMoveClock_ = 0;
-    int fullMoveNumber_ = 0;
+    int fullMoveNumber_ = 1;
 };
 } // namespace shatranj

@@ -1,4 +1,7 @@
 #include "piece_group.h"
+
+#include <algorithm>
+
 namespace shatranj
 {
 bool PieceGroup::AddPiece(const std::shared_ptr<Piece> &piece)
