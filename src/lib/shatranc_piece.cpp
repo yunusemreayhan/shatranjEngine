@@ -174,12 +174,13 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
         {
             Position pos = pos_;
             pos.Move(diff);
-            if (pos.IsValid())
+            if (!pos.IsValid())
             {
-                if (CanMove(pos, board))
-                {
-                    possible_moves.push_back(std::make_pair(pos_, pos));
-                }
+                continue;
+            }
+            if (CanMove(pos, board))
+            {
+                possible_moves.push_back(std::make_pair(pos_, pos));
             }
         }
         else
@@ -189,12 +190,12 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
                 Position pos = pos_;
                 pos.Move(std::make_pair(static_cast<int>(std::floor(diff.first * i)),
                                         static_cast<int>(std::floor(diff.second * i))));
-                if (pos.IsValid())
+                if (!pos.IsValid())
+                    continue;
+
+                if (CanMove(pos, board))
                 {
-                    if (CanMove(pos, board))
-                    {
-                        possible_moves.push_back(std::make_pair(pos_, pos));
-                    }
+                    possible_moves.push_back(std::make_pair(pos_, pos));
                 }
             }
         }
@@ -206,12 +207,13 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
         {
             Position pos = pos_;
             pos.Move(diff);
-            if (pos_.IsValid())
+            if (!pos_.IsValid())
             {
-                if (CanCapture(pos, board))
-                {
-                    possible_moves.push_back(std::make_pair(pos_, pos));
-                }
+                continue;
+            }
+            if (CanCapture(pos, board))
+            {
+                possible_moves.push_back(std::make_pair(pos_, pos));
             }
         }
     }
