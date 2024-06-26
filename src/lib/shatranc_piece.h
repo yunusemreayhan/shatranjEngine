@@ -48,6 +48,11 @@ class Piece : public std::enable_shared_from_this<Piece>
     }
 
     virtual bool IsPiyade() const { return false; }
+    virtual bool IsVizier() const { return false; }
+    virtual bool IsShah() const { return false; }
+    virtual bool IsRook() const { return false; }
+    virtual bool IsHorse() const { return false; }
+    virtual bool IsFil() const { return false; }
 
   private:
     Position pos_;
@@ -78,6 +83,11 @@ class Rook : public Piece
     Rook(Position pos, const std::weak_ptr<Player> &player)
         : Piece(pos, player, "Rook", 'R', true, false, false, {{0, 1}, {1, 0}, {0, -1}, {-1, 0}}, {})
     {
+    }
+
+    bool IsRook() const override
+    {
+        return true;
     }
 };
 
@@ -124,6 +134,11 @@ class Horse : public Piece
                 {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1}, {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}}, {})
     {
     }
+
+    bool IsHorse() const override
+    {
+        return true;
+    }
 };
 class Fil : public Piece
 {
@@ -138,6 +153,11 @@ class Fil : public Piece
     Fil(Position pos, const std::weak_ptr<Player> &player)
         : Piece(pos, player, "Fil", 'F', false, true, false, {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}}, {})
     {
+    }
+
+    bool IsFil() const override
+    {
+        return true;
     }
 };
 class Vizier : public Piece
@@ -155,6 +175,11 @@ class Vizier : public Piece
     Vizier(Position pos, const std::weak_ptr<Player> &player)
         : Piece(pos, player, "Vizier", 'V', false, false, false, {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {})
     {
+    }
+
+    bool IsVizier() const override
+    {
+        return true;
     }
 };
 class Shah : public Piece
@@ -175,6 +200,11 @@ class Shah : public Piece
         : Piece(pos, player, "Shah", 'S', false, false, false,
                 {{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {})
     {
+    }
+
+    bool IsShah() const override
+    {
+        return true;
     }
 };
 } // namespace shatranj

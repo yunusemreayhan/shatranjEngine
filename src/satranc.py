@@ -457,3 +457,6 @@ class Shatranj:
             print( f'{self.player1.name} win!' )
         else:
             print( f'{self.player2.name} win!' )
+
+a = Shatranj('a', 'b')
+a.run()

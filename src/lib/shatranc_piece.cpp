@@ -88,6 +88,10 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
 
 bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck)
 {
+    if (!IsPiyade())
+    {
+        return false;
+    }
     if (pos_ == pos)
     {
         return false;

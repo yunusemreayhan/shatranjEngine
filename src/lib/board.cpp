@@ -85,6 +85,7 @@ bool Board::IsCheck(const std::shared_ptr<Player> &player)
         if (dynamic_cast<Shah *>(piece.get()) != nullptr)
         {
             shah = piece;
+            break;
         }
     }
 
@@ -348,9 +349,9 @@ std::string Board::BoardToString() const
                                             : std::tolower(piece->GetSymbol());
     }
     std::string ret;
-    for (int yitr = 0; yitr < 8; yitr++)
+    for (int yitr = 7; yitr >= 0; yitr--)
     {
-        if (yitr == 0)
+        if (yitr == 7)
         {
             ret += "  ";
             for (int xitr = 0; xitr < 8; xitr++)

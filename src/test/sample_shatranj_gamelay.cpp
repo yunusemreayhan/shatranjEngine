@@ -99,6 +99,20 @@ TEST(SampleCaptureTest_Piyade, Positive)
             EXPECT_EQ(shatranj.PlaySeq({"b4b3"}), false);
         }
     }
+    {
+        // piyade can promote to vizier
+        shatranj::Shatranj shatranj(
+            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
+            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7", "g3h2"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"c7b8", "h2g1"}), true);
+        const auto g1p = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("g1"));
+        EXPECT_TRUE((*g1p)->IsVizier());
+        const auto b8p = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b8"));
+        EXPECT_TRUE((*b8p)->IsVizier());
+
+        std::cout << *(shatranj.GetBoard()) << std::endl;
+    }
 }
 TEST(SampleCaptureTest_Rook, Positive)
 {
