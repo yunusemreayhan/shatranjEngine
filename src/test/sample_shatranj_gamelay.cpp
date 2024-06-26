@@ -121,17 +121,23 @@ TEST(SampleCaptureTest_Horse, Positive)
         shatranj::Shatranj shatranj(
             std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
             std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
-        auto piece_horse_b1 = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b1"));
-        auto piece_horse_b8 = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b8"));
-        auto piece_horse_instance_b8 = *piece_horse_b1;
         CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
         EXPECT_EQ(shatranj.PlaySeq({"b1c3"}), true);
-        piece_horse_b1 = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b1"));
         CheckPossibleMoves(shatranj, "c3", {"c3b5", "c3a4", "c3d5", "c3e4", "c3b1"});
         EXPECT_EQ(shatranj.PlaySeq({"b8c5"}), false);
         EXPECT_EQ(shatranj.PlaySeq({"b8c6"}), true);
-        piece_horse_b8 = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b8"));
         CheckPossibleMoves(shatranj, "c6", {"c6b4", "c6a5", "c6e5", "c6d4", "c6b8"});
+    }
+    {
+        shatranj::Shatranj shatranj(
+            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
+            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
+        EXPECT_EQ(shatranj.PlaySeq({"b1c3", "g8f6", "c3d5"}), true);
+        CheckPossibleMoves(shatranj, "f6", {"f6d5", "f6e4", "f6g4", "f6h5", "f6g8"});
+        EXPECT_EQ(shatranj.PlaySeq({"f6h3"}), false);
+        EXPECT_EQ(shatranj.PlaySeq({"f6d5"}), true);
+        CheckPossibleMoves(shatranj, "d5", {"d5b6", "d5b4", "d5c3", "d5e3", "d5f4", "d5f6"});
     }
 }
 
