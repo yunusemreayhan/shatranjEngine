@@ -51,6 +51,10 @@ class Board : public std::enable_shared_from_this<Board>
     bool AddPiece(const std::shared_ptr<Piece> &piece);
 
     void RemovePiece(const std::shared_ptr<Piece> &piece);
+    std::shared_ptr<Player> GetCurrentPlayer()
+    {
+        return currentTurn_.lock();
+    }
     std::shared_ptr<Board> GetSharedFromThis()
     {
         return shared_from_this();

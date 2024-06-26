@@ -17,7 +17,10 @@ class Shatranj
     std::optional<std::pair<std::string, std::string>> ParseInput(const std::string &input);
     static std::string GetInput();
     bool Play(const std::string &input);
+    bool PlaySeq(const std::vector<std::string> &seq);
     void Run();
+
+    std::shared_ptr<Board>& GetBoard() { return board_; }
 
   private:
     std::shared_ptr<Board> board_;

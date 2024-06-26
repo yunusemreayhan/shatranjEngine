@@ -105,4 +105,26 @@ void Shatranj::Run()
     std::cout << *(board_->Winner()) << " win" << std::endl;
     std::cout << *board_ << std::endl;
 }
+
+bool Shatranj::PlaySeq(const std::vector<std::string>& seq) {
+    int counter = 0;
+    bool succ = true;
+    for (const auto& seqitr : seq) {
+        if (Play(seqitr))
+        {
+            std::cout << "sequence success at:" << seqitr << std::endl;
+            counter++;
+        }
+        else
+        {
+            std::cout << "sequence failed at:" << seqitr << std::endl;
+            succ = false;
+            break;
+        }
+    }
+    // TODO revert with counter
+    (void)counter;
+    return succ;
+}
+
 } // namespace shatranj
