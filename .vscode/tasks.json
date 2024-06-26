@@ -7,6 +7,19 @@
             "label": "build",
             "type": "shell",
             "command": "cmake --build ./build --target all",
+            "dependsOn":"configure debug"
+        },
+        {
+            "label": "configure debug",
+            "type": "shell",
+            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Debug",
+            "dependsOn": "configure"
+        },
+        {
+            "label": "configure release",
+            "type": "shell",
+            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release",
+            "dependsOn": "configure"
         }
     ]
 }

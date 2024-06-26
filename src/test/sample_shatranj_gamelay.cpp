@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <limits.h>
 
-#include "../position.h"
-#include "../shatranj.h"
+#include "position.h"
+#include "shatranj.h"
 #include "gtest/gtest.h"
 
 namespace
@@ -10,7 +10,6 @@ namespace
 
 TEST(SampleCaptureTest, Positive)
 {
-
     shatranj::Shatranj shatranj(std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
                                 std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
     EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5", "a4b5", "f7f6", "a1a7", "d7d6"}), true);

@@ -170,31 +170,36 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
     std::vector<std::pair<Position, Position>> possible_moves;
     for (const auto &diff : possibleRegularMoves_)
     {
-        Position pos = pos_;
-        pos.Move(diff);
-        if (pos_.IsValid())
+        if (!multipleMove_)
         {
-            if (!multipleMove_)
+            Position pos = pos_;
+            pos.Move(diff);
+            if (pos.IsValid())
             {
                 if (CanMove(pos, board))
                 {
                     possible_moves.push_back(std::make_pair(pos_, pos));
                 }
             }
-            else
+        }
+        else
+        {
+            for (int i = 1; i < 8; i++)
             {
-                for (int i = 1; i < 8; i++)
+                Position pos = pos_;
+                pos.Move(std::make_pair(static_cast<int>(std::floor(diff.first * i)),
+                                        static_cast<int>(std::floor(diff.second * i))));
+                if (pos.IsValid())
                 {
-                    const Position multiplemoveinstance{std::make_pair(static_cast<int>(std::floor(diff.first * i)),
-                                                                       static_cast<int>(std::floor(diff.second * i)))};
-                    if (CanMove(multiplemoveinstance, board))
+                    if (CanMove(pos, board))
                     {
-                        possible_moves.push_back(std::make_pair(pos_, multiplemoveinstance));
+                        possible_moves.push_back(std::make_pair(pos_, pos));
                     }
                 }
             }
         }
     }
+
     if (IsPiyade())
     {
         for (const auto &diff : possibleCaptureMoves_)
