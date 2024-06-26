@@ -155,4 +155,20 @@ TEST(SampleCaptureTest_Horse, Positive)
     }
 }
 
+TEST(SampleCaptureTest_LeakTest, Positive)
+{
+    for (int i = 0; i < 100; i++)
+    {
+        shatranj::Shatranj shatranj(
+            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
+            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7", "g3h2"}),
+                  true);
+    }
+    EXPECT_TRUE(true);
+    EXPECT_EQ(sizeof(shatranj::Piece), 96);
+    EXPECT_EQ(sizeof(shatranj::Piyade), 96);
+    EXPECT_EQ(sizeof(shatranj::Shah), 96);
+}
+
 } // namespace

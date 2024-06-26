@@ -3,7 +3,7 @@
 #include "position.h"
 #include "shatranc_piece.h"
 #include <cstddef>
-#include <iterator>
+#include <memory>
 namespace shatranj
 {
 class PieceGroup

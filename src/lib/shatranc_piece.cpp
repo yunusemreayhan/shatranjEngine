@@ -9,12 +9,12 @@
 #include "shatranc_piece.h"
 namespace shatranj
 {
-Piece::Piece(Position pos, const std::weak_ptr<Player> &player, std::string name, char symbol, bool multipleMove,
-             bool canJumpOverOthers, bool moved, std::vector<std::pair<int, int>> possibleRegularMoves,
-             std::vector<std::pair<int, int>> possibleCaptureMoves)
-    : pos_(pos), player_(player), name_(std::move(name)), symbol_(symbol), multipleMove_(multipleMove),
-      canJumpOverOthers_(canJumpOverOthers), moved_(moved), possibleRegularMoves_(std::move(possibleRegularMoves)),
-      possibleCaptureMoves_(std::move(possibleCaptureMoves))
+Piece::Piece(const std::vector<Step> &possibleRegularMoves, const std::vector<Step> &possibleCaptureMoves,
+             const std::weak_ptr<Player> &player, Position pos, ChessPieceEnum pieceType, int8_t direction,
+             bool multipleMove, bool canJumpOverOthers, bool moved)
+    : possibleRegularMoves_(possibleRegularMoves), possibleCaptureMoves_(possibleCaptureMoves), player_(player),
+      pos_(pos), pieceType_(pieceType), direction_(direction), multipleMove_(multipleMove),
+      canJumpOverOthers_(canJumpOverOthers), moved_(moved)
 {
 }
 
@@ -42,10 +42,9 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
         bool check = false;
         for (int i = 1; i < 8; i++)
         {
-            if (diff.first % i == 0 && diff.second % i == 0)
+            if (diff.Diffx() % i == 0 && diff.Diffy() % i == 0)
             {
-                const auto multiplemoveinstance = std::make_pair(static_cast<int>(std::floor(diff.first / i)),
-                                                                 static_cast<int>(std::floor(diff.second / i)));
+                Step multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
                 const auto findres =
                     std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), multiplemoveinstance);
                 if (findres != possibleRegularMoves_.end())
@@ -113,10 +112,9 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
         bool check = false;
         for (int i = 1; i < 8; i++)
         {
-            if (diff.first % i == 0 && diff.second % i == 0)
+            if (diff.Diffx() % i == 0 && diff.Diffy() % i == 0)
             {
-                const auto multiplemoveinstance = std::make_pair(static_cast<int>(std::floor(diff.first / i)),
-                                                                 static_cast<int>(std::floor(diff.second / i)));
+                const auto multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
                 const auto findres =
                     std::find(possibleCaptureMoves_.begin(), possibleCaptureMoves_.end(), multiplemoveinstance);
                 if (findres != possibleCaptureMoves_.end())
@@ -197,8 +195,8 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
             for (int i = 1; i < 8; i++)
             {
                 Position pos = pos_;
-                pos.Move(std::make_pair(static_cast<int>(std::floor(diff.first * i)),
-                                        static_cast<int>(std::floor(diff.second * i))));
+                pos.Move(std::make_pair(static_cast<int>(std::floor(diff.Diffx() * i)),
+                                        static_cast<int>(std::floor(diff.Diffy() * i))));
                 if (!pos.IsValid())
                     continue;
 
@@ -230,7 +228,7 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
 }
 
 Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)
-    : Piece(pos, player, "Piyade", 'P', false, false, false, {}, {}), direction_{+1}
+    : Piece({}, {}, player, pos, ChessPieceEnum::kPiyade, 0, false, false, false)
 {
     if (auto p_sp = player.lock())
     {
