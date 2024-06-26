@@ -61,7 +61,7 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
         }
     }
     const auto piece = board->GetPieces()->GetPiece(pos);
-    if (piece)
+    if (!IsPiyade() && piece)
     {
         auto shp_pl_sp = (*piece)->GetPlayer().lock();
         auto selfpl_sp = player_.lock();
@@ -72,6 +72,11 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
                 return false;
             }
         }
+    }
+    else if (IsPiyade() && piece)
+    {
+        // piyade can not move over another piece
+        return false;
     }
     if (ctrlCheck && board->WouldBeInCheck(GetSharedFromThis(), pos))
     {

@@ -69,6 +69,19 @@ TEST(SampleCaptureTest_Piyade, Positive)
             EXPECT_EQ(shatranj.PlaySeq({"b4a3"}), true);
         }
         {
+            shatranj::Shatranj shatranj(
+                std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
+                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "e2e3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
+            auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b4"));
+            auto lastcapturedpiece = *lastcapturedplace;
+            auto possiblemovesoflastcapturedpiece = lastcapturedpiece->GetPossibleMoves(shatranj.GetBoard());
+            std::cout << *(shatranj.GetBoard()) << std::endl;
+            std::vector<std::string> expectedmoves = {"b4a3", "b4c3", "b4b3"};
+            CheckPossibleMoves(shatranj, possiblemovesoflastcapturedpiece, expectedmoves);
+            EXPECT_EQ(shatranj.PlaySeq({"b4b3"}), true);
+        }
+        {
 
             shatranj::Shatranj shatranj(
                 std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
