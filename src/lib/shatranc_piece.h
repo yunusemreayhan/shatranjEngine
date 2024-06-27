@@ -27,8 +27,8 @@ enum class ChessPieceEnum : std::uint8_t
 class Piece
 {
   public:
-    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove,
-                   bool canJumpOverOthers, bool moved);
+    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
+                   bool moved);
 
     const Position &GetPos() const
     {
@@ -63,6 +63,8 @@ class Piece
         case ChessPieceEnum::kRook:
             return 'R';
         }
+
+        return ' ';
     }
 
     constexpr std::string_view GetName() const
@@ -82,6 +84,8 @@ class Piece
         case ChessPieceEnum::kRook:
             return "Rook";
         }
+
+        return " ";
     }
 
     constexpr ChessPieceEnum GetPieceType() const
@@ -106,12 +110,13 @@ class Piece
         switch (pieceType_)
         {
         case ChessPieceEnum::kPiyade:
-        switch (color_) {
+            switch (color_)
+            {
             case Color::kWhite:
                 return kPiyadeWhiteSteps;
             case Color::kBlack:
                 return kPiyadeBlackSteps;
-        }
+            }
         case ChessPieceEnum::kVizier:
             return kVizierSteps;
         case ChessPieceEnum::kShah:
@@ -123,6 +128,8 @@ class Piece
         case ChessPieceEnum::kRook:
             return kRookSteps;
         }
+
+        return kEmptySteps;
     }
     const static std::vector<Step> kPiyadeWhiteCaptureSteps;
 
@@ -135,12 +142,13 @@ class Piece
         switch (pieceType_)
         {
         case ChessPieceEnum::kPiyade:
-        switch (color_) {
+            switch (color_)
+            {
             case Color::kWhite:
                 return kPiyadeWhiteCaptureSteps;
             case Color::kBlack:
                 return kPiyadeBlackCaptureSteps;
-        }
+            }
         case ChessPieceEnum::kVizier:
         case ChessPieceEnum::kShah:
         case ChessPieceEnum::kHorse:
@@ -148,6 +156,8 @@ class Piece
         case ChessPieceEnum::kRook:
             return kEmptySteps;
         }
+
+        return kEmptySteps;
     }
 
     constexpr bool IsPiyade() const
@@ -212,14 +222,14 @@ class Piece
 class Rook : public Piece
 {
   public:
-    Rook(Position pos, const Color color);
+    Rook(Position pos, Color color);
 };
 
 class Piyade : public Piece
 {
 
   public:
-    Piyade(Position pos, const Color color);
+    Piyade(Position pos, Color color);
 
   private:
 };
@@ -227,22 +237,22 @@ class Piyade : public Piece
 class Horse : public Piece
 {
   public:
-    Horse(Position pos, const Color color);
+    Horse(Position pos, Color color);
 };
 class Fil : public Piece
 {
   public:
-    Fil(Position pos, const Color color);
+    Fil(Position pos, Color color);
 };
 class Vizier : public Piece
 {
   public:
-    Vizier(Position pos, const Color color);
+    Vizier(Position pos, Color color);
 };
 class Shah : public Piece
 {
   public:
-    Shah(Position pos, const Color color);
+    Shah(Position pos, Color color);
 };
 
 using ChessPiece = std::variant<Rook, Piyade, Vizier, Shah, Horse, Fil>;

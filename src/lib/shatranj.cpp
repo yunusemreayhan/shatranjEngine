@@ -10,7 +10,7 @@
 
 namespace shatranj
 {
-Shatranj::Shatranj(std::shared_ptr<Player> player1, std::shared_ptr<Player> player2)
+Shatranj::Shatranj(std::string player1, std::string player2)
     : board_(std::make_shared<Board>(std::move(player1), std::move(player2)))
 {
     InitializeBoard();

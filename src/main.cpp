@@ -3,8 +3,7 @@
 
 int main()
 {
-    shatranj::Shatranj shatranj(std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-                                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
     shatranj.Run();
     return 0;
 }

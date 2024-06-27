@@ -2,8 +2,8 @@
 #include <limits.h>
 #include <utility>
 
-#include "shatranc_piece.h"
 #include "position.h"
+#include "shatranc_piece.h"
 #include "shatranj.h"
 #include "gtest/gtest.h"
 
@@ -50,9 +50,7 @@ void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordina
 TEST(SampleCaptureTest_Piyade, Positive)
 {
     {
-        shatranj::Shatranj shatranj(
-            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
         EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 32);
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5"}), true);
         EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 32);
@@ -60,27 +58,24 @@ TEST(SampleCaptureTest_Piyade, Positive)
         EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 31);
     }
     {
-        shatranj::Shatranj shatranj(
-            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"a4a5"}), true);
     }
     {
         {
             // piyade can not capture in front check get possible moves only 2 crosses possible front filled
-            shatranj::Shatranj shatranj(
-                std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             CheckPossibleMoves(shatranj, "b4", {"b4a3", "b4c3"});
             EXPECT_EQ(shatranj.PlaySeq({"b4a3"}), true);
         }
         {
             // piyade can not capture in front check get possible moves all 3 possible, front empty
-            shatranj::Shatranj shatranj(
-                std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "e2e3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             std::cout << *(shatranj.GetBoard()) << std::endl;
             CheckPossibleMoves(shatranj, "b4", {"b4a3", "b4c3", "b4b3"});
@@ -88,26 +83,23 @@ TEST(SampleCaptureTest_Piyade, Positive)
         }
         {
             // piyade can not capture in front
-            shatranj::Shatranj shatranj(
-                std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             EXPECT_EQ(shatranj.PlaySeq({"b4c3"}), true);
         }
         {
             // piyade can not capture in front
-            shatranj::Shatranj shatranj(
-                std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             EXPECT_EQ(shatranj.PlaySeq({"b4b3"}), false);
         }
     }
     {
         // piyade can promote to vizier
-        shatranj::Shatranj shatranj(
-            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
         EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"g3h2"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"c7b8"}), true);
@@ -122,11 +114,11 @@ TEST(SampleCaptureTest_Piyade, Positive)
 }
 TEST(SampleCaptureTest_Rook, Positive)
 {
-    shatranj::Shatranj shatranj(std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-                                std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
     EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5", "a4b5", "f7f6", "a1a7", "d7d6"}), true);
     std::cout << *(shatranj.GetBoard()) << std::endl;
-    EXPECT_EQ(shatranj.GetBoard()->GetCurrentPlayer()->GetColor(), shatranj::Color::kWhite);
+    EXPECT_EQ(shatranj.GetBoard()->GetCurrentPlayer().GetColor(), shatranj::Color::kWhite);
     auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("a7"));
     EXPECT_EQ(lastcapturedplace.has_value(), true);
     auto lastcapturedpiece = **lastcapturedplace;
@@ -138,9 +130,8 @@ TEST(SampleCaptureTest_Rook, Positive)
 TEST(SampleCaptureTest_Horse, Positive)
 {
     {
-        shatranj::Shatranj shatranj(
-            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
         CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
         EXPECT_EQ(shatranj.PlaySeq({"b1c3"}), true);
         CheckPossibleMoves(shatranj, "c3", {"c3b5", "c3a4", "c3d5", "c3e4", "c3b1"});
@@ -149,9 +140,8 @@ TEST(SampleCaptureTest_Horse, Positive)
         CheckPossibleMoves(shatranj, "c6", {"c6b4", "c6a5", "c6e5", "c6d4", "c6b8"});
     }
     {
-        shatranj::Shatranj shatranj(
-            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
         CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
         EXPECT_EQ(shatranj.PlaySeq({"b1c3", "g8f6", "c3d5"}), true);
         CheckPossibleMoves(shatranj, "f6", {"f6d5", "f6e4", "f6g4", "f6h5", "f6g8"});
@@ -166,6 +156,14 @@ TEST(SampleCaptureTest_LeakTest, Positive)
     EXPECT_EQ(sizeof(shatranj::Piece), 6);
     EXPECT_EQ(sizeof(shatranj::Piyade), 6);
     EXPECT_EQ(sizeof(shatranj::Shah), 6);
+}
+
+TEST(SampleCaptureTest_DrawTest, Positive)
+{
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b6b5", "a4b5", "f7f6", "a1a7", "d7d6"}), true);
+    }
 }
 
 } // namespace

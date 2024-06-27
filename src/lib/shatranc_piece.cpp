@@ -242,26 +242,26 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
     return possible_moves;
 }
 
-Shah::Shah(Position pos, const Color color) : Piece(ChessPieceEnum::kShah, pos, color, false, false, false)
+Shah::Shah(Position pos, Color color) : Piece(ChessPieceEnum::kShah, pos, color, false, false, false)
 {
 }
-Rook::Rook(Position pos, const Color color) : Piece(ChessPieceEnum::kRook, pos, color, true, false, false)
-{
-}
-
-Piyade::Piyade(Position pos, const Color color) : Piece(ChessPieceEnum::kPiyade, pos, color, false, false, false)
+Rook::Rook(Position pos, Color color) : Piece(ChessPieceEnum::kRook, pos, color, true, false, false)
 {
 }
 
-Horse::Horse(Position pos, const Color color) : Piece(ChessPieceEnum::kHorse, pos, color, false, true, false)
+Piyade::Piyade(Position pos, Color color) : Piece(ChessPieceEnum::kPiyade, pos, color, false, false, false)
 {
 }
 
-Fil::Fil(Position pos, const Color color) : Piece(ChessPieceEnum::kFil, pos, color, false, true, false)
+Horse::Horse(Position pos, Color color) : Piece(ChessPieceEnum::kHorse, pos, color, false, true, false)
 {
 }
 
-Vizier::Vizier(Position pos, const Color color) : Piece(ChessPieceEnum::kVizier, pos, color, false, false, false)
+Fil::Fil(Position pos, Color color) : Piece(ChessPieceEnum::kFil, pos, color, false, true, false)
+{
+}
+
+Vizier::Vizier(Position pos, Color color) : Piece(ChessPieceEnum::kVizier, pos, color, false, false, false)
 {
 }
 

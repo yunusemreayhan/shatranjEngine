@@ -18,28 +18,24 @@ class Position;
 class Board : public std::enable_shared_from_this<Board>
 {
   public:
-    Board(std::shared_ptr<Player> player1, std::shared_ptr<Player> player2)
-        : pieces_(std::make_shared<PieceGroup>()), players_({std::move(player1), std::move(player2)}), currentTurn_(Color::kWhite)
-    {
-    }
+    Board(const std::string &name1, const std::string &name2);
 
-    const std::shared_ptr<Player>& GetPlayer(Color color) const;
+    const Player &GetPlayer(Color color) const;
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
-    void MoveSuccesful(const Piece &piece, const std::optional<Piece> &targetPiece,
-                       const Position &frompos, const Position &topos);
+    void MoveSuccesful(const Piece &piece, const Position &frompos, const Position &topos);
     bool MovePiece(Position frompos, Position topos);
     static Piece PromotePiyade(Piece &piyade);
-    bool WouldBeInCheck(Piece* piece, Position pos);
-    bool IsCheck(const std::shared_ptr<Player> &player);
-    bool IsCheckmate(const std::shared_ptr<Player>& player);
+    bool WouldBeInCheck(Piece *piece, Position pos);
+    bool IsCheck();
+    bool IsCheckmate();
     bool IsGameOver();
-    std::shared_ptr<Player> Winner();
+    std::optional<Player> Winner();
     bool IsDraw();
-    bool IsStalemate(const std::shared_ptr<Player>& player);
-    std::shared_ptr<Player> Opponent(const std::shared_ptr<Player>& player);
+    bool IsStalemate();
+    Player Opponent(const Color &pColor);
     void SwitchTurn();
-    bool IsPathClear(const Position& from, const Position& target);
+    bool IsPathClear(const Position &from, const Position &target);
     bool IsUnderAttack(int posx, int posy, Player *player); // not used yet
     bool Play(std::string from_pos, std::string to_pos);
     std::string BoardToString() const;
@@ -51,7 +47,7 @@ class Board : public std::enable_shared_from_this<Board>
     bool AddPiece(Piece piece);
 
     void RemovePiece(Piece &piece);
-    std::shared_ptr<Player> GetCurrentPlayer() const
+    const Player &GetCurrentPlayer() const
     {
         return GetPlayer(currentTurn_);
     }
@@ -66,17 +62,17 @@ class Board : public std::enable_shared_from_this<Board>
         return ostr;
     }
 
-    const std::vector<std::shared_ptr<Player>> &GetPlayers() const
+    const std::vector<Player> &GetPlayers() const
     {
         return players_;
     }
 
   private:
     std::shared_ptr<PieceGroup> pieces_;
-    std::vector<std::shared_ptr<Player>> players_;
+    std::vector<Player> players_;
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;
-    constexpr static inline bool kDebug = false;
+    constexpr static inline bool kDebug = kDebugGlobal;
 };
 } // namespace shatranj

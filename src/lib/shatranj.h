@@ -12,7 +12,7 @@ class Player;
 class Shatranj
 {
   public:
-    Shatranj(std::shared_ptr<Player> player1, std::shared_ptr<Player> player2);
+    Shatranj(std::string player1, std::string player2);
     void InitializeBoard();
     std::optional<std::pair<std::string, std::string>> ParseInput(const std::string &input);
     static std::string GetInput();
@@ -24,6 +24,6 @@ class Shatranj
 
   private:
     std::shared_ptr<Board> board_;
-    constexpr static inline bool kDebug = false;
+    constexpr static inline bool kDebug = kDebugGlobal;
 };
 } // namespace Shatranj

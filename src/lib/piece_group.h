@@ -3,6 +3,8 @@
 #include "board.h"
 #include "position.h"
 #include "shatranc_piece.h"
+#include "types.h"
+
 #include <algorithm>
 #include <cstddef>
 #include <memory>
@@ -87,6 +89,6 @@ class PieceGroup
 
   private:
     std::vector<Piece> pieces_;
-    constexpr static bool inline kDebug = false;
+    constexpr static bool inline kDebug = kDebugGlobal;
 };
 } // namespace shatranj

@@ -13,6 +13,12 @@
 
 namespace shatranj
 {
+
+Board::Board(const std::string &name1, const std::string &name2)
+    : pieces_(std::make_shared<PieceGroup>()), players_{{name1, Color::kWhite}, {name2, Color::kBlack}},
+      currentTurn_(Color::kWhite)
+{
+}
 // would be in check if I move piece to pos
 bool Board::WouldBeInCheck(Piece* piece, Position pos)
 {
@@ -35,10 +41,7 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
             return inCheck
      */
     auto player_sp = GetPlayer(piece->GetColor());
-    if (!player_sp)
-    {
-        return false;
-    }
+
     auto captured_piece = GetPieces()->GetPiece(pos);
     std::unique_ptr<Piece> temp = nullptr;
     if (captured_piece)
@@ -47,7 +50,7 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
         GetPieces()->RemovePiece(pos);
     }
 
-    bool ret_is_check = IsCheck(player_sp);
+    bool ret_is_check = IsCheck();
 
     if (captured_piece)
     {
@@ -59,28 +62,28 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
     return ret_is_check;
 }
 
-bool Board::IsCheck(const std::shared_ptr<Player> &player)
+bool Board::IsCheck()
 {
     Piece* shah = nullptr;
     for (auto &piece : *GetPieces())
     {
-        if (player->GetColor() == piece.GetColor() && piece.IsShah())
+        if (currentTurn_ == piece.GetColor() && piece.IsShah())
         {
             shah = &piece;
             break;
         }
     }
 
-    if (!shah)
+    if (shah == nullptr)
     {
         throw std::runtime_error("Shah piece not found");
     }
 
     // get opponent
-    const std::shared_ptr<Player> &opponent = players_[0] == player ? players_[1] : players_[0];
+    const Player &opponent = Opponent(currentTurn_);
 
     return std::any_of(GetPieces()->begin(), GetPieces()->end(), [&](auto &pitr) {
-        if (pitr.GetColor() == opponent->GetColor())
+        if (pitr.GetColor() == OpponentColor(currentTurn_))
             return false;
         return pitr.CanCapture(shah->GetPos(), GetSharedFromThis(), false);
     });
@@ -123,9 +126,7 @@ bool Board::IsPathClear(const Position &from, const Position &target)
 bool Board::MovePiece(Position frompos, Position topos)
 {
     auto piece = GetPieces()->GetPieceByVal(frompos);
-    auto current_turn_player_sp = GetCurrentPlayer();
-    auto piece_player_sp = GetPlayer((*piece).GetColor());
-    if (current_turn_player_sp != piece_player_sp)
+    if (currentTurn_ != (*piece).GetColor())
     {
         return false;
     }
@@ -158,14 +159,14 @@ bool Board::MovePiece(Position frompos, Position topos)
                 AddPiece(promoted_piece);
             }
         }
-        MoveSuccesful(piece, **captured_piece, from, topos);
+        MoveSuccesful(piece, from, topos);
     }
 
     return true;
 }
 
 void Board::MoveSuccesful(const Piece &piece,
-                          const std::optional<Piece> & /*targetPiece*/, const Position & /*fromPos*/,
+                          const Position & /*fromPos*/,
                           const Position & /*toPos*/)
 {
     // TODO(yunus) :  not sure if needed but last move textual iformation could be saved later
@@ -178,8 +179,7 @@ void Board::MoveSuccesful(const Piece &piece,
         ++halfMoveClock_;
     }
 
-    auto current_turn_sp = GetCurrentPlayer();
-    if (current_turn_sp && current_turn_sp->GetColor() == Color::kBlack)
+    if (currentTurn_ == Color::kBlack)
     {
         fullMoveNumber_++;
     }
@@ -196,15 +196,15 @@ Piece Board::PromotePiyade(Piece &piyade)
     return Vizier(piyade.GetPos(), piyade.GetColor());
 }
 
-bool Board::IsCheckmate(const std::shared_ptr<Player> &player)
+bool Board::IsCheckmate()
 {
-    if (!IsCheck(player))
+    if (!IsCheck())
     {
         return false;
     }
     for (auto &piece : *GetPieces())
     {
-        if (piece.GetColor() == player->GetColor())
+        if (piece.GetColor() == currentTurn_)
         {
             for (int xitr = 0; xitr < 8; xitr++)
             {
@@ -224,16 +224,16 @@ bool Board::IsCheckmate(const std::shared_ptr<Player> &player)
     return false;
 }
 
-bool Board::IsStalemate(const std::shared_ptr<Player> &player)
+bool Board::IsStalemate()
 {
-    if (IsCheck(player))
+    if (IsCheck())
     {
         return false;
     }
 
     for (auto &piece : *GetPieces())
     {
-        if (piece.GetColor() == player->GetColor())
+        if (piece.GetColor() == currentTurn_)
         {
             for (int xitr = 0; xitr < 8; xitr++)
             {
@@ -254,11 +254,11 @@ bool Board::IsStalemate(const std::shared_ptr<Player> &player)
 
 bool Board::IsGameOver()
 {
-    if (IsStalemate(GetCurrentPlayer()))
+    if (IsStalemate())
     {
         return true;
     }
-    if (IsCheckmate(GetCurrentPlayer()))
+    if (IsCheckmate())
     {
         return true;
     }
@@ -269,21 +269,21 @@ bool Board::IsGameOver()
     return false;
 }
 
-std::shared_ptr<Player> Board::Winner()
+std::optional<Player> Board::Winner()
 {
     if (IsDraw())
     {
-        return nullptr;
+        return std::nullopt;
     }
-    if (IsStalemate(GetCurrentPlayer()))
+    if (IsStalemate())
     {
-        return Opponent(GetCurrentPlayer());
+        return Opponent(currentTurn_);
     }
-    if (IsCheckmate(GetCurrentPlayer()))
+    if (IsCheckmate())
     {
-        return Opponent(GetCurrentPlayer());
+        return Opponent(currentTurn_);
     }
-    return GetCurrentPlayer();
+    return std::nullopt;
 }
 
 bool Board::IsDraw()
@@ -292,9 +292,8 @@ bool Board::IsDraw()
     {
         return true;
     }
-    const auto &current_turn_sp = GetCurrentPlayer();
-    auto current_turn_pieces = GetPieces()->GetSubPieces(current_turn_sp->GetColor());
-    auto opponent_pieces = GetPieces()->GetSubPieces(Opponent(current_turn_sp)->GetColor());
+    auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
+    auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
     if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
     {
         if (current_turn_pieces[0].CanCapture(opponent_pieces[0].GetPos(), GetSharedFromThis()) ||
@@ -306,9 +305,9 @@ bool Board::IsDraw()
     return false;
 }
 
-std::shared_ptr<Player> Board::Opponent(const std::shared_ptr<Player> &player)
+Player Board::Opponent(const Color &color)
 {
-    return players_[0] == player ? players_[1] : players_[0];
+    return color == players_[1].GetColor() ? players_[0] : players_[1];
 }
 
 bool Board::Play(std::string from_pos, std::string to_pos)
@@ -372,7 +371,7 @@ std::string Board::BoardToString() const
     }
     ret += '\n';
 
-    ret += "  current turn : " + GetCurrentPlayer()->GetName() + " color " +
+    ret += "  current turn : " + GetCurrentPlayer().GetName() + " color " +
            std::string(currentTurn_ == Color::kWhite ? "White which is uppercase"
                                                                         : "Black which is lowercase") +
            '\n';
@@ -382,10 +381,10 @@ std::string Board::BoardToString() const
     return ret;
 }
 
-const std::shared_ptr<Player>& Board::GetPlayer(Color color) const {
+const Player& Board::GetPlayer(Color color) const {
     for (const auto &player : players_)
     {
-        if (player->GetColor() == color)
+        if (player.GetColor() == color)
         {
             return player;
         }
@@ -401,7 +400,6 @@ bool Board::AddPiece(Piece piece)
         return false;
     }
 
-    // res = piece.GetPlayer().lock()->GetPieces()->AddPiece(piece);
     return res;
 }
 
