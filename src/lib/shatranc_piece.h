@@ -27,7 +27,7 @@ enum class ChessPieceEnum : std::uint8_t
 class Piece
 {
   public:
-    explicit Piece(const Color color, Position pos, ChessPieceEnum pieceType, bool multipleMove,
+    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove,
                    bool canJumpOverOthers, bool moved);
 
     Position &GetPos()
@@ -196,8 +196,8 @@ class Piece
     }
 
   protected:
-    Position pos_;
     ChessPieceEnum pieceType_;
+    Position pos_;
     Color color_;
     bool multipleMove_ = false;
     bool canJumpOverOthers_ = false;

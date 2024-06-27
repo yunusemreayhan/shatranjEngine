@@ -29,9 +29,9 @@ const std::vector<Step> Piece::kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
 
 const std::vector<Step> Piece::kEmptySteps = {};
 
-Piece::Piece(const Color color, Position pos, ChessPieceEnum pieceType, bool multipleMove,
-             bool canJumpOverOthers, bool moved)
-    : color_(color), pos_(pos), pieceType_(pieceType), multipleMove_(multipleMove),
+Piece::Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
+             bool moved)
+    : pieceType_(pieceType), pos_(pos), color_(color), multipleMove_(multipleMove),
       canJumpOverOthers_(canJumpOverOthers), moved_(moved)
 {
 }
@@ -242,32 +242,26 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
     return possible_moves;
 }
 
-Shah::Shah(Position pos, const Color color)
-    : Piece(color, pos, ChessPieceEnum::kShah, false, false, false)
+Shah::Shah(Position pos, const Color color) : Piece(ChessPieceEnum::kShah, pos, color, false, false, false)
 {
 }
-Rook::Rook(Position pos, const Color color)
-    : Piece(color, pos, ChessPieceEnum::kRook, true, false, false)
-{
-}
-
-Piyade::Piyade(Position pos, const Color color)
-    : Piece(color, pos, ChessPieceEnum::kPiyade, false, false, false)
+Rook::Rook(Position pos, const Color color) : Piece(ChessPieceEnum::kRook, pos, color, true, false, false)
 {
 }
 
-Horse::Horse(Position pos, const Color color)
-    : Piece(color, pos, ChessPieceEnum::kHorse, false, true, false)
+Piyade::Piyade(Position pos, const Color color) : Piece(ChessPieceEnum::kPiyade, pos, color, false, false, false)
 {
 }
 
-Fil::Fil(Position pos, const Color color)
-    : Piece(color, pos, ChessPieceEnum::kFil, false, true, false)
+Horse::Horse(Position pos, const Color color) : Piece(ChessPieceEnum::kHorse, pos, color, false, true, false)
 {
 }
 
-Vizier::Vizier(Position pos, const Color color)
-    : Piece(color, pos, ChessPieceEnum::kVizier, false, false, false)
+Fil::Fil(Position pos, const Color color) : Piece(ChessPieceEnum::kFil, pos, color, false, true, false)
+{
+}
+
+Vizier::Vizier(Position pos, const Color color) : Piece(ChessPieceEnum::kVizier, pos, color, false, false, false)
 {
 }
 
