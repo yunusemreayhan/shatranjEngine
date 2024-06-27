@@ -26,7 +26,8 @@ class Board : public std::enable_shared_from_this<Board>
     void MoveSuccesful(const Piece &piece, const Position &frompos, const Position &topos);
     bool MovePiece(Position frompos, Position topos);
     static Piece PromotePiyade(Piece &piyade);
-    bool WouldBeInCheck(Piece *piece, Position pos);
+    bool WouldBeInCheck(Position from, Position pos);
+    bool OpponnentCanCapturePos(const Position &pos);
     bool IsCheck();
     bool IsCheckmate();
     bool IsGameOver();

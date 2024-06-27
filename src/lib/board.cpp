@@ -20,28 +20,8 @@ Board::Board(const std::string &name1, const std::string &name2)
 {
 }
 // would be in check if I move piece to pos
-bool Board::WouldBeInCheck(Piece* piece, Position pos)
+bool Board::WouldBeInCheck(Position from, Position pos)
 {
-    /*
-        def wouldBeInCheck(self, piece, x, y):
-            original_x, original_y = piece.Getx(), piece.Gety()
-            capturedPiece = self.getCell( x, y )
-            if capturedPiece:
-                capturedPiece.player.pieces.remove( capturedPiece )
-                self.pieces.remove( capturedPiece )
-
-            piece.Getx(), piece.Gety() = x, y
-            inCheck = self.isCheck(piece.player)
-
-            piece.Getx(), piece.Gety() = original_x, original_y
-            if capturedPiece:
-                capturedPiece.player.pieces.append( capturedPiece )
-                self.pieces.append( capturedPiece )
-
-            return inCheck
-     */
-    auto player_sp = GetPlayer(piece->GetColor());
-
     auto captured_piece = GetPieces()->GetPiece(pos);
     std::unique_ptr<Piece> temp = nullptr;
     if (captured_piece)
@@ -49,8 +29,15 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
         temp = std::make_unique<Piece>(**captured_piece);
         GetPieces()->RemovePiece(pos);
     }
+    auto piece_updated = GetPieces()->GetPiece(from);
+    if (!piece_updated)
+        return false;
+    auto temppos = (*piece_updated)->GetPos();
+    (*piece_updated)->Move(pos);
 
     bool ret_is_check = IsCheck();
+
+    (*piece_updated)->Move(temppos);
 
     if (captured_piece)
     {
@@ -62,6 +49,28 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
     return ret_is_check;
 }
 
+bool Board::OpponnentCanCapturePos(const Position &pos)
+{
+    return std::any_of(GetPieces()->begin(), GetPieces()->end(), [&](auto &pitr) {
+        if (pitr.GetColor() != OpponentColor(currentTurn_))
+            return false;
+        auto calc = pitr.CanMove(pos, GetSharedFromThis(), false) || pitr.CanCapture(pos, GetSharedFromThis(), false);
+        if constexpr (kDebugGlobal)
+        {
+            if (calc)
+            {
+                std::cout << pitr.GetName() << " " << pitr.GetPos().ToString() << " Can capture " << pos.ToString()
+                          << std::endl;
+            }
+            else
+            {
+                std::cout << pitr.GetName() << " " << pitr.GetPos().ToString() << " Cannot capture " << pos.ToString()
+                          << std::endl;
+            }
+        }
+        return calc;
+    });
+}
 bool Board::IsCheck()
 {
     Piece* shah = nullptr;
@@ -82,11 +91,7 @@ bool Board::IsCheck()
     // get opponent
     const Player &opponent = Opponent(currentTurn_);
 
-    return std::any_of(GetPieces()->begin(), GetPieces()->end(), [&](auto &pitr) {
-        if (pitr.GetColor() == OpponentColor(currentTurn_))
-            return false;
-        return pitr.CanCapture(shah->GetPos(), GetSharedFromThis(), false);
-    });
+    return OpponnentCanCapturePos(shah->GetPos());
 }
 
 bool Board::IsPathClear(const Position &from, const Position &target)
@@ -137,7 +142,7 @@ bool Board::MovePiece(Position frompos, Position topos)
     {
         return false;
     }
-    if (WouldBeInCheck(&*piece, topos))
+    if (WouldBeInCheck(frompos, topos))
     {
         return false;
     }
@@ -213,7 +218,7 @@ bool Board::IsCheckmate()
                     const Position pos(std::make_pair(xitr, yitr));
                     if ((piece.CanMove(pos, GetSharedFromThis(), false) ||
                          piece.CanCapture(pos, GetSharedFromThis(), false)) &&
-                        !WouldBeInCheck(&piece, pos))
+                        !WouldBeInCheck(piece.GetPos(), pos))
                     {
                         return false;
                     }
@@ -241,7 +246,7 @@ bool Board::IsStalemate()
                 {
                     const Position pos(std::make_pair(xitr, yitr));
                     // TODO(yunus) : this could be optimized, can move already calls wouldBeInCheck
-                    if (piece.CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(&piece, pos))
+                    if (piece.CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(piece.GetPos(), pos))
                     {
                         return false;
                     }

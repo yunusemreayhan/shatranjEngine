@@ -5,6 +5,7 @@
 #include "position.h"
 #include "shatranc_piece.h"
 #include "shatranj.h"
+#include "types.h"
 #include "gtest/gtest.h"
 
 namespace
@@ -153,16 +154,58 @@ TEST(SampleCaptureTest_Horse, Positive)
 
 TEST(SampleCaptureTest_LeakTest, Positive)
 {
-    EXPECT_EQ(sizeof(shatranj::Piece), 6);
-    EXPECT_EQ(sizeof(shatranj::Piyade), 6);
-    EXPECT_EQ(sizeof(shatranj::Shah), 6);
+    EXPECT_EQ(sizeof(shatranj::Piece), 4);
+    EXPECT_EQ(sizeof(shatranj::Piyade), 4);
+    EXPECT_EQ(sizeof(shatranj::Shah), 4);
+
+    if constexpr (shatranj::kStressTest)
+        for (int i = 0; i < 1000; i++)
+        {
+            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
+                                        "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+                      true);
+            EXPECT_EQ(shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4", "e6e5",
+                                        "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
+                      true);
+            EXPECT_EQ(shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
+            EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5", "c8d8"}), true);
+            EXPECT_EQ(shatranj.PlaySeq({"d5b5"}),
+                      false); // is check should return false and seq should fail, since rook is next to king
+            EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5", "g8f6", "b1c3",
+                                        "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
+                      true);
+            EXPECT_EQ(shatranj.PlaySeq({"c1c3"}),
+                      false); // is check should return false and seq should fail, since piyade is next to king
+            EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
+                      false); // shah can not take the piyade because it is being protected by fill
+            EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1"}), true);
+        }
 }
 
 TEST(SampleCaptureTest_DrawTest, Positive)
 {
     {
         shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
-        EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b6b5", "a4b5", "f7f6", "a1a7", "d7d6"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
+                                    "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4", "e6e5",
+                                    "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5", "c8d8"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"d5b5"}),
+                  false); // is check should return false and seq should fail, since rook is next to king
+        EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5", "g8f6", "b1c3",
+                                    "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"c1c3"}),
+                  false); // is check should return false and seq should fail, since piyade is next to king
+        EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
+                  false); // shah can not take the piyade because it is being protected by fill
+        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1"}), true);
+        std::cout << *(shatranj.GetBoard()) << std::endl;
     }
 }
 

@@ -91,7 +91,7 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
         // piyade can not move over another piece
         return false;
     }
-    if (ctrlCheck && board->WouldBeInCheck(this, pos))
+    if (ctrlCheck && board->WouldBeInCheck(this->GetPos(), pos))
     {
         return false;
     }
@@ -145,7 +145,7 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
         }
     }
 
-    if (ctrlCheck && board->WouldBeInCheck(this, pos))
+    if (ctrlCheck && board->WouldBeInCheck(this->GetPos(), pos))
     {
         return false;
     }
@@ -154,14 +154,6 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
 
 bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck)
 {
-    /*    def canCapture(self, x: int, y: int, board, ctrlCheck=True):
-        if not self.canThreat(x, y, board, ctrlCheck=ctrlCheck):
-            return False
-        piece = board.getCell(x, y)
-        if not piece or piece.player == self.player:
-            return False
-        return self.canJumpOverOthers or board.isPathClear(self.x, self.y, x, y)*/
-
     if (!CanThreat(pos, board, ctrlCheck))
     {
         return false;

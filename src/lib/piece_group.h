@@ -8,13 +8,14 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <sys/types.h>
 namespace shatranj
 {
 
 class Piece;
 enum class ChessPieceEnum : uint8_t;
 class Board;
-enum class Color : bool;
+enum class Color : uint8_t;
 class PieceGroup
 {
   public:

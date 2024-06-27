@@ -214,9 +214,9 @@ class Piece
     ChessPieceEnum pieceType_;
     Position pos_;
     Color color_;
-    bool multipleMove_ = false;
-    bool canJumpOverOthers_ = false;
-    bool moved_ = false;
+    int8_t multipleMove_:1;
+    int8_t canJumpOverOthers_:1;
+    int8_t moved_:1;
 };
 
 class Rook : public Piece
