@@ -29,10 +29,16 @@ const std::vector<Step> Piece::kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
 
 const std::vector<Step> Piece::kEmptySteps = {};
 
+PiecePrimitive::PiecePrimitive(ChessPieceEnum pieceType, const Color color, bool multipleMove, bool canJumpOverOthers,
+                               bool moved)
+    : pieceType_(pieceType), isWhite_(color == Color::kWhite), multipleMove_(multipleMove),
+      canJumpOverOthers_(canJumpOverOthers), moved_(moved)
+{
+}
+
 Piece::Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
              bool moved)
-    : pieceType_(pieceType), pos_(pos), color_(color), multipleMove_(multipleMove),
-      canJumpOverOthers_(canJumpOverOthers), moved_(moved)
+    : PiecePrimitive(pieceType, color, multipleMove, canJumpOverOthers, moved), pos_(pos)
 {
 }
 

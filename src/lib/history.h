@@ -34,10 +34,6 @@ struct MoveHistory
 
     const std::unique_ptr<HistoryPoint> &GetLastMove() const
     {
-        if (history_.empty())
-        {
-            return nullptr;
-        }
         return history_.top();
     }
 

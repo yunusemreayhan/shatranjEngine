@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -15,19 +16,19 @@ class PieceGroup;
 class Player
 {
   public:
-    Player(const std::string &name, Color color) : name_(name), color_(color)
+    Player(const std::string &name, Color color) : name_(name), isWhite_(color == Color::kWhite)
     {
     }
 
 
     bool operator==(const Player &other) const
     {
-        return color_ == other.color_ && name_ == other.name_;
+        return GetColor() == other.GetColor() && name_ == other.name_;
     }
 
     Color GetColor() const
     {
-        return color_;
+        return isWhite_ ? Color::kWhite : Color::kBlack;
     }
 
     std::string GetName() const
@@ -37,13 +38,13 @@ class Player
 
     friend std::ostream &operator<<(std::ostream &ostr, const Player &player)
     {
-        ostr << player.GetName();
+        ostr << player.GetName() << " " << (player.GetColor() == Color::kWhite ? "White" : "Black");
         return ostr;
     }
 
   private:
     std::string name_;
-    Color color_;
+    uint8_t isWhite_:1;
 };
 
 

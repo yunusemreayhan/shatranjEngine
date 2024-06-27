@@ -154,9 +154,10 @@ TEST(SampleCaptureTest_Horse, Positive)
 
 TEST(SampleCaptureTest_LeakTest, Positive)
 {
-    EXPECT_EQ(sizeof(shatranj::Piece), 4);
-    EXPECT_EQ(sizeof(shatranj::Piyade), 4);
-    EXPECT_EQ(sizeof(shatranj::Shah), 4);
+    EXPECT_EQ(sizeof(shatranj::Piece), 3);
+    EXPECT_EQ(sizeof(shatranj::Piyade), 3);
+    EXPECT_EQ(sizeof(shatranj::Shah), 3);
+    EXPECT_EQ(sizeof(shatranj::PiecePrimitive), 2);
 
     if constexpr (shatranj::kStressTest)
         for (int i = 0; i < 1000; i++)
@@ -204,7 +205,7 @@ TEST(SampleCaptureTest_DrawTest, Positive)
                   false); // is check should return false and seq should fail, since piyade is next to king
         EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
                   false); // shah can not take the piyade because it is being protected by fill
-        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "b5d3"}), true);
         std::cout << *(shatranj.GetBoard()) << std::endl;
         shatranj.GetBoard()->Revert(1000);
         std::cout << *(shatranj.GetBoard()) << std::endl;

@@ -22,6 +22,7 @@ class PieceGroup
     PieceGroup()
     {
         pieces_ = std::vector<Piece>();
+        pieces_.reserve(32);
     }
     using iterator = std::vector<Piece>::iterator;
     using cons_iterator = std::vector<Piece>::const_iterator;

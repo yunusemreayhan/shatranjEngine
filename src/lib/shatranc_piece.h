@@ -23,8 +23,21 @@ enum class ChessPieceEnum : std::uint8_t
     kFil,
     kRook
 };
+class PiecePrimitive // positionless piece
+{
+  public:
+    PiecePrimitive(ChessPieceEnum pieceType, const Color color, bool multipleMove, bool canJumpOverOthers, bool moved);
 
-class Piece
+  protected:
+    ChessPieceEnum pieceType_;
+
+    int8_t isWhite_ : 1;
+    int8_t multipleMove_ : 1;
+    int8_t canJumpOverOthers_ : 1;
+    int8_t moved_ : 1;
+};
+
+class Piece : public PiecePrimitive
 {
   public:
     explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
@@ -37,7 +50,7 @@ class Piece
 
     Color GetColor() const
     {
-        return color_;
+        return isWhite_ ? Color::kWhite : Color::kBlack;
     }
 
     bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
@@ -110,12 +123,14 @@ class Piece
         switch (pieceType_)
         {
         case ChessPieceEnum::kPiyade:
-            switch (color_)
+            switch (GetColor())
             {
             case Color::kWhite:
                 return kPiyadeWhiteSteps;
             case Color::kBlack:
                 return kPiyadeBlackSteps;
+            default:
+                return kEmptySteps;
             }
         case ChessPieceEnum::kVizier:
             return kVizierSteps;
@@ -142,12 +157,14 @@ class Piece
         switch (pieceType_)
         {
         case ChessPieceEnum::kPiyade:
-            switch (color_)
+            switch (GetColor())
             {
             case Color::kWhite:
                 return kPiyadeWhiteCaptureSteps;
             case Color::kBlack:
                 return kPiyadeBlackCaptureSteps;
+            default:
+                return kEmptySteps;
             }
         case ChessPieceEnum::kVizier:
         case ChessPieceEnum::kShah:
@@ -207,16 +224,11 @@ class Piece
 
     bool operator==(const Piece &other) const
     {
-        return pieceType_ == other.pieceType_ && pos_ == other.pos_ && color_ == other.color_;
+        return pieceType_ == other.pieceType_ && pos_ == other.pos_ && GetColor() == other.GetColor();
     }
 
   protected:
-    ChessPieceEnum pieceType_;
     Position pos_;
-    Color color_;
-    int8_t multipleMove_:1;
-    int8_t canJumpOverOthers_:1;
-    int8_t moved_:1;
 };
 
 class Rook : public Piece
