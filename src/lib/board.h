@@ -19,18 +19,18 @@ class Board : public std::enable_shared_from_this<Board>
 {
   public:
     Board(std::shared_ptr<Player> player1, std::shared_ptr<Player> player2)
-        : pieces_(std::make_shared<PieceGroup>()), players_({std::move(player1), std::move(player2)}), currentTurn_(GetWhitePlayer())
+        : pieces_(std::make_shared<PieceGroup>()), players_({std::move(player1), std::move(player2)}), currentTurn_(Color::kWhite)
     {
     }
 
-    std::shared_ptr<Player> GetWhitePlayer();
+    const std::shared_ptr<Player>& GetPlayer(Color color) const;
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
     void MoveSuccesful(const std::shared_ptr<Piece> &piece, const std::optional<std::shared_ptr<Piece>> &targetPiece,
                        const Position &frompos, const Position &topos);
     bool MovePiece(std::shared_ptr<Piece> &piece, Position pos);
     static std::shared_ptr<Piece> PromotePiyade(std::shared_ptr<Piece> &piyade);
-    bool WouldBeInCheck(const std::shared_ptr<Piece> &piece, Position pos);
+    bool WouldBeInCheck(Piece* piece, Position pos);
     bool IsCheck(const std::shared_ptr<Player> &player);
     bool IsCheckmate(const std::shared_ptr<Player>& player);
     bool IsGameOver();
@@ -51,9 +51,9 @@ class Board : public std::enable_shared_from_this<Board>
     bool AddPiece(const std::shared_ptr<Piece> &piece);
 
     void RemovePiece(const std::shared_ptr<Piece> &piece);
-    std::shared_ptr<Player> GetCurrentPlayer()
+    std::shared_ptr<Player> GetCurrentPlayer() const
     {
-        return currentTurn_.lock();
+        return GetPlayer(currentTurn_);
     }
     std::shared_ptr<Board> GetSharedFromThis()
     {
@@ -74,7 +74,7 @@ class Board : public std::enable_shared_from_this<Board>
   private:
     std::shared_ptr<PieceGroup> pieces_;
     std::vector<std::shared_ptr<Player>> players_;
-    std::weak_ptr<Player> currentTurn_;
+    Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;
 };

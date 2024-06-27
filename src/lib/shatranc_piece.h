@@ -24,21 +24,20 @@ enum class ChessPieceEnum : std::uint8_t
     kRook
 };
 
-class Piece : public std::enable_shared_from_this<Piece>
+class Piece
 {
   public:
-    explicit Piece(const std::vector<Step> &possibleRegularMoves, const std::vector<Step> &possibleCaptureMoves,
-                   const std::weak_ptr<Player> &player, Position pos, ChessPieceEnum pieceType, int8_t direction,
-                   bool multipleMove, bool canJumpOverOthers, bool moved);
+    explicit Piece(const Color color, Position pos, ChessPieceEnum pieceType, bool multipleMove,
+                   bool canJumpOverOthers, bool moved);
 
-    Position GetPos()
+    Position &GetPos()
     {
         return pos_;
     }
 
-    std::weak_ptr<Player> GetPlayer()
+    Color GetColor() const
     {
-        return player_;
+        return color_;
     }
 
     bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
@@ -46,13 +45,6 @@ class Piece : public std::enable_shared_from_this<Piece>
     bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool Move(Position pos);
     std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
-
-    std::shared_ptr<Piece> GetSharedFromThis()
-    {
-        return shared_from_this();
-    }
-
-    virtual ~Piece() = default;
 
     constexpr char GetSymbol() const
     {
@@ -89,6 +81,72 @@ class Piece : public std::enable_shared_from_this<Piece>
             return "Fil";
         case ChessPieceEnum::kRook:
             return "Rook";
+        }
+    }
+
+    constexpr ChessPieceEnum GetPieceType() const
+    {
+        return pieceType_;
+    }
+
+    const static std::vector<Step> kRookSteps;
+    const static std::vector<Step> kPiyadeWhiteSteps;
+    const static std::vector<Step> kPiyadeBlackSteps;
+
+    const static std::vector<Step> kVizierSteps;
+
+    const static std::vector<Step> kShahSteps;
+
+    const static std::vector<Step> kHorseSteps;
+
+    const static std::vector<Step> kFilSteps;
+
+    constexpr inline const std::vector<Step> &GetPossibleRegularMoves() const
+    {
+        switch (pieceType_)
+        {
+        case ChessPieceEnum::kPiyade:
+        switch (color_) {
+            case Color::kWhite:
+                return kPiyadeWhiteSteps;
+            case Color::kBlack:
+                return kPiyadeBlackSteps;
+        }
+        case ChessPieceEnum::kVizier:
+            return kVizierSteps;
+        case ChessPieceEnum::kShah:
+            return kShahSteps;
+        case ChessPieceEnum::kHorse:
+            return kHorseSteps;
+        case ChessPieceEnum::kFil:
+            return kFilSteps;
+        case ChessPieceEnum::kRook:
+            return kRookSteps;
+        }
+    }
+    const static std::vector<Step> kPiyadeWhiteCaptureSteps;
+
+    const static std::vector<Step> kPiyadeBlackCaptureSteps;
+
+    const static std::vector<Step> kEmptySteps;
+
+    constexpr inline const std::vector<Step> &GetPossibleCaptureMoves() const
+    {
+        switch (pieceType_)
+        {
+        case ChessPieceEnum::kPiyade:
+        switch (color_) {
+            case Color::kWhite:
+                return kPiyadeWhiteCaptureSteps;
+            case Color::kBlack:
+                return kPiyadeBlackCaptureSteps;
+        }
+        case ChessPieceEnum::kVizier:
+        case ChessPieceEnum::kShah:
+        case ChessPieceEnum::kHorse:
+        case ChessPieceEnum::kFil:
+        case ChessPieceEnum::kRook:
+            return kEmptySteps;
         }
     }
 
@@ -138,12 +196,9 @@ class Piece : public std::enable_shared_from_this<Piece>
     }
 
   protected:
-    std::vector<Step> possibleRegularMoves_;
-    std::vector<Step> possibleCaptureMoves_;
-    std::weak_ptr<Player> player_;
     Position pos_;
     ChessPieceEnum pieceType_;
-    int8_t direction_ : 2;
+    Color color_;
     bool multipleMove_ = false;
     bool canJumpOverOthers_ = false;
     bool moved_ = false;
@@ -152,53 +207,37 @@ class Piece : public std::enable_shared_from_this<Piece>
 class Rook : public Piece
 {
   public:
-    Rook(Position pos, const std::weak_ptr<Player> &player)
-        : Piece({{0, 1}, {1, 0}, {0, -1}, {-1, 0}}, {}, player, pos, ChessPieceEnum::kRook, 0, true, false, false)
-    {
-    }
+    Rook(Position pos, const Color color);
 };
 
 class Piyade : public Piece
 {
 
   public:
-    Piyade(Position pos, const std::weak_ptr<Player> &player);
+    Piyade(Position pos, const Color color);
 
   private:
 };
+
 class Horse : public Piece
 {
   public:
-    Horse(Position pos, const std::weak_ptr<Player> &player)
-        : Piece({{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1}, {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}}, {}, player, pos,
-                ChessPieceEnum::kHorse, 0, false, true, false)
-    {
-    }
+    Horse(Position pos, const Color color);
 };
 class Fil : public Piece
 {
   public:
-    Fil(Position pos, const std::weak_ptr<Player> &player)
-        : Piece({{2, 2}, {2, -2}, {-2, 2}, {-2, -2}}, {}, player, pos, ChessPieceEnum::kFil, 0, false, true, false)
-    {
-    }
+    Fil(Position pos, const Color color);
 };
 class Vizier : public Piece
 {
   public:
-    Vizier(Position pos, const std::weak_ptr<Player> &player)
-        : Piece({{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {}, player, pos, ChessPieceEnum::kVizier, 0, false, false, false)
-    {
-    }
+    Vizier(Position pos, const Color color);
 };
 class Shah : public Piece
 {
   public:
-    Shah(Position pos, const std::weak_ptr<Player> &player)
-        : Piece({{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}}, {}, player, pos,
-                ChessPieceEnum::kShah, 0, false, false, false)
-    {
-    }
+    Shah(Position pos, const Color color);
 };
 
 using ChessPiece = std::variant<Rook, Piyade, Vizier, Shah, Horse, Fil>;

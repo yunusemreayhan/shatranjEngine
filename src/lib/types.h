@@ -2,7 +2,7 @@
 
 namespace shatranj
 {
-enum class Color
+enum class Color : bool
 {
     kWhite,
     kBlack

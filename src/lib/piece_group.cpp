@@ -73,4 +73,11 @@ std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(const st
     }
     return ret;
 }
+
+bool PieceGroup::is_all_instance_of(ChessPieceEnum chessPiece) const
+{
+    return std::all_of(pieces_.begin(), pieces_.end(),
+                       [chessPiece](const auto &piece) { return piece->GetPieceType() == chessPiece; });
+}
+
 } // namespace shatranj

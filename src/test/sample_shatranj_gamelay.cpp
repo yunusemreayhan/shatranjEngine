@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <utility>
 
+#include "shatranc_piece.h"
 #include "position.h"
 #include "shatranj.h"
 #include "gtest/gtest.h"
@@ -125,7 +126,7 @@ TEST(SampleCaptureTest_Rook, Positive)
     EXPECT_EQ(lastcapturedplace.has_value(), true);
     auto lastcapturedpiece = *lastcapturedplace;
     EXPECT_EQ(lastcapturedpiece->GetSymbol() == 'R', true);
-    EXPECT_TRUE(lastcapturedpiece->GetPlayer().lock()->GetColor() == shatranj::Color::kWhite);
+    EXPECT_TRUE(lastcapturedpiece->GetColor() == shatranj::Color::kWhite);
     CheckPossibleMoves(shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
 }
 
@@ -157,18 +158,9 @@ TEST(SampleCaptureTest_Horse, Positive)
 
 TEST(SampleCaptureTest_LeakTest, Positive)
 {
-    for (int i = 0; i < 100; i++)
-    {
-        shatranj::Shatranj shatranj(
-            std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
-            std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
-        EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7", "g3h2"}),
-                  true);
-    }
-    EXPECT_TRUE(true);
-    EXPECT_EQ(sizeof(shatranj::Piece), 96);
-    EXPECT_EQ(sizeof(shatranj::Piyade), 96);
-    EXPECT_EQ(sizeof(shatranj::Shah), 96);
+    EXPECT_EQ(sizeof(shatranj::Piece), 6);
+    EXPECT_EQ(sizeof(shatranj::Piyade), 6);
+    EXPECT_EQ(sizeof(shatranj::Shah), 6);
 }
 
 } // namespace

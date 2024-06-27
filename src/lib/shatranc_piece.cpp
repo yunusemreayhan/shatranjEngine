@@ -9,11 +9,29 @@
 #include "shatranc_piece.h"
 namespace shatranj
 {
-Piece::Piece(const std::vector<Step> &possibleRegularMoves, const std::vector<Step> &possibleCaptureMoves,
-             const std::weak_ptr<Player> &player, Position pos, ChessPieceEnum pieceType, int8_t direction,
-             bool multipleMove, bool canJumpOverOthers, bool moved)
-    : possibleRegularMoves_(possibleRegularMoves), possibleCaptureMoves_(possibleCaptureMoves), player_(player),
-      pos_(pos), pieceType_(pieceType), direction_(direction), multipleMove_(multipleMove),
+
+const std::vector<Step> Piece::kRookSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+const std::vector<Step> Piece::kPiyadeWhiteSteps = {{0, +1}};
+const std::vector<Step> Piece::kPiyadeBlackSteps = {{0, -1}};
+
+const std::vector<Step> Piece::kVizierSteps = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+const std::vector<Step> Piece::kShahSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+const std::vector<Step> Piece::kHorseSteps = {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1},
+                                              {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}};
+
+const std::vector<Step> Piece::kFilSteps = {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}};
+
+const std::vector<Step> Piece::kPiyadeWhiteCaptureSteps = {{1, +1}, {-1, +1}};
+
+const std::vector<Step> Piece::kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
+
+const std::vector<Step> Piece::kEmptySteps = {};
+
+Piece::Piece(const Color color, Position pos, ChessPieceEnum pieceType, bool multipleMove,
+             bool canJumpOverOthers, bool moved)
+    : color_(color), pos_(pos), pieceType_(pieceType), multipleMove_(multipleMove),
       canJumpOverOthers_(canJumpOverOthers), moved_(moved)
 {
 }
@@ -32,7 +50,8 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
     auto diff = pos.Diff(pos_);
     if (!multipleMove_)
     {
-        if (std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), diff) == possibleRegularMoves_.end())
+        if (std::find(GetPossibleRegularMoves().begin(), GetPossibleRegularMoves().end(), diff) ==
+            GetPossibleRegularMoves().end())
         {
             return false;
         }
@@ -46,8 +65,8 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
             {
                 Step multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
                 const auto findres =
-                    std::find(possibleRegularMoves_.begin(), possibleRegularMoves_.end(), multiplemoveinstance);
-                if (findres != possibleRegularMoves_.end())
+                    std::find(GetPossibleRegularMoves().begin(), GetPossibleRegularMoves().end(), multiplemoveinstance);
+                if (findres != GetPossibleRegularMoves().end())
                 {
                     check = true;
                     break;
@@ -62,14 +81,9 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
     const auto piece = board->GetPieces()->GetPiece(pos);
     if (!IsPiyade() && piece)
     {
-        auto shp_pl_sp = (*piece)->GetPlayer().lock();
-        auto selfpl_sp = player_.lock();
-        if (selfpl_sp && shp_pl_sp)
+        if ((*piece)->GetColor() == GetColor())
         {
-            if (*shp_pl_sp == *selfpl_sp)
-            {
-                return false;
-            }
+            return false;
         }
     }
     else if (IsPiyade() && piece)
@@ -77,7 +91,7 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
         // piyade can not move over another piece
         return false;
     }
-    if (ctrlCheck && board->WouldBeInCheck(GetSharedFromThis(), pos))
+    if (ctrlCheck && board->WouldBeInCheck(this, pos))
     {
         return false;
     }
@@ -102,7 +116,8 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
     auto diff = pos.Diff(pos_);
     if (!multipleMove_)
     {
-        if (std::find(possibleCaptureMoves_.begin(), possibleCaptureMoves_.end(), diff) == possibleCaptureMoves_.end())
+        if (std::find(GetPossibleCaptureMoves().begin(), GetPossibleCaptureMoves().end(), diff) ==
+            GetPossibleCaptureMoves().end())
         {
             return false;
         }
@@ -116,8 +131,8 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
             {
                 const auto multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
                 const auto findres =
-                    std::find(possibleCaptureMoves_.begin(), possibleCaptureMoves_.end(), multiplemoveinstance);
-                if (findres != possibleCaptureMoves_.end())
+                    std::find(GetPossibleCaptureMoves().begin(), GetPossibleCaptureMoves().end(), multiplemoveinstance);
+                if (findres != GetPossibleCaptureMoves().end())
                 {
                     check = true;
                     break;
@@ -130,7 +145,7 @@ bool Piece::CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ct
         }
     }
 
-    if (ctrlCheck && board->WouldBeInCheck(GetSharedFromThis(), pos))
+    if (ctrlCheck && board->WouldBeInCheck(this, pos))
     {
         return false;
     }
@@ -152,7 +167,7 @@ bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool c
         return false;
     }
     auto piece = board->GetPieces()->GetPiece(pos);
-    if (!piece || *(*piece)->GetPlayer().lock() == *player_.lock())
+    if (!piece || (*piece)->GetColor() == GetColor())
     {
         // if the piece is not on the board or it belongs to same player
         return false;
@@ -175,7 +190,7 @@ bool Piece::Move(Position pos)
 std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::shared_ptr<Board> &board)
 {
     std::vector<std::pair<Position, Position>> possible_moves;
-    for (const auto &diff : possibleRegularMoves_)
+    for (const auto &diff : GetPossibleRegularMoves())
     {
         if (!multipleMove_)
         {
@@ -210,7 +225,7 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
 
     if (IsPiyade())
     {
-        for (const auto &diff : possibleCaptureMoves_)
+        for (const auto &diff : GetPossibleCaptureMoves())
         {
             Position pos = pos_;
             pos.Move(diff);
@@ -227,14 +242,33 @@ std::vector<std::pair<Position, Position>> Piece::GetPossibleMoves(const std::sh
     return possible_moves;
 }
 
-Piyade::Piyade(Position pos, const std::weak_ptr<Player> &player)
-    : Piece({}, {}, player, pos, ChessPieceEnum::kPiyade, 0, false, false, false)
+Shah::Shah(Position pos, const Color color)
+    : Piece(color, pos, ChessPieceEnum::kShah, false, false, false)
 {
-    if (auto p_sp = player.lock())
-    {
-        direction_ = p_sp->GetColor() == Color::kWhite ? +1 : -1;
-    }
-    possibleRegularMoves_ = {{0, direction_}};
-    possibleCaptureMoves_ = {{1, direction_}, {-1, direction_}};
 }
+Rook::Rook(Position pos, const Color color)
+    : Piece(color, pos, ChessPieceEnum::kRook, true, false, false)
+{
+}
+
+Piyade::Piyade(Position pos, const Color color)
+    : Piece(color, pos, ChessPieceEnum::kPiyade, false, false, false)
+{
+}
+
+Horse::Horse(Position pos, const Color color)
+    : Piece(color, pos, ChessPieceEnum::kHorse, false, true, false)
+{
+}
+
+Fil::Fil(Position pos, const Color color)
+    : Piece(color, pos, ChessPieceEnum::kFil, false, true, false)
+{
+}
+
+Vizier::Vizier(Position pos, const Color color)
+    : Piece(color, pos, ChessPieceEnum::kVizier, false, false, false)
+{
+}
+
 } // namespace shatranj

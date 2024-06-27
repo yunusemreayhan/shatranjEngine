@@ -1,11 +1,17 @@
 #pragma once
 
+#include "board.h"
 #include "position.h"
 #include "shatranc_piece.h"
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 namespace shatranj
 {
+
+class Piece;
+enum class ChessPieceEnum : uint8_t;
+class Board;
 class PieceGroup
 {
   public:
@@ -67,15 +73,7 @@ class PieceGroup
         return pieces_.empty();
     }
 
-    template<typename T>
-    bool is_all_instance_of() const {
-        for (const auto &piece : pieces_) {
-            if (!std::dynamic_pointer_cast<T>(piece)) {
-                return false;
-            }
-        }
-        return true;
-    }
+    bool is_all_instance_of(ChessPieceEnum chessPiece) const;
 
     std::shared_ptr<Piece> get(size_t index) const
     {
