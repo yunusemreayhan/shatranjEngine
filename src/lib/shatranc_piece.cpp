@@ -164,7 +164,6 @@ bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool c
         // if the piece is not on the board or it belongs to same player
         return false;
     }
-    // TODO(yunus): check if this works below || could be && IMHO
     return canJumpOverOthers_ || board->IsPathClear(pos_, pos);
 }
 

@@ -7,6 +7,7 @@
 #include "player.h"
 #include "shatranc_piece.h"
 #include "types.h"
+#include "history.h"
 
 namespace shatranj
 {
@@ -25,7 +26,9 @@ class Board : public std::enable_shared_from_this<Board>
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
     void MoveSuccesful(const Piece &piece, const Position &frompos, const Position &topos);
     bool MovePiece(Position frompos, Position topos);
+    bool Revert(int move_count = 1);
     static Piece PromotePiyade(Piece &piyade);
+    static Piece DemotePromoted(Piece &promoted);
     bool WouldBeInCheck(Position from, Position pos);
     bool OpponnentCanCapturePos(const Position &pos);
     bool IsCheck();
@@ -71,6 +74,7 @@ class Board : public std::enable_shared_from_this<Board>
   private:
     std::shared_ptr<PieceGroup> pieces_;
     std::vector<Player> players_;
+    MoveHistory history_;
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;

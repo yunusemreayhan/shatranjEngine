@@ -41,8 +41,6 @@ bool Board::WouldBeInCheck(Position from, Position pos)
 
     if (captured_piece)
     {
-        // TODO(yunus): put back the captured piece after check
-
         GetPieces()->AddPiece(*temp);
     }
 
@@ -73,7 +71,7 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
 }
 bool Board::IsCheck()
 {
-    Piece* shah = nullptr;
+    Piece *shah = nullptr;
     for (auto &piece : *GetPieces())
     {
         if (currentTurn_ == piece.GetColor() && piece.IsShah())
@@ -146,14 +144,17 @@ bool Board::MovePiece(Position frompos, Position topos)
     {
         return false;
     }
+    std::unique_ptr<Piece> captured_piece_uptr = nullptr;
     auto captured_piece = GetPieces()->GetPiece(topos);
     if (captured_piece)
     {
+        captured_piece_uptr = std::make_unique<Piece>(**captured_piece);
         if (((*piece).IsPiyade() && can_capture) || (!(*piece).IsPiyade() && can_move))
             RemovePiece(**captured_piece);
     }
     {
-        Piece& piece = **GetPieces()->GetPiece(frompos);
+        bool promoted = false;
+        Piece &piece = **GetPieces()->GetPiece(frompos);
         piece.Move(topos);
         if (piece.IsPiyade())
         {
@@ -162,17 +163,88 @@ bool Board::MovePiece(Position frompos, Position topos)
                 auto promoted_piece = PromotePiyade(piece);
                 RemovePiece(piece);
                 AddPiece(promoted_piece);
+                promoted = true;
             }
         }
+        history_.AddMove(frompos, topos, std::move(captured_piece_uptr), promoted, piece.GetColor());
         MoveSuccesful(piece, from, topos);
     }
 
     return true;
 }
 
-void Board::MoveSuccesful(const Piece &piece,
-                          const Position & /*fromPos*/,
-                          const Position & /*toPos*/)
+bool Board::Revert(int move_count)
+{
+    if constexpr (kDebug)
+    {
+        std::cout << "Reverting " << move_count << " moves" << std::endl;
+    }
+    if (move_count <= 0)
+    {
+        return true;
+    }
+    while (move_count > 0)
+    {
+        if (history_.GetHistory().size() == 0)
+        {
+            if constexpr (kDebug)
+            {
+                std::cout << "No more moves to revert" << std::endl;
+            }
+            return false;
+        }
+        const std::unique_ptr<HistoryPoint> &last_move = history_.GetLastMove();
+
+        if constexpr (kDebug)
+        {
+            std::cout << "Reverting from " << last_move->to.ToString() << " to " << last_move->from.ToString()
+                      << std::endl;
+        }
+
+        auto piece_opt = GetPieces()->GetPiece(last_move->to);
+        if (!piece_opt)
+        {
+            if constexpr (kDebug)
+            {
+                std::cout << *this << std::endl;
+            }
+            throw std::runtime_error("Piece not found, illogical board state at " + last_move->to.ToString());
+        }
+        auto *piece = *piece_opt;
+        piece->Move(last_move->from);
+        if (last_move->promoted)
+
+        {
+            auto demoted_piece = DemotePromoted(*piece);
+            RemovePiece(*piece);
+            AddPiece(demoted_piece);
+        }
+
+        if (last_move->captured != nullptr)
+        {
+            AddPiece(*last_move->captured);
+        }
+
+        if constexpr (kDebug)
+        {
+            std::cout << "Revert done from " << last_move->to.ToString() << " to " << last_move->from.ToString()
+                      << std::endl;
+        }
+        move_count--;
+        if (last_move->color == Color::kBlack)
+        {
+            fullMoveNumber_--;
+        }
+        if constexpr (kDebug)
+        {
+            std::cout << "Reverting " << move_count << " moves" << std::endl;
+        }
+        history_.PopLastMove();
+    }
+    return true;
+}
+
+void Board::MoveSuccesful(const Piece &piece, const Position & /*fromPos*/, const Position & /*toPos*/)
 {
     // TODO(yunus) :  not sure if needed but last move textual iformation could be saved later
     if (piece.IsPiyade())
@@ -199,6 +271,10 @@ void Board::SwitchTurn()
 Piece Board::PromotePiyade(Piece &piyade)
 {
     return Vizier(piyade.GetPos(), piyade.GetColor());
+}
+Piece Board::DemotePromoted(Piece &promoted)
+{
+    return Piyade(promoted.GetPos(), promoted.GetColor());
 }
 
 bool Board::IsCheckmate()
@@ -339,9 +415,8 @@ std::string Board::BoardToString() const
     for (auto &piece : *pieces_)
     {
         const auto pos = piece.GetPos();
-        board[pos.Getx()][pos.Gety()] = piece.GetColor() == Color::kWhite
-                                            ? std::toupper(piece.GetSymbol())
-                                            : std::tolower(piece.GetSymbol());
+        board[pos.Getx()][pos.Gety()] =
+            piece.GetColor() == Color::kWhite ? std::toupper(piece.GetSymbol()) : std::tolower(piece.GetSymbol());
     }
     std::string ret;
     for (int yitr = 7; yitr >= 0; yitr--)
@@ -377,16 +452,15 @@ std::string Board::BoardToString() const
     ret += '\n';
 
     ret += "  current turn : " + GetCurrentPlayer().GetName() + " color " +
-           std::string(currentTurn_ == Color::kWhite ? "White which is uppercase"
-                                                                        : "Black which is lowercase") +
-           '\n';
+           std::string(currentTurn_ == Color::kWhite ? "White which is uppercase" : "Black which is lowercase") + '\n';
     ret += "  current move count : " + std::to_string(fullMoveNumber_) + '\n';
     ret += "  half move count : " + std::to_string(halfMoveClock_) + '\n';
 
     return ret;
 }
 
-const Player& Board::GetPlayer(Color color) const {
+const Player &Board::GetPlayer(Color color) const
+{
     for (const auto &player : players_)
     {
         if (player.GetColor() == color)

@@ -206,6 +206,8 @@ TEST(SampleCaptureTest_DrawTest, Positive)
                   false); // shah can not take the piyade because it is being protected by fill
         EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1"}), true);
         std::cout << *(shatranj.GetBoard()) << std::endl;
+        shatranj.GetBoard()->Revert(1000);
+        std::cout << *(shatranj.GetBoard()) << std::endl;
     }
 }
 
