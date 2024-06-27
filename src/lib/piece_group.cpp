@@ -76,12 +76,28 @@ std::optional<Piece> PieceGroup::GetPieceByVal(const Position &pos)
     }
     return std::nullopt;
 }
+std::vector<Piece> PieceGroup::GetSubPieces(Color color)
+{
+    std::vector<Piece> ret;
+    for (auto &piece : pieces_)
+    {
+        if (piece.GetColor() == color)
+        {
+            ret.push_back(piece);
+        }
+    }
+    return ret;
+}
 
-std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(const std::shared_ptr<Board> &board)
+std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(Color color, const std::shared_ptr<Board> &board)
 {
     std::vector<std::pair<Position, Position>> ret;
     for (auto &piece : pieces_)
     {
+        if (piece.GetColor() != color)
+        {
+            continue;
+        }
         auto insertable = piece.GetPossibleMoves(board);
         for (auto it = insertable.begin(); it != insertable.end(); it++)
         {

@@ -12,6 +12,7 @@ namespace shatranj
 class Piece;
 enum class ChessPieceEnum : uint8_t;
 class Board;
+enum class Color : bool;
 class PieceGroup
 {
   public:
@@ -30,6 +31,7 @@ class PieceGroup
     bool HasPiece(const Position &pos);
     std::optional<Piece*> GetPiece(const Position &pos);
     std::optional<Piece> GetPieceByVal(const Position &pos);
+    std::vector<Piece> GetSubPieces(Color color);
 
     auto begin() -> iterator
     {
@@ -81,7 +83,7 @@ class PieceGroup
 
     Piece &get(size_t index);
 
-    std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
+    std::vector<std::pair<Position, Position>> GetPossibleMoves(Color color, const std::shared_ptr<Board> &board);
 
   private:
     std::vector<Piece> pieces_;

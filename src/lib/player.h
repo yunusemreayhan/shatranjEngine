@@ -15,11 +15,10 @@ class PieceGroup;
 class Player
 {
   public:
-    Player(const std::string &name, Color color) : name_(name), color_(color), pieces_(std::make_shared<PieceGroup>())
+    Player(const std::string &name, Color color) : name_(name), color_(color)
     {
     }
 
-    std::shared_ptr<PieceGroup> &GetPieces();
 
     bool operator==(const Player &other) const
     {
@@ -45,7 +44,6 @@ class Player
   private:
     std::string name_;
     Color color_;
-    std::shared_ptr<PieceGroup> pieces_;
 };
 
 

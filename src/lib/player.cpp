@@ -3,8 +3,5 @@
 
 namespace shatranj
 {
-std::shared_ptr<PieceGroup> &Player::GetPieces()
-{
-    return pieces_;
-}
+
 }

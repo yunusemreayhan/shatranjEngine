@@ -51,7 +51,6 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
 
     if (captured_piece)
     {
-        auto &captured_piece_sp = (*captured_piece);
         // TODO(yunus): put back the captured piece after check
 
         GetPieces()->AddPiece(*temp);
@@ -80,8 +79,10 @@ bool Board::IsCheck(const std::shared_ptr<Player> &player)
     // get opponent
     const std::shared_ptr<Player> &opponent = players_[0] == player ? players_[1] : players_[0];
 
-    return std::any_of(opponent->GetPieces()->begin(), opponent->GetPieces()->end(), [&](auto &op_piece) {
-        return op_piece.CanCapture(shah->GetPos(), GetSharedFromThis(), false);
+    return std::any_of(GetPieces()->begin(), GetPieces()->end(), [&](auto &pitr) {
+        if (pitr.GetColor() == opponent->GetColor())
+            return false;
+        return pitr.CanCapture(shah->GetPos(), GetSharedFromThis(), false);
     });
 }
 
@@ -201,18 +202,21 @@ bool Board::IsCheckmate(const std::shared_ptr<Player> &player)
     {
         return false;
     }
-    for (auto &piece : *player->GetPieces())
+    for (auto &piece : *GetPieces())
     {
-        for (int xitr = 0; xitr < 8; xitr++)
+        if (piece.GetColor() == player->GetColor())
         {
-            for (int yitr = 0; yitr < 8; yitr++)
+            for (int xitr = 0; xitr < 8; xitr++)
             {
-                const Position pos(std::make_pair(xitr, yitr));
-                if ((piece.CanMove(pos, GetSharedFromThis(), false) ||
-                     piece.CanCapture(pos, GetSharedFromThis(), false)) &&
-                    !WouldBeInCheck(&piece, pos))
+                for (int yitr = 0; yitr < 8; yitr++)
                 {
-                    return false;
+                    const Position pos(std::make_pair(xitr, yitr));
+                    if ((piece.CanMove(pos, GetSharedFromThis(), false) ||
+                         piece.CanCapture(pos, GetSharedFromThis(), false)) &&
+                        !WouldBeInCheck(&piece, pos))
+                    {
+                        return false;
+                    }
                 }
             }
         }
@@ -227,17 +231,20 @@ bool Board::IsStalemate(const std::shared_ptr<Player> &player)
         return false;
     }
 
-    for (auto &piece : *player->GetPieces())
+    for (auto &piece : *GetPieces())
     {
-        for (int xitr = 0; xitr < 8; xitr++)
+        if (piece.GetColor() == player->GetColor())
         {
-            for (int yitr = 0; yitr < 8; yitr++)
+            for (int xitr = 0; xitr < 8; xitr++)
             {
-                const Position pos(std::make_pair(xitr, yitr));
-                // TODO(yunus) : this could be optimized, can move already calls wouldBeInCheck
-                if (piece.CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(&piece, pos))
+                for (int yitr = 0; yitr < 8; yitr++)
                 {
-                    return false;
+                    const Position pos(std::make_pair(xitr, yitr));
+                    // TODO(yunus) : this could be optimized, can move already calls wouldBeInCheck
+                    if (piece.CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(&piece, pos))
+                    {
+                        return false;
+                    }
                 }
             }
         }
@@ -286,12 +293,12 @@ bool Board::IsDraw()
         return true;
     }
     const auto &current_turn_sp = GetCurrentPlayer();
-    const auto &current_turn_pieces = current_turn_sp->GetPieces();
-    const auto &opponent_pieces = Opponent(current_turn_sp)->GetPieces();
-    if (current_turn_pieces->size() == 1 && opponent_pieces->size() == 2)
+    auto current_turn_pieces = GetPieces()->GetSubPieces(current_turn_sp->GetColor());
+    auto opponent_pieces = GetPieces()->GetSubPieces(Opponent(current_turn_sp)->GetColor());
+    if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
     {
-        if (current_turn_sp->GetPieces()->get(0).CanCapture(opponent_pieces->get(0).GetPos(), GetSharedFromThis()) ||
-            current_turn_sp->GetPieces()->get(0).CanCapture(opponent_pieces->get(1).GetPos(), GetSharedFromThis()))
+        if (current_turn_pieces[0].CanCapture(opponent_pieces[0].GetPos(), GetSharedFromThis()) ||
+            current_turn_pieces[0].CanCapture(opponent_pieces[1].GetPos(), GetSharedFromThis()))
         {
             return true;
         }
@@ -416,7 +423,7 @@ void Board::RemovePiece(Piece &piece)
 
 void Board::PrintValidMoves()
 {
-    const auto &moves = GetCurrentPlayer()->GetPieces()->GetPossibleMoves(GetSharedFromThis());
+    const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
 
     for (const auto &move : moves)
     {
