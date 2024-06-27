@@ -24,5 +24,6 @@ class Shatranj
 
   private:
     std::shared_ptr<Board> board_;
+    constexpr static inline bool kDebug = false;
 };
 } // namespace Shatranj

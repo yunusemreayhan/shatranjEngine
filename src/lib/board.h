@@ -26,10 +26,10 @@ class Board : public std::enable_shared_from_this<Board>
     const std::shared_ptr<Player>& GetPlayer(Color color) const;
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
-    void MoveSuccesful(const std::shared_ptr<Piece> &piece, const std::optional<std::shared_ptr<Piece>> &targetPiece,
+    void MoveSuccesful(const Piece &piece, const std::optional<Piece> &targetPiece,
                        const Position &frompos, const Position &topos);
-    bool MovePiece(std::shared_ptr<Piece> &piece, Position pos);
-    static std::shared_ptr<Piece> PromotePiyade(std::shared_ptr<Piece> &piyade);
+    bool MovePiece(Position frompos, Position topos);
+    static Piece PromotePiyade(Piece &piyade);
     bool WouldBeInCheck(Piece* piece, Position pos);
     bool IsCheck(const std::shared_ptr<Player> &player);
     bool IsCheckmate(const std::shared_ptr<Player>& player);
@@ -48,9 +48,9 @@ class Board : public std::enable_shared_from_this<Board>
         return pieces_;
     }
     void PrintValidMoves();
-    bool AddPiece(const std::shared_ptr<Piece> &piece);
+    bool AddPiece(Piece piece);
 
-    void RemovePiece(const std::shared_ptr<Piece> &piece);
+    void RemovePiece(Piece &piece);
     std::shared_ptr<Player> GetCurrentPlayer() const
     {
         return GetPlayer(currentTurn_);
@@ -77,5 +77,6 @@ class Board : public std::enable_shared_from_this<Board>
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;
+    constexpr static inline bool kDebug = false;
 };
 } // namespace shatranj

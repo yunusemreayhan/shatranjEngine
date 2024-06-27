@@ -81,7 +81,7 @@ bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrl
     const auto piece = board->GetPieces()->GetPiece(pos);
     if (!IsPiyade() && piece)
     {
-        if ((*piece)->GetColor() == GetColor())
+        if ((**piece).GetColor() == GetColor())
         {
             return false;
         }
@@ -167,7 +167,7 @@ bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool c
         return false;
     }
     auto piece = board->GetPieces()->GetPiece(pos);
-    if (!piece || (*piece)->GetColor() == GetColor())
+    if (!piece || (**piece).GetColor() == GetColor())
     {
         // if the piece is not on the board or it belongs to same player
         return false;

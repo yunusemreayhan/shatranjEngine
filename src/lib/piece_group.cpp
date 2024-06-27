@@ -4,11 +4,15 @@
 
 namespace shatranj
 {
-bool PieceGroup::AddPiece(const std::shared_ptr<Piece> &piece)
+bool PieceGroup::AddPiece(const Piece &piece)
 {
-    if (HasPiece(piece->GetPos()))
+    if (HasPiece(piece.GetPos()))
     {
         return false;
+    }
+    if constexpr (kDebug)
+    {
+        std::cout << "Adding " << piece.GetPos().ToString() << std::endl;
     }
     pieces_.push_back(piece);
     return true;
@@ -18,7 +22,7 @@ void PieceGroup::RemovePiece(const Position &pos)
 {
     for (auto it = pieces_.begin(); it != pieces_.end(); it++)
     {
-        if ((*it)->GetPos() == pos)
+        if ((*it).GetPos() == pos)
         {
             pieces_.erase(it);
             break;
@@ -26,13 +30,11 @@ void PieceGroup::RemovePiece(const Position &pos)
     }
 }
 
-void PieceGroup::RemovePiece(const std::shared_ptr<Piece> &piece)
+void PieceGroup::RemovePiece(const Piece &piece)
 {
-    pieces_.erase(std::remove_if(pieces_.begin(), pieces_.end(),
-                                 [&piece](const std::shared_ptr<Piece> &current) -> bool {
-                                     return current->GetPos() == piece->GetPos();
-                                 }),
-                  pieces_.end());
+    pieces_.erase(
+        std::remove_if(pieces_.begin(), pieces_.end(), [&piece](const Piece &pieceitr) { return piece == pieceitr; }),
+        pieces_.end());
 }
 
 bool PieceGroup::HasPiece(const Position &pos)
@@ -43,7 +45,7 @@ bool PieceGroup::HasPiece(const Position &pos)
     }
     for (auto it = pieces_.begin(); it != pieces_.end(); it++)
     {
-        if ((*it)->GetPos() == pos)
+        if ((it)->GetPos() == pos)
         {
             return true;
         }
@@ -51,23 +53,38 @@ bool PieceGroup::HasPiece(const Position &pos)
     return false;
 }
 
-std::optional<std::shared_ptr<Piece>> PieceGroup::GetPiece(const Position &pos)
+std::optional<Piece*> PieceGroup::GetPiece(const Position &pos)
 {
     for (auto it = pieces_.begin(); it != pieces_.end(); it++)
     {
-        if ((*it)->GetPos() == pos)
+        if ((it)->GetPos() == pos)
         {
-            return *it;
+            return &(*it);
         }
     }
     return std::nullopt;
 }
 
-std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(const std::shared_ptr<Board> &board) {
+std::optional<Piece> PieceGroup::GetPieceByVal(const Position &pos)
+{
+    for (auto it = pieces_.begin(); it != pieces_.end(); it++)
+    {
+        if ((it)->GetPos() == pos)
+        {
+            return (*it);
+        }
+    }
+    return std::nullopt;
+}
+
+std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(const std::shared_ptr<Board> &board)
+{
     std::vector<std::pair<Position, Position>> ret;
-    for (const auto& piece : pieces_) {
-        auto insertable = piece->GetPossibleMoves(board);
-        for (auto it = insertable.begin(); it != insertable.end(); it++) {
+    for (auto &piece : pieces_)
+    {
+        auto insertable = piece.GetPossibleMoves(board);
+        for (auto it = insertable.begin(); it != insertable.end(); it++)
+        {
             ret.push_back(*it);
         }
     }
@@ -77,7 +94,10 @@ std::vector<std::pair<Position, Position>> PieceGroup::GetPossibleMoves(const st
 bool PieceGroup::is_all_instance_of(ChessPieceEnum chessPiece) const
 {
     return std::all_of(pieces_.begin(), pieces_.end(),
-                       [chessPiece](const auto &piece) { return piece->GetPieceType() == chessPiece; });
+                       [chessPiece](const auto &piece) { return piece.GetPieceType() == chessPiece; });
 }
-
+Piece &PieceGroup::get(size_t index)
+{
+    return pieces_[index];
+}
 } // namespace shatranj

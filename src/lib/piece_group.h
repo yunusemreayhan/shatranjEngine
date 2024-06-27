@@ -15,17 +15,21 @@ class Board;
 class PieceGroup
 {
   public:
-    PieceGroup() {pieces_ = std::vector<std::shared_ptr<Piece>>();}
-    using iterator = std::vector<std::shared_ptr<Piece>>::iterator;
-    using cons_iterator = std::vector<std::shared_ptr<Piece>>::const_iterator;
-    using reverse_iterator = std::vector<std::shared_ptr<Piece>>::reverse_iterator;
-    using const_reverse_iterator = std::vector<std::shared_ptr<Piece>>::const_reverse_iterator;
+    PieceGroup()
+    {
+        pieces_ = std::vector<Piece>();
+    }
+    using iterator = std::vector<Piece>::iterator;
+    using cons_iterator = std::vector<Piece>::const_iterator;
+    using reverse_iterator = std::vector<Piece>::reverse_iterator;
+    using const_reverse_iterator = std::vector<Piece>::const_reverse_iterator;
 
-    bool AddPiece(const std::shared_ptr<Piece> &piece);
+    bool AddPiece(const Piece &piece);
     void RemovePiece(const Position &pos);
-    void RemovePiece(const std::shared_ptr<Piece> &piece);
+    void RemovePiece(const Piece &piece);
     bool HasPiece(const Position &pos);
-    std::optional<std::shared_ptr<Piece>> GetPiece(const Position &pos);
+    std::optional<Piece*> GetPiece(const Position &pos);
+    std::optional<Piece> GetPieceByVal(const Position &pos);
 
     auto begin() -> iterator
     {
@@ -75,14 +79,12 @@ class PieceGroup
 
     bool is_all_instance_of(ChessPieceEnum chessPiece) const;
 
-    std::shared_ptr<Piece> get(size_t index) const
-    {
-        return pieces_[index];
-    }
-    
+    Piece &get(size_t index);
+
     std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
 
   private:
-    std::vector<std::shared_ptr<Piece>> pieces_;
+    std::vector<Piece> pieces_;
+    constexpr static bool inline kDebug = false;
 };
 } // namespace shatranj

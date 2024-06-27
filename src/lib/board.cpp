@@ -39,9 +39,11 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
     {
         return false;
     }
-    const auto captured_piece = GetPieces()->GetPiece(pos);
+    auto captured_piece = GetPieces()->GetPiece(pos);
+    std::unique_ptr<Piece> temp = nullptr;
     if (captured_piece)
     {
+        temp = std::make_unique<Piece>(**captured_piece);
         GetPieces()->RemovePiece(pos);
     }
 
@@ -49,10 +51,10 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
 
     if (captured_piece)
     {
-        const auto &captured_piece_sp = (*captured_piece);
+        auto &captured_piece_sp = (*captured_piece);
         // TODO(yunus): put back the captured piece after check
 
-        GetPieces()->AddPiece(captured_piece_sp);
+        GetPieces()->AddPiece(*temp);
     }
 
     return ret_is_check;
@@ -60,12 +62,12 @@ bool Board::WouldBeInCheck(Piece* piece, Position pos)
 
 bool Board::IsCheck(const std::shared_ptr<Player> &player)
 {
-    std::shared_ptr<Piece> shah = nullptr;
-    for (const auto &piece : *GetPieces())
+    Piece* shah = nullptr;
+    for (auto &piece : *GetPieces())
     {
-        if (player->GetColor() == piece->GetColor() && piece->IsShah())
+        if (player->GetColor() == piece.GetColor() && piece.IsShah())
         {
-            shah = piece;
+            shah = &piece;
             break;
         }
     }
@@ -78,8 +80,8 @@ bool Board::IsCheck(const std::shared_ptr<Player> &player)
     // get opponent
     const std::shared_ptr<Player> &opponent = players_[0] == player ? players_[1] : players_[0];
 
-    return std::any_of(opponent->GetPieces()->begin(), opponent->GetPieces()->end(), [&](const auto &op_piece) {
-        return op_piece->CanCapture(shah->GetPos(), GetSharedFromThis(), false);
+    return std::any_of(opponent->GetPieces()->begin(), opponent->GetPieces()->end(), [&](auto &op_piece) {
+        return op_piece.CanCapture(shah->GetPos(), GetSharedFromThis(), false);
     });
 }
 
@@ -117,52 +119,56 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     return true;
 }
 
-bool Board::MovePiece(std::shared_ptr<Piece> &piece, Position pos)
+bool Board::MovePiece(Position frompos, Position topos)
 {
+    auto piece = GetPieces()->GetPieceByVal(frompos);
     auto current_turn_player_sp = GetCurrentPlayer();
-    auto piece_player_sp = GetPlayer(piece->GetColor());
+    auto piece_player_sp = GetPlayer((*piece).GetColor());
     if (current_turn_player_sp != piece_player_sp)
     {
         return false;
     }
-    const auto from = piece->GetPos();
-    const bool can_move = piece->CanMove(pos, GetSharedFromThis());
-    const bool can_capture = piece->CanCapture(pos, GetSharedFromThis());
+    const auto from = (*piece).GetPos();
+    const bool can_move = (*piece).CanMove(topos, GetSharedFromThis());
+    const bool can_capture = (*piece).CanCapture(topos, GetSharedFromThis());
     if (!can_move && !can_capture)
     {
         return false;
     }
-    if (WouldBeInCheck(piece.get(), pos))
+    if (WouldBeInCheck(&*piece, topos))
     {
         return false;
     }
-    const auto captured_piece = GetPieces()->GetPiece(pos);
+    auto captured_piece = GetPieces()->GetPiece(topos);
     if (captured_piece)
     {
-        if ((piece->IsPiyade() && can_capture) || (!piece->IsPiyade() && can_move))
-            RemovePiece(*captured_piece);
+        if (((*piece).IsPiyade() && can_capture) || (!(*piece).IsPiyade() && can_move))
+            RemovePiece(**captured_piece);
     }
-    piece->Move(pos);
-    if (piece->IsPiyade())
     {
-        if (pos.Gety() == 0 || pos.Gety() == 7)
+        Piece& piece = **GetPieces()->GetPiece(frompos);
+        piece.Move(topos);
+        if (piece.IsPiyade())
         {
-            auto promoted_piece = PromotePiyade(piece);
-            RemovePiece(piece);
-            AddPiece(promoted_piece);
+            if (topos.Gety() == 0 || topos.Gety() == 7)
+            {
+                auto promoted_piece = PromotePiyade(piece);
+                RemovePiece(piece);
+                AddPiece(promoted_piece);
+            }
         }
+        MoveSuccesful(piece, **captured_piece, from, topos);
     }
 
-    MoveSuccesful(piece, captured_piece, from, pos);
     return true;
 }
 
-void Board::MoveSuccesful(const std::shared_ptr<Piece> &piece,
-                          const std::optional<std::shared_ptr<Piece>> & /*targetPiece*/, const Position & /*fromPos*/,
+void Board::MoveSuccesful(const Piece &piece,
+                          const std::optional<Piece> & /*targetPiece*/, const Position & /*fromPos*/,
                           const Position & /*toPos*/)
 {
     // TODO(yunus) :  not sure if needed but last move textual iformation could be saved later
-    if (piece->IsPiyade())
+    if (piece.IsPiyade())
     {
         halfMoveClock_ = 0;
     }
@@ -184,11 +190,9 @@ void Board::SwitchTurn()
     currentTurn_ = Color::kWhite == currentTurn_ ? Color::kBlack : Color::kWhite;
 }
 
-std::shared_ptr<Piece> Board::PromotePiyade(std::shared_ptr<Piece> &piyade)
+Piece Board::PromotePiyade(Piece &piyade)
 {
-    const auto pos = piyade->GetPos();
-    auto ret = std::make_shared<Vizier>(pos, piyade->GetColor());
-    return ret;
+    return Vizier(piyade.GetPos(), piyade.GetColor());
 }
 
 bool Board::IsCheckmate(const std::shared_ptr<Player> &player)
@@ -197,16 +201,16 @@ bool Board::IsCheckmate(const std::shared_ptr<Player> &player)
     {
         return false;
     }
-    for (const auto &piece : *player->GetPieces())
+    for (auto &piece : *player->GetPieces())
     {
         for (int xitr = 0; xitr < 8; xitr++)
         {
             for (int yitr = 0; yitr < 8; yitr++)
             {
                 const Position pos(std::make_pair(xitr, yitr));
-                if ((piece->CanMove(pos, GetSharedFromThis(), false) ||
-                     piece->CanCapture(pos, GetSharedFromThis(), false)) &&
-                    !WouldBeInCheck(piece.get(), pos))
+                if ((piece.CanMove(pos, GetSharedFromThis(), false) ||
+                     piece.CanCapture(pos, GetSharedFromThis(), false)) &&
+                    !WouldBeInCheck(&piece, pos))
                 {
                     return false;
                 }
@@ -223,7 +227,7 @@ bool Board::IsStalemate(const std::shared_ptr<Player> &player)
         return false;
     }
 
-    for (const auto &piece : *player->GetPieces())
+    for (auto &piece : *player->GetPieces())
     {
         for (int xitr = 0; xitr < 8; xitr++)
         {
@@ -231,7 +235,7 @@ bool Board::IsStalemate(const std::shared_ptr<Player> &player)
             {
                 const Position pos(std::make_pair(xitr, yitr));
                 // TODO(yunus) : this could be optimized, can move already calls wouldBeInCheck
-                if (piece->CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(piece.get(), pos))
+                if (piece.CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(&piece, pos))
                 {
                     return false;
                 }
@@ -286,8 +290,8 @@ bool Board::IsDraw()
     const auto &opponent_pieces = Opponent(current_turn_sp)->GetPieces();
     if (current_turn_pieces->size() == 1 && opponent_pieces->size() == 2)
     {
-        if (current_turn_sp->GetPieces()->get(0)->CanCapture(opponent_pieces->get(0)->GetPos(), GetSharedFromThis()) ||
-            current_turn_sp->GetPieces()->get(0)->CanCapture(opponent_pieces->get(1)->GetPos(), GetSharedFromThis()))
+        if (current_turn_sp->GetPieces()->get(0).CanCapture(opponent_pieces->get(0).GetPos(), GetSharedFromThis()) ||
+            current_turn_sp->GetPieces()->get(0).CanCapture(opponent_pieces->get(1).GetPos(), GetSharedFromThis()))
         {
             return true;
         }
@@ -309,24 +313,24 @@ bool Board::Play(std::string from_pos, std::string to_pos)
         return false;
     }
 
-    std::optional<std::shared_ptr<Piece>> piece = pieces_->GetPiece(from_pos_local);
+    auto piece = pieces_->GetPiece(from_pos_local);
     if (!piece || (*piece)->GetColor() != currentTurn_)
     {
         return false;
     }
 
-    return MovePiece(*piece, to_pos_local);
+    return MovePiece(from_pos_local, to_pos_local);
 }
 
 std::string Board::BoardToString() const
 {
     std::vector<std::vector<char>> board(8, std::vector<char>(8, '.'));
-    for (const auto &piece : *pieces_)
+    for (auto &piece : *pieces_)
     {
-        const auto pos = piece->GetPos();
-        board[pos.Getx()][pos.Gety()] = piece->GetColor() == Color::kWhite
-                                            ? std::toupper(piece->GetSymbol())
-                                            : std::tolower(piece->GetSymbol());
+        const auto pos = piece.GetPos();
+        board[pos.Getx()][pos.Gety()] = piece.GetColor() == Color::kWhite
+                                            ? std::toupper(piece.GetSymbol())
+                                            : std::tolower(piece.GetSymbol());
     }
     std::string ret;
     for (int yitr = 7; yitr >= 0; yitr--)
@@ -382,7 +386,7 @@ const std::shared_ptr<Player>& Board::GetPlayer(Color color) const {
     return players_[0];
 }
 
-bool Board::AddPiece(const std::shared_ptr<Piece> &piece)
+bool Board::AddPiece(Piece piece)
 {
     auto res = pieces_->AddPiece(piece);
     if (!res)
@@ -390,14 +394,24 @@ bool Board::AddPiece(const std::shared_ptr<Piece> &piece)
         return false;
     }
 
-    // res = piece->GetPlayer().lock()->GetPieces()->AddPiece(piece);
+    // res = piece.GetPlayer().lock()->GetPieces()->AddPiece(piece);
     return res;
 }
 
-void Board::RemovePiece(const std::shared_ptr<Piece> &piece)
+void Board::RemovePiece(Piece &piece)
 {
+    if constexpr (kDebug)
+    {
+        std::cout << "Removing " << piece.GetPos().ToString() << std::endl;
+        std::cout << *this << std::endl;
+    }
     pieces_->RemovePiece(piece);
-    // piece->GetPlayer().lock()->GetPieces()->RemovePiece(piece);
+    // piece.GetPlayer().lock()->GetPieces()->RemovePiece(piece);
+    if constexpr (kDebug)
+    {
+        std::cout << "Removed " << piece.GetPos().ToString() << std::endl;
+        std::cout << *this << std::endl;
+    }
 }
 
 void Board::PrintValidMoves()

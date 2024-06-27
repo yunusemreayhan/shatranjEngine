@@ -30,7 +30,7 @@ class Piece
     explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove,
                    bool canJumpOverOthers, bool moved);
 
-    Position &GetPos()
+    const Position &GetPos() const
     {
         return pos_;
     }
@@ -193,6 +193,11 @@ class Piece
     constexpr bool IsMoved() const
     {
         return moved_;
+    }
+
+    bool operator==(const Piece &other) const
+    {
+        return pieceType_ == other.pieceType_ && pos_ == other.pos_ && color_ == other.color_;
     }
 
   protected:

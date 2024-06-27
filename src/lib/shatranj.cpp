@@ -1,6 +1,7 @@
 #include "shatranj.h"
 
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <sstream>
 
@@ -16,33 +17,33 @@ Shatranj::Shatranj(std::shared_ptr<Player> player1, std::shared_ptr<Player> play
 }
 void Shatranj::InitializeBoard()
 {
-    board_->AddPiece(std::make_shared<Rook>(Position("a1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Rook>(Position("h1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Horse>(Position("b1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Horse>(Position("g1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Fil>(Position("c1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Fil>(Position("f1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Vizier>(Position("d1"), Color::kWhite));
-    board_->AddPiece(std::make_shared<Shah>(Position("e1"), Color::kWhite));
+    board_->AddPiece(Rook(Position("a1"), Color::kWhite));
+    board_->AddPiece(Rook(Position("h1"), Color::kWhite));
+    board_->AddPiece(Horse(Position("b1"), Color::kWhite));
+    board_->AddPiece(Horse(Position("g1"), Color::kWhite));
+    board_->AddPiece(Fil(Position("c1"), Color::kWhite));
+    board_->AddPiece(Fil(Position("f1"), Color::kWhite));
+    board_->AddPiece(Vizier(Position("d1"), Color::kWhite));
+    board_->AddPiece(Shah(Position("e1"), Color::kWhite));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
         ssinst << citr << "2";
-        board_->AddPiece(std::make_shared<Piyade>(Position(ssinst.str()), Color::kWhite));
+        board_->AddPiece(Piyade(Position(ssinst.str()), Color::kWhite));
     }
-    board_->AddPiece(std::make_shared<Rook>(Position("a8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Rook>(Position("h8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Horse>(Position("b8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Horse>(Position("g8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Fil>(Position("c8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Fil>(Position("f8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Vizier>(Position("d8"), Color::kBlack));
-    board_->AddPiece(std::make_shared<Shah>(Position("e8"), Color::kBlack));
+    board_->AddPiece(Rook(Position("a8"), Color::kBlack));
+    board_->AddPiece(Rook(Position("h8"), Color::kBlack));
+    board_->AddPiece(Horse(Position("b8"), Color::kBlack));
+    board_->AddPiece(Horse(Position("g8"), Color::kBlack));
+    board_->AddPiece(Fil(Position("c8"), Color::kBlack));
+    board_->AddPiece(Fil(Position("f8"), Color::kBlack));
+    board_->AddPiece(Vizier(Position("d8"), Color::kBlack));
+    board_->AddPiece(Shah(Position("e8"), Color::kBlack));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
         ssinst << citr << "7";
-        board_->AddPiece(std::make_shared<Piyade>(Position(ssinst.str()), Color::kBlack));
+        board_->AddPiece(Piyade(Position(ssinst.str()), Color::kBlack));
     }
 }
 std::optional<std::pair<std::string, std::string>> Shatranj::ParseInput(const std::string &input)
@@ -62,8 +63,10 @@ std::string Shatranj::GetInput()
 }
 bool Shatranj::Play(const std::string &input)
 {
-    std::cout << "play: " << input << std::endl;
-    if (input == "valids") {
+    if (kDebug)
+        std::cout << "play: " << input << std::endl;
+    if (input == "valids")
+    {
         board_->PrintValidMoves();
         return true;
     }
@@ -106,21 +109,27 @@ void Shatranj::Run()
     std::cout << *board_ << std::endl;
 }
 
-bool Shatranj::PlaySeq(const std::vector<std::string>& seq) {
+bool Shatranj::PlaySeq(const std::vector<std::string> &seq)
+{
     int counter = 0;
     bool succ = true;
-    for (const auto& seqitr : seq) {
+    for (const auto &seqitr : seq)
+    {
         if (Play(seqitr))
         {
-            std::cout << "sequence success at:" << seqitr << std::endl;
+            if constexpr (kDebug)
+                std::cout << "sequence success at:" << seqitr << std::endl;
             counter++;
         }
         else
         {
-            std::cout << "sequence failed at:" << seqitr << std::endl;
+            if constexpr (kDebug)
+                std::cout << "sequence failed at:" << seqitr << std::endl;
             succ = false;
             break;
         }
+        if constexpr (kDebug)
+            std::cout << *(this->GetBoard()) << std::endl;
     }
     // TODO revert with counter
     (void)counter;

@@ -20,8 +20,8 @@ void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordina
     {
         return;
     }
-    auto lastcapturedpiece = *lastcapturedplace;
-    auto possiblemovesoflastcapturedpiece = lastcapturedpiece->GetPossibleMoves(shatranj.GetBoard());
+    auto lastcapturedpiece = **lastcapturedplace;
+    auto possiblemovesoflastcapturedpiece = lastcapturedpiece.GetPossibleMoves(shatranj.GetBoard());
     for (const auto &move : possiblemovesoflastcapturedpiece)
     {
         const std::string movestring = move.first.ToString() + move.second.ToString();
@@ -53,8 +53,11 @@ TEST(SampleCaptureTest_Piyade, Positive)
         shatranj::Shatranj shatranj(
             std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
             std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
+        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 32);
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5"}), true);
+        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 32);
         EXPECT_EQ(shatranj.PlaySeq({"a4b5"}), true);
+        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 31);
     }
     {
         shatranj::Shatranj shatranj(
@@ -105,12 +108,14 @@ TEST(SampleCaptureTest_Piyade, Positive)
         shatranj::Shatranj shatranj(
             std::make_shared<shatranj::Player>(std::string("player1"), shatranj::Color::kWhite),
             std::make_shared<shatranj::Player>(std::string("player2"), shatranj::Color::kBlack));
-        EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7", "g3h2"}), true);
-        EXPECT_EQ(shatranj.PlaySeq({"c7b8", "h2g1"}), true);
-        const auto g1p = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("g1"));
-        EXPECT_TRUE((*g1p)->IsVizier());
+        EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"g3h2"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"c7b8"}), true);
         const auto b8p = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("b8"));
-        EXPECT_TRUE((*b8p)->IsVizier());
+        EXPECT_TRUE((**b8p).IsVizier());
+        EXPECT_EQ(shatranj.PlaySeq({"h2g1"}), true);
+        const auto g1p = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("g1"));
+        EXPECT_TRUE((**g1p).IsVizier());
 
         std::cout << *(shatranj.GetBoard()) << std::endl;
     }
@@ -124,9 +129,9 @@ TEST(SampleCaptureTest_Rook, Positive)
     EXPECT_EQ(shatranj.GetBoard()->GetCurrentPlayer()->GetColor(), shatranj::Color::kWhite);
     auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position("a7"));
     EXPECT_EQ(lastcapturedplace.has_value(), true);
-    auto lastcapturedpiece = *lastcapturedplace;
-    EXPECT_EQ(lastcapturedpiece->GetSymbol() == 'R', true);
-    EXPECT_TRUE(lastcapturedpiece->GetColor() == shatranj::Color::kWhite);
+    auto lastcapturedpiece = **lastcapturedplace;
+    EXPECT_EQ(lastcapturedpiece.GetSymbol() == 'R', true);
+    EXPECT_TRUE(lastcapturedpiece.GetColor() == shatranj::Color::kWhite);
     CheckPossibleMoves(shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
 }
 
