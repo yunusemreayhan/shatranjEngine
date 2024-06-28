@@ -56,6 +56,7 @@ class Piece : public PiecePrimitive
     bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
     bool Move(Position pos);
     std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
 

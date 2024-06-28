@@ -173,6 +173,10 @@ bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool c
     return canJumpOverOthers_ || board->IsPathClear(pos_, pos);
 }
 
+bool Piece::CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck) {
+    return CanCapture(pos, board, ctrlCheck) || CanMove(pos, board, ctrlCheck);
+}
+
 bool Piece::Move(Position pos)
 {
     if (!pos.IsValid())

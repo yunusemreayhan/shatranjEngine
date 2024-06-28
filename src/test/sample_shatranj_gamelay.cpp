@@ -205,7 +205,16 @@ TEST(SampleCaptureTest_DrawTest, Positive)
                   false); // is check should return false and seq should fail, since piyade is next to king
         EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
                   false); // shah can not take the piyade because it is being protected by fill
-        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "b5d3"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3", "c3d1",
+                                    "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "f1g1"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"d8d7"}), false);
+
+        EXPECT_EQ(shatranj.PlaySeq({"d8c7", "e5d7"}), true);
+        EXPECT_EQ(shatranj.GetBoard()->IsDraw(), true);
+        std::cout << *(shatranj.GetBoard()) << std::endl;
+        EXPECT_EQ(shatranj.PlaySeq({"c7d7"}), false); // because of draw
+        EXPECT_EQ(shatranj.GetBoard()->IsDraw(), true);
         std::cout << *(shatranj.GetBoard()) << std::endl;
         shatranj.GetBoard()->Revert(1000);
         std::cout << *(shatranj.GetBoard()) << std::endl;

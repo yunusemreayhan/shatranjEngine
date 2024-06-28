@@ -377,8 +377,8 @@ bool Board::IsDraw()
     auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
     if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
     {
-        if (current_turn_pieces[0].CanCapture(opponent_pieces[0].GetPos(), GetSharedFromThis()) ||
-            current_turn_pieces[0].CanCapture(opponent_pieces[1].GetPos(), GetSharedFromThis()))
+        if (current_turn_pieces[0].CanGo(opponent_pieces[0].GetPos(), GetSharedFromThis()) ||
+            current_turn_pieces[0].CanGo(opponent_pieces[1].GetPos(), GetSharedFromThis()))
         {
             return true;
         }
@@ -393,6 +393,8 @@ Player Board::Opponent(const Color &color)
 
 bool Board::Play(std::string from_pos, std::string to_pos)
 {
+    if (IsGameOver())
+        return false;
     const Position from_pos_local(std::move(from_pos));
     const Position to_pos_local(std::move(to_pos));
     if (!from_pos_local.IsValid() || !to_pos_local.IsValid())
