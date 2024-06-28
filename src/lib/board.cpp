@@ -2,16 +2,20 @@
 #include "helper.h"
 #include "position.h"
 #include "shatranc_piece.h"
+#include "shatranj.h"
 #include "types.h"
 
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <optional>
+#include <random>
 #include <stdexcept>
 #include <utility>
 
@@ -26,26 +30,27 @@ Board::Board(const std::string &name1, const std::string &name2)
 // would be in check if I move piece to pos
 bool Board::WouldBeInCheck(Position from, Position pos)
 {
-    auto captured_piece = GetPieces()->GetPiece(pos);
-    std::unique_ptr<Piece> temp = nullptr;
-    if (captured_piece)
+    auto control = Movement{from, pos};
+    Color color = currentTurn_;
+    auto temp = fullMoveNumber_;
+    auto res = Play(control, false);
+
+    if (!res)
     {
-        temp = std::make_unique<Piece>(**captured_piece);
-        GetPieces()->RemovePiece(pos);
+        std::cout << *this << std::endl;
+        std::cout << "Error in WouldBeInCheck, can not control " << control.ToString() << std::endl;
     }
-    auto piece_updated = GetPieces()->GetPiece(from);
-    if (!piece_updated)
-        return false;
-    auto temppos = (*piece_updated)->GetPos();
-    (*piece_updated)->Move(pos);
 
-    bool ret_is_check = IsCheck();
+    bool ret_is_check = IsCheck(color);
 
-    (*piece_updated)->Move(temppos);
+    if (res)
+        Revert(1);
 
-    if (captured_piece)
+    if (temp != fullMoveNumber_)
     {
-        GetPieces()->AddPiece(*temp);
+        std::cout << *this << std::endl;
+        std::cout << "Error in WouldBeInCheck, full move number changed " << control.ToString() << std::endl;
+        throw std::runtime_error("Error in WouldBeInCheck, full move number changed");
     }
 
     return ret_is_check;
@@ -53,32 +58,30 @@ bool Board::WouldBeInCheck(Position from, Position pos)
 
 bool Board::OpponnentCanCapturePos(const Position &pos)
 {
-    return std::any_of(GetPieces()->begin(), GetPieces()->end(), [&](auto &pitr) {
-        if (pitr.GetColor() != OpponentColor(currentTurn_))
-            return false;
-        auto calc = pitr.CanMove(pos, GetSharedFromThis(), false) || pitr.CanCapture(pos, GetSharedFromThis(), false);
-        if constexpr (kDebugGlobal)
-        {
-            if (calc)
-            {
-                std::cout << pitr.GetName() << " " << pitr.GetPos().ToString() << " Can capture " << pos.ToString()
-                          << std::endl;
-            }
-            else
-            {
-                std::cout << pitr.GetName() << " " << pitr.GetPos().ToString() << " Cannot capture " << pos.ToString()
-                          << std::endl;
-            }
-        }
-        return calc;
-    });
+    auto positions = GetPieces()->GetPositions();
+    for (const auto &position : positions)
+    {
+        auto curpiece = *GetPieces()->GetPieceByVal(position);
+        if (curpiece.GetColor() != currentTurn_)
+            continue;
+        auto calc =
+            Piece::CanMove(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor(), false) ||
+            Piece::CanCapture(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor(), false);
+        if (calc)
+            return true;
+    }
+    return false;
 }
-bool Board::IsCheck()
+
+bool Board::IsCheck(Color color)
 {
     Piece *shah = nullptr;
-    for (auto &piece : *GetPieces())
+    auto positions = GetPieces()->GetPositions();
+    for (const auto &pos : positions) // for (const auto &piece : *(board->GetPieces()))
     {
-        if (currentTurn_ == piece.GetColor() && piece.IsShah())
+        auto pieceopt = GetPieces()->GetPieceByVal(pos);
+        auto piece = *pieceopt;
+        if (color == piece.GetColor() && piece.IsShah())
         {
             shah = &piece;
             break;
@@ -87,7 +90,8 @@ bool Board::IsCheck()
 
     if (shah == nullptr)
     {
-        throw std::runtime_error("Shah piece not found");
+        std::cout << *this << std::endl;
+        throw std::runtime_error("Shah piece not found, logical error!");
     }
 
     // get opponent
@@ -121,7 +125,7 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     Position cur(std::make_pair(cur_x, cur_y));
     while (cur != target)
     {
-        if (GetPieces()->GetPiece(cur))
+        if (GetPieces()->GetPieceByVal(cur))
         {
             return false;
         }
@@ -130,49 +134,66 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     return true;
 }
 
-bool Board::MovePiece(Position frompos, Position topos)
+bool Board::MovePiece(Position frompos, Position topos, bool ctrlCheck)
 {
-    auto piece = GetPieces()->GetPieceByVal(frompos);
-    if (currentTurn_ != (*piece).GetColor())
+    auto piece_opt = GetPieces()->GetPieceByVal(frompos);
+    auto piece = *piece_opt;
+    if (currentTurn_ != piece.GetColor())
     {
+        if constexpr (kDebugGlobal)
+        {
+            std::cout << "its turn of " << currentTurn_ << " not " << piece.GetColor() << std::endl;
+        }
         return false;
     }
-    const auto from = (*piece).GetPos();
-    const bool can_move = (*piece).CanMove(topos, GetSharedFromThis());
-    const bool can_capture = (*piece).CanCapture(topos, GetSharedFromThis());
+
+    const bool can_move =
+        Piece::CanMove(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor(), false);
+
+    const bool can_capture =
+        Piece::CanCapture(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor(), false);
+
     if (!can_move && !can_capture)
     {
+
         return false;
     }
-    if (WouldBeInCheck(frompos, topos))
+
+    if (ctrlCheck && WouldBeInCheck(frompos, topos))
     {
+        if constexpr (kDebugGlobal)
+        {
+            std::cout << "Would be in check" << std::endl;
+        }
         return false;
     }
+
     std::unique_ptr<Piece> captured_piece_uptr = nullptr;
-    auto captured_piece = GetPieces()->GetPiece(topos);
+    auto captured_piece = GetPieces()->GetPieceByVal(topos);
     if (captured_piece)
     {
-        captured_piece_uptr = std::make_unique<Piece>(**captured_piece);
-        if (((*piece).IsPiyade() && can_capture) || (!(*piece).IsPiyade() && can_move))
-            RemovePiece(**captured_piece);
+        captured_piece_uptr = std::make_unique<Piece>(*captured_piece);
+        if ((piece.IsPiyade() && can_capture) || (!piece.IsPiyade() && can_move))
+            RemovePiece(*captured_piece);
     }
+
+    bool promoted = false;
+    GetPieces()->MovePiece(frompos, topos);
+    piece_opt = GetPieces()->GetPieceByVal(topos);
+    piece = *piece_opt;
+    if (piece.IsPiyade())
     {
-        bool promoted = false;
-        Piece &piece = **GetPieces()->GetPiece(frompos);
-        piece.Move(topos);
-        if (piece.IsPiyade())
+        if (topos.Gety() == 0 || topos.Gety() == 7)
         {
-            if (topos.Gety() == 0 || topos.Gety() == 7)
-            {
-                auto promoted_piece = PromotePiyade(piece);
-                RemovePiece(piece);
-                AddPiece(promoted_piece);
-                promoted = true;
-            }
+            auto promoted_piece = PromotePiyade(piece);
+            RemovePiece(piece);
+            AddPiece(promoted_piece);
+            promoted = true;
         }
-        GetHistory().AddMove(frompos, topos, piece.GetPieceType(), std::move(captured_piece_uptr), promoted, piece.GetColor());
-        MoveSuccesful(piece, from, topos);
     }
+    GetHistory().AddMove(frompos, topos, piece.GetPieceType(), std::move(captured_piece_uptr), promoted,
+                         piece.GetColor());
+    MoveSuccesful(piece, frompos, topos);
 
     return true;
 }
@@ -205,22 +226,22 @@ bool Board::Revert(int move_count)
                       << std::endl;
         }
 
-        auto piece_opt = GetPieces()->GetPiece(last_move->to);
+        GetPieces()->MovePiece(last_move->to, last_move->from);
+        auto piece_opt = GetPieces()->GetPieceByVal(last_move->from);
         if (!piece_opt)
         {
             if constexpr (kDebug)
             {
                 std::cout << *this << std::endl;
             }
+            std::cout << "Piece not found, illogical board state at " << last_move->to.ToString() << std::endl;
             throw std::runtime_error("Piece not found, illogical board state at " + last_move->to.ToString());
         }
-        auto *piece = *piece_opt;
-        piece->Move(last_move->from);
+        auto piece = *piece_opt;
         if (last_move->promoted)
-
         {
-            auto demoted_piece = DemotePromoted(*piece);
-            RemovePiece(*piece);
+            Piece demoted_piece = DemotePromoted(piece);
+            RemovePiece(piece);
             AddPiece(demoted_piece);
         }
 
@@ -228,6 +249,12 @@ bool Board::Revert(int move_count)
         {
             AddPiece(*last_move->captured);
         }
+        if (last_move->color == Color::kBlack)
+        {
+            fullMoveNumber_--;
+        }
+
+        currentTurn_ = OpponentColor(currentTurn_);
 
         if constexpr (kDebug)
         {
@@ -235,10 +262,6 @@ bool Board::Revert(int move_count)
                       << std::endl;
         }
         move_count--;
-        if (last_move->color == Color::kBlack)
-        {
-            fullMoveNumber_--;
-        }
         if constexpr (kDebug)
         {
             std::cout << "Reverting " << move_count << " moves" << std::endl;
@@ -281,113 +304,55 @@ Piece Board::DemotePromoted(Piece &promoted)
     return Piyade(promoted.GetPos(), promoted.GetColor());
 }
 
-bool Board::IsCheckmate()
+GameState Board::GetBoardState()
 {
-    if (!IsCheck())
+    auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
+    auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
+
+    if (current_turn_pieces.size() == 1 && opponent_pieces.size() > 2)
     {
-        return false;
+        return GameState::kCheckmate;
     }
-    for (auto &piece : *GetPieces())
+
+    if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 1)
     {
-        if (piece.GetColor() == currentTurn_)
+        return GameState::kDraw;
+    }
+
+    if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
+    {
+        if (Piece::CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
+                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor(), false) ||
+            Piece::CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
+                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor(), false))
         {
-            for (int xitr = 0; xitr < 8; xitr++)
-            {
-                for (int yitr = 0; yitr < 8; yitr++)
-                {
-                    const Position pos(std::make_pair(xitr, yitr));
-                    if ((piece.CanMove(pos, GetSharedFromThis(), false) ||
-                         piece.CanCapture(pos, GetSharedFromThis(), false)) &&
-                        !WouldBeInCheck(piece.GetPos(), pos))
-                    {
-                        return false;
-                    }
-                }
-            }
+            return GameState::kDraw;
         }
     }
-    return false;
-}
 
-bool Board::IsStalemate()
-{
-    if (IsCheck())
+    const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
+    if (IsCheck(currentTurn_) && moves.empty())
     {
-        return false;
+        return GameState::kCheckmate;
     }
-
-    for (auto &piece : *GetPieces())
+    if (moves.empty())
     {
-        if (piece.GetColor() == currentTurn_)
-        {
-            for (int xitr = 0; xitr < 8; xitr++)
-            {
-                for (int yitr = 0; yitr < 8; yitr++)
-                {
-                    const Position pos(std::make_pair(xitr, yitr));
-                    // TODO(yunus) : this could be optimized, can move already calls wouldBeInCheck
-                    if (piece.CanMove(pos, GetSharedFromThis(), false) && !WouldBeInCheck(piece.GetPos(), pos))
-                    {
-                        return false;
-                    }
-                }
-            }
-        }
+        return GameState::kStalemate;
     }
-    return true;
-}
-
-bool Board::IsGameOver()
-{
-    if (IsStalemate())
-    {
-        return true;
-    }
-    if (IsCheckmate())
-    {
-        return true;
-    }
-    if (IsDraw())
-    {
-        return true;
-    }
-    return false;
+    return GameState::kNormal;
 }
 
 std::optional<Player> Board::Winner()
 {
-    if (IsDraw())
+    switch (GetBoardState())
     {
+    case GameState::kCheckmate:
+    case GameState::kStalemate:
+        return Opponent(currentTurn_);
+    default:
         return std::nullopt;
     }
-    if (IsStalemate())
-    {
-        return Opponent(currentTurn_);
-    }
-    if (IsCheckmate())
-    {
-        return Opponent(currentTurn_);
-    }
     return std::nullopt;
-}
-
-bool Board::IsDraw()
-{
-    if (pieces_->size() == 2 && GetPieces()->is_all_instance_of(ChessPieceEnum::kShah))
-    {
-        return true;
-    }
-    auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
-    auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
-    if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
-    {
-        if (current_turn_pieces[0].CanGo(opponent_pieces[0].GetPos(), GetSharedFromThis()) ||
-            current_turn_pieces[0].CanGo(opponent_pieces[1].GetPos(), GetSharedFromThis()))
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 Player Board::Opponent(const Color &color)
@@ -395,33 +360,60 @@ Player Board::Opponent(const Color &color)
     return color == players_[1].GetColor() ? players_[0] : players_[1];
 }
 
-bool Board::Play(std::string from_pos, std::string to_pos)
+bool Board::Play(const std::string &input)
 {
-    if (IsGameOver())
-        return false;
-    const Position from_pos_local(std::move(from_pos));
-    const Position to_pos_local(std::move(to_pos));
-    if (!from_pos_local.IsValid() || !to_pos_local.IsValid())
+    if (kDebug)
+        std::cout << "play: " << input << std::endl;
+    std::optional<std::pair<std::string, std::string>> parsed_input = Shatranj::ParseInput(input);
+    if (parsed_input)
     {
-        return false;
-    }
+        const std::string &from_pos = parsed_input->first;
+        const std::string &to_pos = parsed_input->second;
+        if (from_pos.size() != 2 || to_pos.size() != 2)
+        {
+            std::cout << "Invalid input. Please enter a move in the format 'fromPos toPos'." << std::endl;
+            return false;
+        }
 
-    auto piece = pieces_->GetPiece(from_pos_local);
-    if (!piece || (*piece)->GetColor() != currentTurn_)
-    {
-        return false;
+        return Play(from_pos, to_pos);
     }
-
-    return MovePiece(from_pos_local, to_pos_local);
+    return false;
 }
 
-char* Board::BoardRepresantation::GetBoardReprensentation(const Board *board)
+bool Board::Play(const Movement &input, bool ctrlcheck)
 {
-    static char* ret = new char[64];
-    memset(ret, '.', 64);
-    for (auto &piece : *(board->pieces_))
+    if (!input.from.IsValid() || !input.to.IsValid())
     {
-        const auto& pos = piece.GetPos();
+        std::cout << "Invalid input. Please enter a move in the format 'fromPos toPos'." << std::endl;
+        return false;
+    }
+
+    auto piece = pieces_->GetPieceByVal(input.from);
+    if (!piece || piece->GetColor() != currentTurn_)
+    {
+        return false;
+    }
+
+    return MovePiece(input.from, input.to, ctrlcheck);
+}
+
+bool Board::Play(const std::string &from_pos, const std::string &to_pos)
+{
+    if (GetBoardState() != GameState::kNormal)
+        return false;
+    
+    return Play(Movement(from_pos, to_pos), true);
+}
+
+char *Board::BoardRepresantation::GetBoardReprensentation(Board *board)
+{
+    static char *ret = new char[64];
+    memset(ret, '.', 64);
+    auto positions = board->GetPieces()->GetPositions();
+    for (const auto &pos : positions) // for (const auto &piece : *(board->GetPieces()))
+    {
+        const auto &pieceopt = board->GetPieces()->GetPieceByVal(pos);
+        const auto &piece = *pieceopt;
         ret[CombinedCoordinate(pos.Getx(), pos.Gety())] =
             piece.GetColor() == Color::kWhite ? std::toupper(piece.GetSymbol()) : std::tolower(piece.GetSymbol());
     }
@@ -430,7 +422,7 @@ char* Board::BoardRepresantation::GetBoardReprensentation(const Board *board)
 
 std::string Board::BoardToString() const
 {
-    char* board_repr = BoardRepresantation::GetBoardReprensentation(this);
+    char *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
@@ -453,16 +445,27 @@ std::string Board::BoardToString() const
             ret += BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
             ret += ' ';
         }
+        if constexpr (kDebugTablePrint)
+        {
+            ret += static_cast<char>('0' + yitr);
+            ret += ' ';
+        }
         ret += '\n';
-    }
 
-    ret += "  ";
-    for (int8_t xitr = 0; xitr < 8; xitr++)
-    {
-        ret += static_cast<char>(xitr + 'a');
-        ret += ' ';
+        if constexpr (kDebugTablePrint)
+        {
+            if (yitr == 0)
+            {
+                ret += "  ";
+                for (int8_t xitr = 0; xitr < 8; xitr++)
+                {
+                    ret += static_cast<char>(xitr + '0');
+                    ret += ' ';
+                }
+                ret += '\n';
+            }
+        }
     }
-    ret += '\n';
 
     ret += "  current turn : " + GetCurrentPlayer().GetName() + " color " +
            std::string(currentTurn_ == Color::kWhite ? "White which is uppercase" : "Black which is lowercase") + '\n';
@@ -489,6 +492,7 @@ bool Board::AddPiece(Piece piece)
     auto res = pieces_->AddPiece(piece);
     if (!res)
     {
+        std::cout << "Adding " << piece.GetPos().ToString() << " failed" << std::endl;
         return false;
     }
 
@@ -502,7 +506,7 @@ void Board::RemovePiece(Piece &piece)
         std::cout << "Removing " << piece.GetPos().ToString() << std::endl;
         std::cout << *this << std::endl;
     }
-    pieces_->RemovePiece(piece);
+    pieces_->RemovePiece(piece.GetPos());
     // piece.GetPlayer().lock()->GetPieces()->RemovePiece(piece);
     if constexpr (kDebug)
     {
@@ -517,7 +521,7 @@ void Board::PrintValidMoves()
 
     for (const auto &move : moves)
     {
-        std::cout << move.first.ToString() << "" << move.second.ToString() << " ";
+        std::cout << move.ToString() << " ";
     }
 
     std::cout << std::endl;
@@ -530,7 +534,7 @@ MoveHistory &Board::GetHistory() const
 
 std::string Board::GenerateFEN() const
 {
-    auto* board_repr = BoardRepresantation::GetBoardReprensentation(this);
+    auto *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
 
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
@@ -569,19 +573,18 @@ std::string Board::GenerateFEN() const
     ret += " " + std::string(currentTurn_ == Color::kWhite ? "w" : "b");
     // ret += " KQkq"; // TODO add castling rights here, no castling in shatranj
 
-    //if (history_->GetHistory().size() > 0)
+    // if (history_->GetHistory().size() > 0)
     //{
-        // TODO here calculate if a pawn moved 2 squares and capturable point if so for example a pawn moved from e2 to
-        // e4 than e3 is capturable point, no 2 squares move in shatranj
+    //  TODO here calculate if a pawn moved 2 squares and capturable point if so for example a pawn moved from e2 to
+    //  e4 than e3 is capturable point, no 2 squares move in shatranj
     //}
     // ret += " -";
     ret += " " + std::to_string(halfMoveClock_) + " " + std::to_string(fullMoveNumber_);
     return ret;
 }
 
-
 void Board::ApplyFEN(const std::string &fen)
-{  
+{
     // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 1
     const auto &fen_pieces = SplitStringByChar(fen, ' ');
 
@@ -621,6 +624,132 @@ void Board::ApplyFEN(const std::string &fen)
     }
     if constexpr (kDebug)
         std::cout << *this << std::endl;
+}
+
+double Board::EvaluateBoard(Color color)
+{
+    double score = 0;
+
+    auto positions = GetPieces()->GetPositions();
+
+    for (const auto &pos : positions)
+    {
+        auto pieceopt = GetPieces()->GetPieceByVal(pos);
+        auto piece = *pieceopt;
+        if (piece.GetColor() == color)
+        {
+            score += piece.GetPiecePoint();
+            score *= IsCheck(color) ? 2 : 1;
+            score *= GameState() == GameState::kCheckmate ? 10 : 1;
+        }
+        else
+        {
+            score -= piece.GetPiecePoint();
+            score /= IsCheck(OpponentColor(color)) ? 2 : 1;
+            score /= GameState() == GameState::kCheckmate ? 10 : 1;
+        }
+    }
+    return score;
+}
+
+void Shuffle(std::vector<Movement> &movements)
+{
+    std::random_device rnd;  // Seed the random number generator (once per program execution)
+    std::mt19937 gen(rnd()); // Use Mersenne Twister engine
+
+    std::shuffle(movements.begin(), movements.end(), gen);
+}
+
+std::variant<double, Movement> Board::PickOrEvaluate(std::optional<Movement> playing_move_opt, int &nodesvisited,
+                                                     int depth, Color maximizingColor, bool randomize, double alpha,
+                                                     double beta)
+{
+    bool isMaximizing = maximizingColor == currentTurn_;
+
+    bool toplevel = !playing_move_opt;
+    auto moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
+    if (moves.size() == 0 && toplevel)
+    {
+        std::cout << *this << std::endl;
+        std::cout << GenerateFEN() << std::endl;
+        std::cout << "No possible moves game over, " << OpponentColor(currentTurn_) << " won!" << std::endl;
+
+        throw std::runtime_error("No possible moves, game over");
+    }
+    if (moves.size() == 0)
+    {
+        return EvaluateBoard(maximizingColor);
+    }
+    auto temp_eval = isMaximizing ? std::numeric_limits<double>::min() : std::numeric_limits<double>::max();
+    auto pickedmove = moves[0];
+    if (randomize)
+        Shuffle(moves);
+
+    for (const auto &possible_move : moves)
+    {
+        auto eval =
+            MinimaxSearch(Movement(possible_move), nodesvisited, depth - 1, maximizingColor, randomize, alpha, beta);
+        if (isMaximizing)
+        {
+            if (temp_eval < std::get<double>(eval))
+            {
+                pickedmove = possible_move;
+                temp_eval = std::get<double>(eval);
+            }
+            alpha = std::max(alpha, std::get<double>(eval));
+            if (beta <= alpha)
+            {
+                break;
+            }
+        }
+        else
+        {
+            if (temp_eval > std::get<double>(eval))
+            {
+                pickedmove = possible_move;
+                temp_eval = std::get<double>(eval);
+            }
+            beta = std::min(beta, std::get<double>(eval));
+            if (beta <= alpha)
+            {
+                break;
+            }
+        }
+    }
+    if (!toplevel)
+        return temp_eval;
+    return Movement(pickedmove);
+}
+
+std::variant<double, Movement> Board::MinimaxSearch(std::optional<Movement> playing_move_opt, int &nodesvisited,
+                                                    int depth, Color maximizingColor, bool randomize, double alpha,
+                                                    double beta)
+{
+    bool played_something = false;
+    if (playing_move_opt)
+    {
+        played_something = Play(*playing_move_opt, true);
+        if (!played_something)
+        {
+            std::cout << *this << std::endl;
+            std::cout << "Invalid move " << playing_move_opt->ToString() << "  boardstatefen " << GenerateFEN()
+                      << std::endl;
+            throw std::runtime_error("Invalid move " + playing_move_opt->ToString());
+        }
+        nodesvisited++;
+    }
+    DeferedCall callback([&]() {
+        if (played_something)
+            Revert();
+    });
+
+    if (depth == 0)
+    {
+        auto res = EvaluateBoard(maximizingColor);
+        return res;
+    }
+
+    return PickOrEvaluate(playing_move_opt, nodesvisited, depth, maximizingColor, randomize, alpha, beta);
 }
 
 } // namespace shatranj

@@ -7,8 +7,12 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <map>
 #include <memory>
+#include <queue>
+#include <set>
 #include <sys/types.h>
+
 namespace shatranj
 {
 
@@ -16,6 +20,36 @@ class Piece;
 enum class ChessPieceEnum : uint8_t;
 class Board;
 enum class Color : uint8_t;
+
+class FENBasedPossibleMoveMemory
+{
+  public:
+    bool Have(const std::string &fen)
+    {
+        return moves_.find(fen) != moves_.end();
+    }
+
+    void Add(const std::string &fen, const std::vector<Movement> &&moves)
+    {
+        moves_[fen] = moves;
+        if (moves_.size() > maxFenCount_)
+        {
+            moves_.erase(fens_.front());
+            fens_.pop();
+        }
+        fens_.push(fen);
+    }
+
+    const std::vector<Movement> &Get(const std::string &fen)
+    {
+        return moves_.at(fen);
+    }
+
+  private:
+    const size_t maxFenCount_ = 1000;
+    std::queue<std::string> fens_;
+    std::map<std::string, std::vector<Movement>> moves_;
+};
 class PieceGroup
 {
   public:
@@ -31,46 +65,13 @@ class PieceGroup
 
     bool AddPiece(const Piece &piece);
     void RemovePiece(const Position &pos);
-    void RemovePiece(const Piece &piece);
     bool HasPiece(const Position &pos);
-    std::optional<Piece*> GetPiece(const Position &pos);
+    bool MovePiece(const Position &frompos, const Position &topos);
     std::optional<Piece> GetPieceByVal(const Position &pos);
     std::vector<Piece> GetSubPieces(Color color);
-
-    auto begin() -> iterator
+    std::set<Position> GetPositions()
     {
-        return pieces_.begin();
-    }
-    auto end() -> iterator
-    {
-        return pieces_.end();
-    }
-
-    auto begin() const -> cons_iterator
-    {
-        return pieces_.begin();
-    }
-    auto end() const -> cons_iterator
-    {
-        return pieces_.end();
-    }
-
-    auto rbegin() -> reverse_iterator
-    {
-        return pieces_.rbegin();
-    }
-    auto rend() -> reverse_iterator
-    {
-        return pieces_.rend();
-    }
-
-    auto rbegin() const -> const_reverse_iterator
-    {
-        return pieces_.rbegin();
-    }
-    auto rend() const -> const_reverse_iterator
-    {
-        return pieces_.rend();
+        return positions_;
     }
 
     size_t size() const
@@ -86,16 +87,20 @@ class PieceGroup
     void clear()
     {
         pieces_.clear();
+        positions_.clear();
     }
 
     bool is_all_instance_of(ChessPieceEnum chessPiece) const;
 
     Piece &get(size_t index);
 
-    std::vector<std::pair<Position, Position>> GetPossibleMoves(Color color, const std::shared_ptr<Board> &board);
+    const std::vector<Movement> &GetPossibleMoves(Color color, const std::shared_ptr<Board> &board);
 
   private:
+    std::optional<Piece *> GetPiece(const Position &pos, bool check = true);
     std::vector<Piece> pieces_;
+    std::set<Position> positions_;
+    FENBasedPossibleMoveMemory possibleMovesMemory_;
     constexpr static bool inline kDebug = kDebugGlobal;
 };
 } // namespace shatranj

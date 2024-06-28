@@ -2,12 +2,14 @@
 
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <memory>
 #include <optional>
 
 #include "history.h"
 #include "piece_group.h"
 #include "player.h"
+#include "position.h"
 #include "shatranc_piece.h"
 #include "types.h"
 
@@ -24,7 +26,7 @@ class Board : public std::enable_shared_from_this<Board>
   public:
     struct BoardRepresantation
     {
-        static char* GetBoardReprensentation(const Board *board);
+        static char *GetBoardReprensentation(Board *board);
 
         constexpr inline static char GetPieceFromCoordinate(char* board_repr, uint8_t xpos, uint8_t ypos)
         {
@@ -44,24 +46,31 @@ class Board : public std::enable_shared_from_this<Board>
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
     void MoveSuccesful(const Piece &piece, const Position &frompos, const Position &topos);
-    bool MovePiece(Position frompos, Position topos);
+    bool MovePiece(Position frompos, Position topos, bool check = true);
     bool Revert(int move_count = 1);
     static Piece PromotePiyade(Piece &piyade);
     static Piece DemotePromoted(Piece &promoted);
     bool WouldBeInCheck(Position from, Position pos);
     bool OpponnentCanCapturePos(const Position &pos);
-    bool IsCheck();
-    bool IsCheckmate();
-    bool IsGameOver();
+    bool IsCheck(Color color);
+    GameState GetBoardState();
     std::optional<Player> Winner();
-    bool IsDraw();
-    bool IsStalemate();
     Player Opponent(const Color &pColor);
     void SwitchTurn();
     bool IsPathClear(const Position &from, const Position &target);
     bool IsUnderAttack(int posx, int posy, Player *player); // not used yet
-    bool Play(std::string from_pos, std::string to_pos);
+    bool Play(const std::string &input);
+    bool Play(const Movement &input, bool ctrlcheck);
+    bool Play(const std::string &from_pos, const std::string &to_pos);
     std::string BoardToString() const;
+    double EvaluateBoard(Color color);
+    std::variant<double, Movement> MinimaxSearch(std::optional<Movement> playing_move, int &nodesvisited, int depth = 5,
+                                                 Color maximizingColor = Color::kWhite, bool randomize = true,
+                                                 double alpha = std::numeric_limits<double>::min(),
+                                                 double beta = std::numeric_limits<double>::max());
+    std::variant<double, Movement> PickOrEvaluate(std::optional<Movement> playing_move_opt, int &nodesvisited,
+                                                  int depth, Color maximizingColor, bool randomize, double alpha,
+                                                  double beta);
     std::shared_ptr<PieceGroup> &GetPieces()
     {
         return pieces_;
@@ -75,6 +84,10 @@ class Board : public std::enable_shared_from_this<Board>
     const Player &GetCurrentPlayer() const
     {
         return GetPlayer(currentTurn_);
+    }
+    Color GetCurrentTurn() const
+    {
+        return currentTurn_;
     }
     std::shared_ptr<Board> GetSharedFromThis()
     {
@@ -111,6 +124,6 @@ class Board : public std::enable_shared_from_this<Board>
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;
-    constexpr static inline bool kDebug = kDebugGlobal;
+    constexpr static inline bool kDebug = kBoardDebug;
 };
 } // namespace shatranj

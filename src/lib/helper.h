@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+namespace shatranj
+{
 inline std::vector<std::string> SplitStringByChar(const std::string &str, char forsplit)
 {
     std::vector<std::string> ret;
@@ -17,3 +19,19 @@ inline std::vector<std::string> SplitStringByChar(const std::string &str, char f
     ret.push_back(str.substr(start));
     return ret;
 }
+
+template <typename FunctionType> struct DeferedCall
+{
+
+    DeferedCall(FunctionType function) : function_(function)
+    {
+    }
+
+    ~DeferedCall()
+    {
+        function_();
+    }
+
+    FunctionType function_;
+};
+} // namespace shatranj

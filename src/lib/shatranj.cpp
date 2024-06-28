@@ -7,6 +7,7 @@
 
 #include "position.h"
 #include "shatranc_piece.h"
+#include "types.h"
 
 namespace shatranj
 {
@@ -85,9 +86,18 @@ bool Shatranj::Play(const std::string &input)
     }
     return false;
 }
+
+bool Shatranj::Play(const Movement &input)
+{
+    if (kDebug)
+        std::cout << "play: " << input.ToString() << std::endl;
+
+    return board_->Play(input, true);
+}
+
 void Shatranj::Run()
 {
-    while (!board_->IsGameOver())
+    while (board_->GetBoardState() == GameState::kNormal)
     {
         std::cout << *board_ << std::endl;
         std::string input = GetInput();
@@ -100,7 +110,7 @@ void Shatranj::Run()
         {
             std::cout << "Move successful " << input << std::endl;
         }
-        if (board_->IsDraw())
+        if (GameState() == GameState::kDraw)
         {
             std::cout << "Draw" << std::endl;
         }
@@ -125,6 +135,33 @@ bool Shatranj::PlaySeq(const std::vector<std::string> &seq)
         {
             if constexpr (kDebug)
                 std::cout << "sequence failed at:" << seqitr << std::endl;
+            succ = false;
+            break;
+        }
+        if constexpr (kDebug)
+            std::cout << *(this->GetBoard()) << std::endl;
+    }
+    // TODO revert with counter
+    (void)counter;
+    return succ;
+}
+
+bool Shatranj::PlaySeq2(const std::vector<Movement> &seq)
+{
+    int counter = 0;
+    bool succ = true;
+    for (const auto &seqitr : seq)
+    {
+        if (Play(seqitr))
+        {
+            if constexpr (kDebug)
+                std::cout << "sequence success at:" << seqitr.ToString() << std::endl;
+            counter++;
+        }
+        else
+        {
+            if constexpr (kDebug)
+                std::cout << "sequence failed at:" << seqitr.ToString() << std::endl;
             succ = false;
             break;
         }

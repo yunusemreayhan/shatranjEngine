@@ -59,6 +59,10 @@ class Step
         return {static_cast<int8_t>(std::floor(posx)), static_cast<int8_t>(std::floor(posy))};
     }
 
+    double OklideanDistance() const {
+        return std::sqrt(pow(x_, 2) + pow(y_, 2));
+    }
+
     int8_t x_;
     int8_t y_;
 };
@@ -71,7 +75,11 @@ class Position
         x_ = fromString[0] - 'a';
         y_ = fromString[1] - '1';
     }
-    explicit Position(std::pair<int, int> posvalues) : x_(posvalues.first), y_(posvalues.second)
+    explicit Position(std::pair<uint8_t, uint8_t> posvalues) : x_(posvalues.first), y_(posvalues.second)
+    {
+    }
+
+    explicit Position(uint8_t x, uint8_t y) : x_(x), y_(y)
     {
     }
 
@@ -104,6 +112,11 @@ class Position
         return !(*this == other);
     }
 
+    bool operator<(const Position &other) const
+    {
+        return x_ < other.x_ || (x_ == other.x_ && y_ < other.y_);
+    }
+
     Step Diff(const Position &other) const
     {
         return {static_cast<int8_t>(x_ - other.x_), static_cast<int8_t>(y_ - other.y_)};
@@ -124,6 +137,34 @@ class Position
   private:
     uint8_t x_ : 3;
     uint8_t y_ : 3;
+};
+
+struct Movement
+{
+    Position from;
+    Position to;
+
+    explicit Movement(const Position &from, const Position &to) : from(from), to(to)
+    {
+    }
+
+    explicit Movement(std::pair<Position, Position> movement) : from(movement.first), to(movement.second)
+    {
+    }
+
+    explicit Movement(const std::string &from, const std::string &to) : from(from), to(to)
+    {
+    }
+
+    std::string ToString() const
+    {
+        return from.ToString() + to.ToString();
+    }
+
+    static Movement GetEmpty()
+    {
+        return Movement(Position(0, 0), Position(0, 0));
+    }
 };
 
 } // namespace shatranj

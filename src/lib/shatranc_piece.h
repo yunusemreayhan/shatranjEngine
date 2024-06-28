@@ -28,7 +28,7 @@ enum class ChessPieceEnum : std::uint8_t
 class PiecePrimitive // positionless piece
 {
   public:
-    PiecePrimitive(ChessPieceEnum pieceType, const Color color, bool multipleMove, bool canJumpOverOthers, bool moved);
+    PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved);
 
     constexpr char GetSymbol() const
     {
@@ -46,6 +46,8 @@ class PiecePrimitive // positionless piece
             return 'F';
         case ChessPieceEnum::kRook:
             return 'R';
+        case ChessPieceEnum::kNone:
+            return ' ';
         }
 
         return ' ';
@@ -67,6 +69,8 @@ class PiecePrimitive // positionless piece
             return "Fil";
         case ChessPieceEnum::kRook:
             return "Rook";
+        case ChessPieceEnum::kNone:
+            return "None";
         }
 
         return " ";
@@ -89,12 +93,12 @@ class PiecePrimitive // positionless piece
 
     const static std::vector<Step> kFilSteps;
 
-    constexpr inline const std::vector<Step> &GetPossibleRegularMoves() const
+    static constexpr inline const std::vector<Step> &GetPossibleRegularMoves(ChessPieceEnum pieceType, Color color)
     {
-        switch (pieceType_)
+        switch (pieceType)
         {
         case ChessPieceEnum::kPiyade:
-            switch (GetColor())
+            switch (color)
             {
             case Color::kWhite:
                 return kPiyadeWhiteSteps;
@@ -113,6 +117,8 @@ class PiecePrimitive // positionless piece
             return kFilSteps;
         case ChessPieceEnum::kRook:
             return kRookSteps;
+        case ChessPieceEnum::kNone:
+            return kEmptySteps;
         }
 
         return kEmptySteps;
@@ -123,12 +129,12 @@ class PiecePrimitive // positionless piece
 
     const static std::vector<Step> kEmptySteps;
 
-    constexpr inline const std::vector<Step> &GetPossibleCaptureMoves() const
+    static constexpr inline const std::vector<Step> &GetPossibleCaptureMoves(ChessPieceEnum pieceType, Color color)
     {
-        switch (pieceType_)
+        switch (pieceType)
         {
         case ChessPieceEnum::kPiyade:
-            switch (GetColor())
+            switch (color)
             {
             case Color::kWhite:
                 return kPiyadeWhiteCaptureSteps;
@@ -142,10 +148,47 @@ class PiecePrimitive // positionless piece
         case ChessPieceEnum::kHorse:
         case ChessPieceEnum::kFil:
         case ChessPieceEnum::kRook:
+        case ChessPieceEnum::kNone:
             return kEmptySteps;
         }
 
         return kEmptySteps;
+    }
+
+    static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
+    {
+        switch (pieceType)
+        {
+        case ChessPieceEnum::kPiyade:
+        case ChessPieceEnum::kVizier:
+        case ChessPieceEnum::kShah:
+        case ChessPieceEnum::kHorse:
+        case ChessPieceEnum::kFil:
+        case ChessPieceEnum::kNone:
+            return false;
+        case ChessPieceEnum::kRook:
+            return true;
+        }
+
+        return false;
+    }
+
+    static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
+    {
+        switch (pieceType)
+        {
+        case ChessPieceEnum::kPiyade:
+        case ChessPieceEnum::kVizier:
+        case ChessPieceEnum::kShah:
+        case ChessPieceEnum::kRook:
+        case ChessPieceEnum::kNone:
+            return false;
+        case ChessPieceEnum::kFil:
+        case ChessPieceEnum::kHorse:
+            return true;
+        }
+
+        return false;
     }
 
     constexpr bool IsPiyade() const
@@ -178,16 +221,6 @@ class PiecePrimitive // positionless piece
         return pieceType_ == ChessPieceEnum::kRook;
     }
 
-    constexpr bool IsMultipleMove() const
-    {
-        return multipleMove_;
-    }
-
-    constexpr bool CanJumpOverOthers() const
-    {
-        return canJumpOverOthers_;
-    }
-
     constexpr bool IsMoved() const
     {
         return moved_;
@@ -202,33 +235,74 @@ class PiecePrimitive // positionless piece
     ChessPieceEnum pieceType_;
 
     int8_t isWhite_ : 1;
-    int8_t multipleMove_ : 1;
-    int8_t canJumpOverOthers_ : 1;
     int8_t moved_ : 1;
 };
 
 class Piece : public PiecePrimitive
 {
   public:
-
-    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
-                   bool moved);
+    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool moved);
 
     const Position &GetPos() const
     {
         return pos_;
     }
 
-    bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    static bool CanMove(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
+                        Color color, bool ctrlCheck = true);
+    static bool CanThreat(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
+                          Color color, bool ctrlCheck = true);
+    static bool CanCapture(Position frompos, Position pos, const std::shared_ptr<Board> &board,
+                           ChessPieceEnum pieceType, Color color, bool ctrlCheck = true);
+    static bool CanGo(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
+                      Color color, bool ctrlCheck = true);
     bool Move(Position pos);
-    std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
+    static std::vector<Movement> GetPossibleMoves(Position frompos, const std::shared_ptr<Board> &board,
+                                                  ChessPieceEnum pieceType, Color color, bool ctrlCheck = true);
 
     bool operator==(const Piece &other) const
     {
         return pieceType_ == other.pieceType_ && pos_ == other.pos_ && GetColor() == other.GetColor();
+    }
+
+    double GetCenterDistance() const
+    {
+        const static Position kCenter(4, 4);
+        auto res =  kCenter.Diff(GetPos());
+        return res.OklideanDistance();
+    }
+
+    double GetVizierDistanceForPiyade() const
+    {
+        if (GetColor() == Color::kBlack)
+        {
+            return std::abs(0 - GetPos().Gety());
+        }
+
+        return std::abs(7 - GetPos().Gety());
+    }
+
+    constexpr double GetPiecePoint() const
+    {
+        switch (pieceType_)
+        {
+        case ChessPieceEnum::kPiyade:
+            return 1.0 / (1 + GetVizierDistanceForPiyade()) / GetCenterDistance();
+        case ChessPieceEnum::kVizier:
+            return 2.0 / GetCenterDistance();
+        case ChessPieceEnum::kShah:
+            return 1.0 / GetCenterDistance();
+        case ChessPieceEnum::kHorse:
+            return 3.0 / GetCenterDistance();
+        case ChessPieceEnum::kFil:
+            return 2.0 / GetCenterDistance();
+        case ChessPieceEnum::kRook:
+            return 4.0 / GetCenterDistance();
+        case ChessPieceEnum::kNone:
+            return 0 * GetCenterDistance();
+        }
+
+        return 0;
     }
 
   protected:
