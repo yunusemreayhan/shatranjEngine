@@ -1,13 +1,15 @@
 #pragma once
 
+#include <cstdint>
+#include <cstring>
 #include <memory>
 #include <optional>
 
+#include "history.h"
 #include "piece_group.h"
 #include "player.h"
 #include "shatranc_piece.h"
 #include "types.h"
-#include "history.h"
 
 namespace shatranj
 {
@@ -15,10 +17,27 @@ class PieceGroup;
 class Player;
 class Piece;
 class Position;
+class MoveHistory;
 
 class Board : public std::enable_shared_from_this<Board>
 {
   public:
+    struct BoardRepresantation
+    {
+        static char* GetBoardReprensentation(const Board *board);
+
+        constexpr inline static char GetPieceFromCoordinate(char* board_repr, uint8_t xpos, uint8_t ypos)
+        {
+            return board_repr[CombinedCoordinate(xpos, ypos)];
+        }
+
+      private:
+        constexpr inline static uint8_t CombinedCoordinate(uint8_t xpos, uint8_t ypos)
+        {
+            return xpos + 8 * ypos;
+        }
+    };
+    friend struct BoardRepresantation;
     Board(const std::string &name1, const std::string &name2);
 
     const Player &GetPlayer(Color color) const;
@@ -71,10 +90,12 @@ class Board : public std::enable_shared_from_this<Board>
         return players_;
     }
 
+    MoveHistory &GetHistory() const;
+
   private:
     std::shared_ptr<PieceGroup> pieces_;
     std::vector<Player> players_;
-    MoveHistory history_;
+    std::unique_ptr<MoveHistory> history_;
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;

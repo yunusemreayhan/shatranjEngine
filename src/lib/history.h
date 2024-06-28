@@ -4,6 +4,7 @@
 #include <stack>
 
 #include "shatranc_piece.h"
+#include "types.h"
 
 namespace shatranj
 {
@@ -17,10 +18,7 @@ struct HistoryPoint
     bool promoted;
     Color color;
 
-    HistoryPoint(Position frompos, Position topos, std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite)
-        : from(frompos), to(topos), captured(std::move(captured)), promoted(promoted), color(color)
-    {
-    }
+    HistoryPoint(Position frompos, Position topos, std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
 };
 
 struct MoveHistory

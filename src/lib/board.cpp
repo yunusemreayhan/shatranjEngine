@@ -5,6 +5,9 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -16,7 +19,7 @@ namespace shatranj
 
 Board::Board(const std::string &name1, const std::string &name2)
     : pieces_(std::make_shared<PieceGroup>()), players_{{name1, Color::kWhite}, {name2, Color::kBlack}},
-      currentTurn_(Color::kWhite)
+      history_(std::make_unique<MoveHistory>()), currentTurn_(Color::kWhite)
 {
 }
 // would be in check if I move piece to pos
@@ -166,7 +169,7 @@ bool Board::MovePiece(Position frompos, Position topos)
                 promoted = true;
             }
         }
-        history_.AddMove(frompos, topos, std::move(captured_piece_uptr), promoted, piece.GetColor());
+        GetHistory().AddMove(frompos, topos, std::move(captured_piece_uptr), promoted, piece.GetColor());
         MoveSuccesful(piece, from, topos);
     }
 
@@ -185,7 +188,7 @@ bool Board::Revert(int move_count)
     }
     while (move_count > 0)
     {
-        if (history_.GetHistory().size() == 0)
+        if (GetHistory().GetHistory().size() == 0)
         {
             if constexpr (kDebug)
             {
@@ -193,7 +196,7 @@ bool Board::Revert(int move_count)
             }
             return false;
         }
-        const std::unique_ptr<HistoryPoint> &last_move = history_.GetLastMove();
+        const std::unique_ptr<HistoryPoint> &last_move = GetHistory().GetLastMove();
 
         if constexpr (kDebug)
         {
@@ -239,7 +242,7 @@ bool Board::Revert(int move_count)
         {
             std::cout << "Reverting " << move_count << " moves" << std::endl;
         }
-        history_.PopLastMove();
+        GetHistory().PopLastMove();
     }
     return true;
 }
@@ -411,22 +414,29 @@ bool Board::Play(std::string from_pos, std::string to_pos)
     return MovePiece(from_pos_local, to_pos_local);
 }
 
-std::string Board::BoardToString() const
+char* Board::BoardRepresantation::GetBoardReprensentation(const Board *board)
 {
-    std::vector<std::vector<char>> board(8, std::vector<char>(8, '.'));
-    for (auto &piece : *pieces_)
+    static char* ret = new char[64];
+    memset(ret, '.', 64);
+    for (auto &piece : *(board->pieces_))
     {
-        const auto pos = piece.GetPos();
-        board[pos.Getx()][pos.Gety()] =
+        const auto& pos = piece.GetPos();
+        ret[CombinedCoordinate(pos.Getx(), pos.Gety())] =
             piece.GetColor() == Color::kWhite ? std::toupper(piece.GetSymbol()) : std::tolower(piece.GetSymbol());
     }
+    return ret;
+}
+
+std::string Board::BoardToString() const
+{
+    char* board_repr = BoardRepresantation::GetBoardReprensentation(this);
     std::string ret;
-    for (int yitr = 7; yitr >= 0; yitr--)
+    for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
         if (yitr == 7)
         {
             ret += "  ";
-            for (int xitr = 0; xitr < 8; xitr++)
+            for (int8_t xitr = 0; xitr < 8; xitr++)
             {
                 ret += static_cast<char>(xitr + 'a');
                 ret += ' ';
@@ -434,19 +444,19 @@ std::string Board::BoardToString() const
             ret += '\n';
         }
 
-        ret += std::to_string(1 + yitr);
+        ret += static_cast<char>('1' + yitr);
         ret += ' ';
 
-        for (int xitr = 0; xitr < 8; xitr++)
+        for (int8_t xitr = 0; xitr < 8; xitr++)
         {
-            ret += board[xitr][yitr];
+            ret += BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
             ret += ' ';
         }
         ret += '\n';
     }
 
     ret += "  ";
-    for (int xitr = 0; xitr < 8; xitr++)
+    for (int8_t xitr = 0; xitr < 8; xitr++)
     {
         ret += static_cast<char>(xitr + 'a');
         ret += ' ';
@@ -510,6 +520,11 @@ void Board::PrintValidMoves()
     }
 
     std::cout << std::endl;
+}
+
+MoveHistory &Board::GetHistory() const
+{
+    return *history_;
 }
 
 } // namespace shatranj
