@@ -221,4 +221,55 @@ TEST(SampleCaptureTest_DrawTest, Positive)
     }
 }
 
+TEST(SampleCaptureTest_GenerateFEN, Negative)
+{
+    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
+    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w 0 1"));
+    EXPECT_EQ(shatranj.PlaySeq({"e2e3"}), true);
+    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppppppp/8/8/8/4P3/PPPP1PPP/RHFVSFHR b 0 1"));
+    EXPECT_EQ(shatranj.PlaySeq({"e7e6"}), true);
+    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
+}
+
+TEST(SampleCaptureTest_ApplyFEN, Negative)
+{
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
+        shatranj.GetBoard()->ApplyFEN(std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
+        auto e3opt = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position{"e3"});
+        auto e6opt = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position{"e6"});
+        EXPECT_EQ(e3opt.has_value(), true);
+        EXPECT_EQ(e6opt.has_value(), true);
+        auto *e3val = *e3opt;
+        auto *e6val = *e6opt;
+        EXPECT_EQ(e3val->GetPieceType(), shatranj::ChessPieceEnum::kPiyade);
+        EXPECT_EQ(e6val->GetPieceType(), shatranj::ChessPieceEnum::kPiyade);
+        EXPECT_EQ(shatranj.GetBoard()->GetFullMoveNumber(), 2);
+        EXPECT_EQ(shatranj.GetBoard()->GetHalfMoveClock(), 0);
+    }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
+        shatranj.GetBoard()->ApplyFEN(std::string("s7/8/4p3/8/8/4P3/8/7S w 0 2"));
+        auto a8opt = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position{"a8"});
+        auto h1opt = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position{"h1"});
+        auto e3opt = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position{"e3"});
+        auto e6opt = shatranj.GetBoard()->GetPieces()->GetPiece(shatranj::Position{"e6"});
+        EXPECT_EQ(a8opt.has_value(), true);
+        EXPECT_EQ(h1opt.has_value(), true);
+        EXPECT_EQ(e3opt.has_value(), true);
+        EXPECT_EQ(e6opt.has_value(), true);
+        auto *e3val = *e3opt;
+        auto *e6val = *e6opt;
+        EXPECT_EQ(e3val->GetPieceType(), shatranj::ChessPieceEnum::kPiyade);
+        EXPECT_EQ(e6val->GetPieceType(), shatranj::ChessPieceEnum::kPiyade);
+        auto *a8val = *a8opt;
+        auto *h1val = *h1opt;
+        EXPECT_EQ(a8val->GetPieceType(), shatranj::ChessPieceEnum::kShah);
+        EXPECT_EQ(h1val->GetPieceType(), shatranj::ChessPieceEnum::kShah);
+    }
+}
+
 } // namespace

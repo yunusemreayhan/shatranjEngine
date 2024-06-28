@@ -1,4 +1,5 @@
 #include "board.h"
+#include "helper.h"
 #include "position.h"
 #include "shatranc_piece.h"
 #include "types.h"
@@ -169,7 +170,7 @@ bool Board::MovePiece(Position frompos, Position topos)
                 promoted = true;
             }
         }
-        GetHistory().AddMove(frompos, topos, std::move(captured_piece_uptr), promoted, piece.GetColor());
+        GetHistory().AddMove(frompos, topos, piece.GetPieceType(), std::move(captured_piece_uptr), promoted, piece.GetColor());
         MoveSuccesful(piece, from, topos);
     }
 
@@ -525,6 +526,101 @@ void Board::PrintValidMoves()
 MoveHistory &Board::GetHistory() const
 {
     return *history_;
+}
+
+std::string Board::GenerateFEN() const
+{
+    auto* board_repr = BoardRepresantation::GetBoardReprensentation(this);
+
+    std::string ret;
+    for (int8_t yitr = 7; yitr >= 0; yitr--)
+    {
+        int spaces = 0;
+        for (int8_t xitr = 0; xitr < 8; xitr++)
+        {
+            const auto &piece = BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
+            if (piece == '.')
+            {
+                spaces++;
+            }
+            else
+            {
+                if (spaces != 0)
+                {
+                    ret += std::to_string(spaces);
+                    spaces = 0;
+                }
+                ret += piece;
+            }
+            if (xitr == 7)
+            {
+                if (spaces != 0)
+                {
+                    ret += std::to_string(spaces);
+                    spaces = 0;
+                }
+            }
+        }
+        if (yitr != 0)
+        {
+            ret += '/';
+        }
+    }
+    ret += " " + std::string(currentTurn_ == Color::kWhite ? "w" : "b");
+    // ret += " KQkq"; // TODO add castling rights here, no castling in shatranj
+
+    //if (history_->GetHistory().size() > 0)
+    //{
+        // TODO here calculate if a pawn moved 2 squares and capturable point if so for example a pawn moved from e2 to
+        // e4 than e3 is capturable point, no 2 squares move in shatranj
+    //}
+    // ret += " -";
+    ret += " " + std::to_string(halfMoveClock_) + " " + std::to_string(fullMoveNumber_);
+    return ret;
+}
+
+
+void Board::ApplyFEN(const std::string &fen)
+{  
+    // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 1
+    const auto &fen_pieces = SplitStringByChar(fen, ' ');
+
+    if (fen_pieces.size() != 4) // TODO normally this is 6, but shatranj has 4
+    {
+        throw std::runtime_error("Invalid FEN");
+    }
+
+    const auto &piece_lines = SplitStringByChar(fen_pieces[0], '/');
+    if (piece_lines.size() != 8)
+    {
+        throw std::runtime_error("Invalid FEN");
+    }
+    currentTurn_ = fen_pieces[1] == "w" ? Color::kWhite : Color::kBlack;
+    halfMoveClock_ = std::stoi(fen_pieces[2]);
+    fullMoveNumber_ = std::stoi(fen_pieces[3]);
+    pieces_->clear();
+    for (uint8_t row = 0; row < 8; row++)
+    {
+        uint8_t col = 7;
+        for (const char &piece : piece_lines[row])
+        {
+            if (isdigit(piece) != 0)
+            {
+                col -= piece - '0' - 1;
+            }
+            else
+            {
+                if constexpr (kDebug)
+                {
+                    std::cout << "Adding " << piece << " at row:" << row << " col:" << col << std::endl;
+                }
+                AddPiece(FromChar(piece, Position(std::make_pair(7 - col, 7 - row))));
+            }
+            col--;
+        }
+    }
+    if constexpr (kDebug)
+        std::cout << *this << std::endl;
 }
 
 } // namespace shatranj

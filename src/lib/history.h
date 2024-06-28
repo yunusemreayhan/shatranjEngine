@@ -10,6 +10,7 @@ namespace shatranj
 {
 class Position;
 class Piece;
+enum class ChessPieceEnum : std::uint8_t;
 struct HistoryPoint
 {
     Position from;
@@ -17,16 +18,18 @@ struct HistoryPoint
     std::unique_ptr<Piece> captured;
     bool promoted;
     Color color;
+    ChessPieceEnum lastMovedPieceType;
 
-    HistoryPoint(Position frompos, Position topos, std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
+    HistoryPoint(Position frompos, Position topos, ChessPieceEnum lastMovedPieceType, std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
 };
 
 struct MoveHistory
 {
-    void AddMove(const Position &frompos, const Position &topos, std::unique_ptr<Piece> captured = nullptr,
-                 bool promoted = false, Color color = Color::kWhite)
+    void AddMove(const Position &frompos, const Position &topos, ChessPieceEnum lastMovedPieceType,
+                 std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite)
     {
-        auto toinsert = std::make_unique<HistoryPoint>(frompos, topos, std::move(captured), promoted, color);
+        auto toinsert =
+            std::make_unique<HistoryPoint>(frompos, topos, lastMovedPieceType, std::move(captured), promoted, color);
         history_.emplace(std::move(toinsert));
     }
 

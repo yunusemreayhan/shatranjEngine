@@ -41,6 +41,8 @@ Piece::Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool mul
              bool moved)
     : PiecePrimitive(pieceType, color, multipleMove, canJumpOverOthers, moved), pos_(pos)
 {
+    if (!pos.IsValid())
+        throw std::invalid_argument("Position is invalid " + pos.ToString());
 }
 
 bool Piece::CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck)

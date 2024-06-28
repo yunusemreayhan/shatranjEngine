@@ -68,6 +68,8 @@ class Board : public std::enable_shared_from_this<Board>
     }
     void PrintValidMoves();
     bool AddPiece(Piece piece);
+    std::string GenerateFEN() const;
+    void ApplyFEN(const std::string &fen);
 
     void RemovePiece(Piece &piece);
     const Player &GetCurrentPlayer() const
@@ -88,6 +90,16 @@ class Board : public std::enable_shared_from_this<Board>
     const std::vector<Player> &GetPlayers() const
     {
         return players_;
+    }
+
+    int GetHalfMoveClock() const
+    {
+        return halfMoveClock_;
+    }
+
+    int GetFullMoveNumber() const
+    {
+        return fullMoveNumber_;
     }
 
     MoveHistory &GetHistory() const;

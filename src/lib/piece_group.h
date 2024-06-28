@@ -83,6 +83,11 @@ class PieceGroup
         return pieces_.empty();
     }
 
+    void clear()
+    {
+        pieces_.clear();
+    }
+
     bool is_all_instance_of(ChessPieceEnum chessPiece) const;
 
     Piece &get(size_t index);
