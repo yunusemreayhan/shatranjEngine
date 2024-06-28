@@ -10,24 +10,25 @@
 namespace shatranj
 {
 
-const std::vector<Step> Piece::kRookSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-const std::vector<Step> Piece::kPiyadeWhiteSteps = {{0, +1}};
-const std::vector<Step> Piece::kPiyadeBlackSteps = {{0, -1}};
+const std::vector<Step> PiecePrimitive::kRookSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+const std::vector<Step> PiecePrimitive::kPiyadeWhiteSteps = {{0, +1}};
+const std::vector<Step> PiecePrimitive::kPiyadeBlackSteps = {{0, -1}};
 
-const std::vector<Step> Piece::kVizierSteps = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+const std::vector<Step> PiecePrimitive::kVizierSteps = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-const std::vector<Step> Piece::kShahSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+const std::vector<Step> PiecePrimitive::kShahSteps = {{0, 1}, {1, 0},  {0, -1}, {-1, 0},
+                                                      {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-const std::vector<Step> Piece::kHorseSteps = {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1},
-                                              {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}};
+const std::vector<Step> PiecePrimitive::kHorseSteps = {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1},
+                                                       {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}};
 
-const std::vector<Step> Piece::kFilSteps = {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}};
+const std::vector<Step> PiecePrimitive::kFilSteps = {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}};
 
-const std::vector<Step> Piece::kPiyadeWhiteCaptureSteps = {{1, +1}, {-1, +1}};
+const std::vector<Step> PiecePrimitive::kPiyadeWhiteCaptureSteps = {{1, +1}, {-1, +1}};
 
-const std::vector<Step> Piece::kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
+const std::vector<Step> PiecePrimitive::kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
 
-const std::vector<Step> Piece::kEmptySteps = {};
+const std::vector<Step> PiecePrimitive::kEmptySteps = {};
 
 PiecePrimitive::PiecePrimitive(ChessPieceEnum pieceType, const Color color, bool multipleMove, bool canJumpOverOthers,
                                bool moved)
@@ -173,7 +174,8 @@ bool Piece::CanCapture(Position pos, const std::shared_ptr<Board> &board, bool c
     return canJumpOverOthers_ || board->IsPathClear(pos_, pos);
 }
 
-bool Piece::CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck) {
+bool Piece::CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck)
+{
     return CanCapture(pos, board, ctrlCheck) || CanMove(pos, board, ctrlCheck);
 }
 

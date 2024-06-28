@@ -28,38 +28,6 @@ class PiecePrimitive // positionless piece
   public:
     PiecePrimitive(ChessPieceEnum pieceType, const Color color, bool multipleMove, bool canJumpOverOthers, bool moved);
 
-  protected:
-    ChessPieceEnum pieceType_;
-
-    int8_t isWhite_ : 1;
-    int8_t multipleMove_ : 1;
-    int8_t canJumpOverOthers_ : 1;
-    int8_t moved_ : 1;
-};
-
-class Piece : public PiecePrimitive
-{
-  public:
-    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
-                   bool moved);
-
-    const Position &GetPos() const
-    {
-        return pos_;
-    }
-
-    Color GetColor() const
-    {
-        return isWhite_ ? Color::kWhite : Color::kBlack;
-    }
-
-    bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
-    bool Move(Position pos);
-    std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
-
     constexpr char GetSymbol() const
     {
         switch (pieceType_)
@@ -222,6 +190,38 @@ class Piece : public PiecePrimitive
     {
         return moved_;
     }
+
+    Color GetColor() const
+    {
+        return isWhite_ ? Color::kWhite : Color::kBlack;
+    }
+
+  protected:
+    ChessPieceEnum pieceType_;
+
+    int8_t isWhite_ : 1;
+    int8_t multipleMove_ : 1;
+    int8_t canJumpOverOthers_ : 1;
+    int8_t moved_ : 1;
+};
+
+class Piece : public PiecePrimitive
+{
+  public:
+    explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool multipleMove, bool canJumpOverOthers,
+                   bool moved);
+
+    const Position &GetPos() const
+    {
+        return pos_;
+    }
+
+    bool CanMove(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanThreat(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanCapture(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool CanGo(Position pos, const std::shared_ptr<Board> &board, bool ctrlCheck = true);
+    bool Move(Position pos);
+    std::vector<std::pair<Position, Position>> GetPossibleMoves(const std::shared_ptr<Board> &board);
 
     bool operator==(const Piece &other) const
     {
