@@ -212,4 +212,9 @@ Piece PieceGroup::FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primi
 {
     return Piece(*primitr, Position{Coord1to2(std::distance(pieces_primitive_.begin(), primitr))});
 }
+
+bool PieceGroup::HavePieceAtPosWithColor(const Position &pos, Color color)
+{
+    return static_cast<bool>(pieces_primitive_[Coord2to1(pos)].GetColor() == color);
+}
 } // namespace shatranj

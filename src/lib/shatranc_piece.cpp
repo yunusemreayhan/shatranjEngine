@@ -86,18 +86,21 @@ bool Piece::CanMove(Position frompos, Position pos, const std::shared_ptr<Board>
             return false;
         }
     }
-    const auto piece = board->GetPieces()->GetPieceByVal(pos);
-    if (pieceType != ChessPieceEnum::kPiyade && piece)
+    const auto piece = board->GetPieces()->GetPiece(pos);
+    if (piece)
     {
-        if ((*piece).GetColor() == color)
+        if (pieceType != ChessPieceEnum::kPiyade)
         {
+            if ((*piece)->GetColor() == color)
+            {
+                return false;
+            }
+        }
+        else if (pieceType == ChessPieceEnum::kPiyade)
+        {
+            // piyade can not move over another piece
             return false;
         }
-    }
-    else if (pieceType == ChessPieceEnum::kPiyade && piece)
-    {
-        // piyade can not move over another piece
-        return false;
     }
 
     if (!(CanJumpOverOthers(pieceType) || board->IsPathClear(frompos, pos)))
@@ -124,12 +127,12 @@ bool Piece::CanThreat(Position frompos, Position pos, const std::shared_ptr<Boar
         return false;
     }
     // target pos should have opponent piece to pawn can make a thread
-    auto target_piece = board->GetPieces()->GetPieceByVal(pos);
+    auto target_piece = board->GetPieces()->GetPiece(pos);
     if (!target_piece)
     {
         return false;
     }
-    if ((*target_piece).GetColor() == color)
+    if ((*target_piece)->GetColor() == color)
     {
         return false;
     }
@@ -180,8 +183,8 @@ bool Piece::CanCapture(Position frompos, Position pos, const std::shared_ptr<Boa
     {
         return false;
     }
-    auto piece = board->GetPieces()->GetPieceByVal(pos);
-    if (!piece || (*piece).GetColor() == color)
+    auto piece = board->GetPieces()->GetPiece(pos);
+    if (!piece || (*piece)->GetColor() == color)
     {
         // if the piece is not on the board or it belongs to same player
         return false;

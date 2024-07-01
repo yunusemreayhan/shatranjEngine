@@ -67,6 +67,7 @@ class PieceGroup
     std::optional<Piece> Get(size_t index);
     std::optional<PiecePrimitive *> GetWhitePtr(size_t index);
     std::optional<PiecePrimitive *> GetBlackPtr(size_t index);
+    bool HavePieceAtPosWithColor(const Position &pos, Color color);
 
     const std::vector<Movement> &GetPossibleMoves(Color color, const std::shared_ptr<Board> &board);
 

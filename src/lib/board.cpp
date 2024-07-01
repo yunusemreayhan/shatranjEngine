@@ -69,7 +69,9 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
 {
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto curpieceopt = currentTurn_ == Color::kBlack ? GetPieces()->GetBlackPtr(i) : GetPieces()->GetWhitePtr(i);
+        auto curpieceopt = OpponentColor((*GetPieces()->GetPiece(pos))->GetColor()) == Color::kBlack
+                               ? GetPieces()->GetBlackPtr(i)
+                               : GetPieces()->GetWhitePtr(i);
         if (!curpieceopt)
         {
             continue;
@@ -338,13 +340,16 @@ GameState Board::GetBoardState()
     {
         const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
 
-        if (IsCheck(currentTurn_) && moves.empty())
+        if (moves.empty())
         {
-            ret = GameState::kCheckmate;
-        }
-        else if (moves.empty())
-        {
-            ret = GameState::kStalemate;
+            if (IsCheck(currentTurn_))
+            {
+                ret = GameState::kCheckmate;
+            }
+            else
+            {
+                ret = GameState::kStalemate;
+            }
         }
     }
     boardStateMemory_.Add(fenkey, ret);

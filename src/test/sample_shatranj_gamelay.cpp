@@ -436,6 +436,12 @@ TEST(SampleGameEndTests, PosNeg)
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 20);
     }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("r1fv3r/2ppp1sp/pp3ppf/4h3/8/2H5/PPPPPPhP/R1FVSFHR w 6 20");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
+        DumpPossibleMoves(shatranj.GetBoard(), 0);
+    }
 }
 
 TEST(SampleCaptureTest_MinMax, Negative)
