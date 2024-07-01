@@ -1,6 +1,7 @@
 #pragma once
 
 #include "board.h"
+#include "helper.h"
 #include "position.h"
 #include "shatranc_piece.h"
 #include "types.h"
@@ -21,35 +22,6 @@ enum class ChessPieceEnum : uint8_t;
 class Board;
 enum class Color : uint8_t;
 
-class FENBasedPossibleMoveMemory
-{
-  public:
-    bool Have(const std::string &fen)
-    {
-        return moves_.find(fen) != moves_.end();
-    }
-
-    void Add(const std::string &fen, const std::vector<Movement> &&moves)
-    {
-        moves_[fen] = moves;
-        if (moves_.size() > maxFenCount_)
-        {
-            moves_.erase(fens_.front());
-            fens_.pop();
-        }
-        fens_.push(fen);
-    }
-
-    const std::vector<Movement> &Get(const std::string &fen)
-    {
-        return moves_.at(fen);
-    }
-
-  private:
-    const size_t maxFenCount_ = 1000;
-    std::queue<std::string> fens_;
-    std::map<std::string, std::vector<Movement>> moves_;
-};
 class PieceGroup
 {
   public:
@@ -100,7 +72,7 @@ class PieceGroup
     std::optional<Piece *> GetPiece(const Position &pos, bool check = true);
     std::vector<Piece> pieces_;
     std::set<Position> positions_;
-    FENBasedPossibleMoveMemory possibleMovesMemory_;
+    KeyBasedMemory<std::string, std::vector<Movement>> possibleMovesMemory_;
     constexpr static bool inline kDebug = kDebugGlobal;
 };
 } // namespace shatranj

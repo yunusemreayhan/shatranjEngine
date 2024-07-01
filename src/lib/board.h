@@ -6,6 +6,7 @@
 #include <memory>
 #include <optional>
 
+#include "helper.h"
 #include "history.h"
 #include "piece_group.h"
 #include "player.h"
@@ -124,6 +125,8 @@ class Board : public std::enable_shared_from_this<Board>
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;
+    KeyBasedMemory<std::string, GameState> boardStateMemory_;
+    KeyBasedMemory<std::string, bool> wouldBeInCheckMemory_;
     constexpr static inline bool kDebug = kBoardDebug;
 };
 } // namespace shatranj

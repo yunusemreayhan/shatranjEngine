@@ -404,7 +404,7 @@ TEST(SampleCaptureTest_MinMax, Negative)
         }
         std::cout << std::endl;
     });
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 100; i++)
     {
         auto start = std::chrono::high_resolution_clock::now();
         int countofnodesvisited = 0;

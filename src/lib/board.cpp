@@ -30,6 +30,13 @@ Board::Board(const std::string &name1, const std::string &name2)
 // would be in check if I move piece to pos
 bool Board::WouldBeInCheck(Position from, Position pos)
 {
+    Movement controlling{from, pos};
+    auto curkey = GenerateFEN() + controlling.ToString();
+    if (wouldBeInCheckMemory_.Have(curkey))
+    {
+        return wouldBeInCheckMemory_.Get(curkey);
+    }
+
     auto control = Movement{from, pos};
     Color color = currentTurn_;
     auto temp = fullMoveNumber_;
@@ -53,6 +60,7 @@ bool Board::WouldBeInCheck(Position from, Position pos)
         throw std::runtime_error("Error in WouldBeInCheck, full move number changed");
     }
 
+    wouldBeInCheckMemory_.Add(curkey, ret_is_check);
     return ret_is_check;
 }
 
@@ -306,40 +314,47 @@ Piece Board::DemotePromoted(Piece &promoted)
 
 GameState Board::GetBoardState()
 {
+    GameState ret = GameState::kNormal;
+    if (boardStateMemory_.Have(GenerateFEN()))
+    {
+        return boardStateMemory_.Get(GenerateFEN());
+    }
     auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
     auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
 
     if (current_turn_pieces.size() == 1 && opponent_pieces.size() > 2)
     {
-        return GameState::kCheckmate;
+        ret = GameState::kCheckmate;
     }
-
-    if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 1)
+    else if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 1)
     {
-        return GameState::kDraw;
+        ret = GameState::kDraw;
     }
-
-    if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
+    else if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
     {
         if (Piece::CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
                          current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor(), false) ||
             Piece::CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
                          current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor(), false))
         {
-            return GameState::kDraw;
+            ret = GameState::kDraw;
         }
     }
+    else
+    {
+        const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
 
-    const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
-    if (IsCheck(currentTurn_) && moves.empty())
-    {
-        return GameState::kCheckmate;
+        if (IsCheck(currentTurn_) && moves.empty())
+        {
+            ret = GameState::kCheckmate;
+        }
+        else if (moves.empty())
+        {
+            ret = GameState::kStalemate;
+        }
     }
-    if (moves.empty())
-    {
-        return GameState::kStalemate;
-    }
-    return GameState::kNormal;
+    boardStateMemory_.Add(GenerateFEN(), ret);
+    return ret;
 }
 
 std::optional<Player> Board::Winner()
