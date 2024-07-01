@@ -16,6 +16,18 @@
 namespace
 {
 
+void DumpPossibleMoves(std::shared_ptr<shatranj::Board> &board, size_t expected_moves = 0)
+{
+    auto posmoves = board->GetPieces()->GetPossibleMoves(board->GetCurrentTurn(), board);
+    std::cout << *(board) << std::endl;
+    for (const auto &move : posmoves)
+    {
+        std::cout << move.ToString() << " ";
+    }
+    std::cout << std::endl;
+    EXPECT_EQ(posmoves.size(), expected_moves);
+}
+
 void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordinates,
                         const std::vector<std::string> &expectedmoves)
 {
@@ -404,6 +416,28 @@ TEST(RevertTest2, Positive)
     }
 }
 
+TEST(SampleGameEndTests, PosNeg)
+{
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("1r1vr3/1p2sp2/p1p5/3pp2p/2f3p1/2H2P2/PPPf1PPP/1RFVSF1R w 1 43");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
+        DumpPossibleMoves(shatranj.GetBoard(), 19);
+    }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("2rr2f1/2v1p1p1/p2p1p1p/1p2h3/2p1s1h1/2H5/PPPfPPPP/R1FVSFHR b 7 37");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
+        DumpPossibleMoves(shatranj.GetBoard(), 3);
+    }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("2rvs2r/pp1p1pp1/3fp2p/2p1h2h/2f5/2H5/PPPP1PPP/1RFVSFHR w 0 21");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
+        DumpPossibleMoves(shatranj.GetBoard(), 20);
+    }
+}
+
 TEST(SampleCaptureTest_MinMax, Negative)
 {
     shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
@@ -437,7 +471,7 @@ TEST(SampleCaptureTest_MinMax, Negative)
         catch (...)
         {
             ASSERT_FALSE(shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kNormal);
-            throw;
+            break;
         }
         auto duration = std::chrono::high_resolution_clock::now() - start;
         std::cout << "seach time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms"

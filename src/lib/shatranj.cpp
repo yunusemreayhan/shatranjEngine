@@ -138,9 +138,9 @@ bool Shatranj::PlaySeq(const std::vector<std::string> &seq, bool printboard)
             succ = false;
             break;
         }
-        if (printboard)
-            std::cout << *(this->GetBoard()) << std::endl;
     }
+    if (printboard)
+        std::cout << *(this->GetBoard()) << std::endl;
     // TODO revert with counter
     (void)counter;
     return succ;

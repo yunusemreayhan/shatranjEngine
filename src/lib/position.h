@@ -135,8 +135,8 @@ class Position
     }
 
   private:
-    uint8_t x_ : 3;
-    uint8_t y_ : 3;
+    uint8_t x_ : 4;
+    uint8_t y_ : 4;
 };
 
 struct Movement

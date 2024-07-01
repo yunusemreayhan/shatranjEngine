@@ -29,10 +29,6 @@ class PiecePrimitive // positionless piece
 {
   public:
     PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved);
-    PiecePrimitive(const PiecePrimitive &primitive)
-        : pieceType_(primitive.pieceType_), isWhite_(primitive.isWhite_), moved_(primitive.moved_)
-    {
-    }
 
     constexpr char GetSymbol() const
     {

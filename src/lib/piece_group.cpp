@@ -14,22 +14,35 @@ PieceGroup::PieceGroup()
     pieces_primitive_ = std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
     pieces_primitive_.reserve(64);
 }
-bool PieceGroup::AddPiece(const Piece &piece)
+bool PieceGroup::AddPiece(const PiecePrimitive &piece, const Position &pos)
 {
-    if (pieces_primitive_[Coord2to1(piece.GetPos())].GetPieceType() != ChessPieceEnum::kNone)
+    auto calccoord = Coord2to1(pos);
+    if (pieces_primitive_[calccoord].GetPieceType() != ChessPieceEnum::kNone)
     {
         if constexpr (kPieceGroupDebug)
         {
-            std::cout << "Already have " << piece.GetPos().ToString() << std::endl;
+            std::cout << "Already have " << pos.ToString() << std::endl;
         }
         return false;
     }
     if constexpr (kPieceGroupDebug)
     {
-        std::cout << "Adding " << piece.GetPos().ToString() << " " << static_cast<uint>(Coord2to1(piece.GetPos()))
-                  << std::endl;
+        std::cout << "Adding " << pos.ToString() << " " << static_cast<uint>(calccoord) << std::endl;
     }
-    pieces_primitive_[Coord2to1(piece.GetPos())] = piece.GetPrimitive();
+    pieces_primitive_[calccoord] = piece;
+    if (pieces_primitive_[calccoord].IsShah())
+    {
+        if (pieces_primitive_[calccoord].GetColor() == Color::kBlack)
+        {
+            blackShah_ = &pieces_primitive_[calccoord];
+            blackShahPos_ = pos;
+        }
+        else
+        {
+            whiteShah_ = &pieces_primitive_[calccoord];
+            whiteShahPos_ = pos;
+        }
+    }
     counter_++;
     if (piece.GetColor() == Color::kBlack)
     {
@@ -71,8 +84,23 @@ void PieceGroup::RemovePieceNoCounterUpdate(const Position &pos)
 
 bool PieceGroup::MovePiece(const Position &frompos, const Position &topos)
 {
-    pieces_primitive_[Coord2to1(topos)] = pieces_primitive_[Coord2to1(frompos)];
+    auto calccoord = Coord2to1(topos);
+    auto *target = &pieces_primitive_[calccoord];
+    *target = pieces_primitive_[Coord2to1(frompos)];
     RemovePieceNoCounterUpdate(frompos);
+    if (target->IsShah())
+    {
+        if (target->GetColor() == Color::kBlack)
+        {
+            blackShah_ = target;
+            blackShahPos_ = topos;
+        }
+        else
+        {
+            whiteShah_ = target;
+            whiteShahPos_ = topos;
+        }
+    }
     return true;
 }
 
@@ -156,6 +184,20 @@ std::optional<Piece> PieceGroup::Get(size_t index)
     if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone)
         return std::nullopt;
     return FromPiecePrimitive(pieces_primitive_.begin() + index);
+}
+std::optional<PiecePrimitive *> PieceGroup::GetBlackPtr(size_t index)
+{
+    auto &pieceatindex = pieces_primitive_[index];
+    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone || pieceatindex.GetColor() == Color::kWhite)
+        return std::nullopt;
+    return &*(pieces_primitive_.begin() + index);
+}
+std::optional<PiecePrimitive *> PieceGroup::GetWhitePtr(size_t index)
+{
+    auto &pieceatindex = pieces_primitive_[index];
+    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone || pieceatindex.GetColor() == Color::kBlack)
+        return std::nullopt;
+    return &*(pieces_primitive_.begin() + index);
 }
 
 void PieceGroup::Clear()

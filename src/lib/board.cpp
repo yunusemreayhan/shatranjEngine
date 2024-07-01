@@ -69,17 +69,17 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
 {
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto curpieceopt = GetPieces()->Get(i);
+        auto curpieceopt = currentTurn_ == Color::kBlack ? GetPieces()->GetBlackPtr(i) : GetPieces()->GetWhitePtr(i);
         if (!curpieceopt)
         {
             continue;
         }
 
-        auto curpiece = *curpieceopt;
-        auto calc =
-            Piece::CanMove(curpiece.GetPos(), pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor()) ||
-            Piece::CanCapture(curpiece.GetPos(), pos, GetSharedFromThis(), curpiece.GetPieceType(),
-                              curpiece.GetColor());
+        auto *curpiece = *curpieceopt;
+        auto calc = Piece::CanMove(PieceGroup::Coord1to2(i), pos, GetSharedFromThis(), curpiece->GetPieceType(),
+                                   curpiece->GetColor()) ||
+                    Piece::CanCapture(PieceGroup::Coord1to2(i), pos, GetSharedFromThis(), curpiece->GetPieceType(),
+                                      curpiece->GetColor());
         if (calc)
             return true;
     }
@@ -88,32 +88,13 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
 
 bool Board::IsCheck(Color color)
 {
-    bool found = false;
-    Position shahpos(0, 0);
-    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
-    {
-        auto curpieceopt = GetPieces()->Get(i);
-        if (!curpieceopt)
-        {
-            continue;
-        }
-        auto curpiece = *curpieceopt;
-        if (color == curpiece.GetColor() && curpiece.IsShah())
-        {
-            shahpos = curpiece.GetPos();
-            found = true;
-            break;
-        }
-    }
+    Position shahpos = color == Color::kBlack ? GetPieces()->GetBlackShahPos() : GetPieces()->GetWhiteShahPos();
 
-    if (!found)
+    if (!shahpos.IsValid())
     {
         std::cout << *this << std::endl;
         throw std::runtime_error("Shah piece not found, logical error!");
     }
-
-    // get opponent
-    const Player &opponent = Opponent(currentTurn_);
 
     return OpponnentCanCapturePos(shahpos);
 }
@@ -512,7 +493,7 @@ const Player &Board::GetPlayer(Color color) const
 
 bool Board::AddPiece(Piece piece)
 {
-    auto res = pieces_->AddPiece(piece);
+    auto res = pieces_->AddPiece(piece.GetPrimitive(), piece.GetPos());
     if (!res)
     {
         std::cout << "Adding " << piece.GetPos().ToString() << " failed" << std::endl;
@@ -667,14 +648,10 @@ double Board::EvaluateBoard(Color color)
         if (piece.GetColor() == color)
         {
             score += piece.GetPiecePoint();
-            score *= IsCheck(color) ? 2 : 1;
-            score *= GameState() == GameState::kCheckmate ? 10 : 1;
         }
         else
         {
             score -= piece.GetPiecePoint();
-            score /= IsCheck(OpponentColor(color)) ? 2 : 1;
-            score /= GameState() == GameState::kCheckmate ? 10 : 1;
         }
     }
     return score;
