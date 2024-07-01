@@ -72,9 +72,8 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
         auto curpiece = *GetPieces()->GetPieceByVal(position);
         if (curpiece.GetColor() != currentTurn_)
             continue;
-        auto calc =
-            Piece::CanMove(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor(), false) ||
-            Piece::CanCapture(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor(), false);
+        auto calc = Piece::CanMove(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor()) ||
+                    Piece::CanCapture(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor());
         if (calc)
             return true;
     }
@@ -155,15 +154,13 @@ bool Board::MovePiece(Position frompos, Position topos, bool ctrlCheck)
         return false;
     }
 
-    const bool can_move =
-        Piece::CanMove(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor(), false);
+    const bool can_move = Piece::CanMove(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor());
 
     const bool can_capture =
-        Piece::CanCapture(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor(), false);
+        Piece::CanCapture(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor());
 
     if (!can_move && !can_capture)
     {
-
         return false;
     }
 
@@ -333,9 +330,9 @@ GameState Board::GetBoardState()
     else if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
     {
         if (Piece::CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
-                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor(), false) ||
+                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor()) ||
             Piece::CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
-                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor(), false))
+                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor()))
         {
             ret = GameState::kDraw;
         }

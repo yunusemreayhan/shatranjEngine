@@ -124,7 +124,7 @@ const std::vector<Movement> &PieceGroup::GetPossibleMoves(Color color, const std
         {
             continue;
         }
-        auto insertable = Piece::GetPossibleMoves(piece.GetPos(), board, piece.GetPieceType(), piece.GetColor(), true);
+        auto insertable = Piece::GetPossibleMoves(piece.GetPos(), board, piece.GetPieceType(), piece.GetColor());
         for (auto it = insertable.begin(); it != insertable.end(); it++)
         {
             if (it->from == it->to)

@@ -43,7 +43,7 @@ Piece::Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool mov
 }
 
 bool Piece::CanMove(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                    Color color, bool ctrlCheck)
+                    Color color)
 {
     if (frompos == pos)
     {
@@ -105,16 +105,11 @@ bool Piece::CanMove(Position frompos, Position pos, const std::shared_ptr<Board>
         return false;
     }
 
-    if (ctrlCheck && board->WouldBeInCheck(frompos, pos))
-    {
-        return false;
-    }
-
     return true;
 }
 
 bool Piece::CanThreat(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                      Color color, bool ctrlCheck)
+                      Color color)
 {
     if (pieceType != ChessPieceEnum::kPiyade)
     {
@@ -175,17 +170,13 @@ bool Piece::CanThreat(Position frompos, Position pos, const std::shared_ptr<Boar
     {
         return false;
     }
-    if (ctrlCheck && board->WouldBeInCheck(frompos, pos))
-    {
-        return false;
-    }
     return true;
 }
 
 bool Piece::CanCapture(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                       Color color, bool ctrlCheck)
+                       Color color)
 {
-    if (!CanThreat(frompos, pos, board, pieceType, color, ctrlCheck))
+    if (!CanThreat(frompos, pos, board, pieceType, color))
     {
         return false;
     }
@@ -199,10 +190,9 @@ bool Piece::CanCapture(Position frompos, Position pos, const std::shared_ptr<Boa
 }
 
 bool Piece::CanGo(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                  Color color, bool ctrlCheck)
+                  Color color)
 {
-    return CanCapture(frompos, pos, board, pieceType, color, ctrlCheck) ||
-           CanMove(frompos, pos, board, pieceType, color, ctrlCheck);
+    return CanCapture(frompos, pos, board, pieceType, color) || CanMove(frompos, pos, board, pieceType, color);
 }
 
 bool Piece::Move(Position pos)
@@ -217,7 +207,7 @@ bool Piece::Move(Position pos)
 }
 
 std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::shared_ptr<Board> &board,
-                                              ChessPieceEnum pieceType, Color color, bool ctrlCheck)
+                                              ChessPieceEnum pieceType, Color color)
 {
     if (board->GetCurrentTurn() != color)
     {
@@ -234,9 +224,10 @@ std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::share
             {
                 continue;
             }
-            if (CanMove(frompos, pos, board, pieceType, color, ctrlCheck))
+            if (CanMove(frompos, pos, board, pieceType, color))
             {
-                possible_moves.push_back(Movement(frompos, pos));
+                if (!board->WouldBeInCheck(frompos, pos))
+                    possible_moves.push_back(Movement(frompos, pos));
             }
         }
         else
@@ -249,9 +240,10 @@ std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::share
                 if (!pos.IsValid())
                     continue;
 
-                if (CanMove(frompos, pos, board, pieceType, color, ctrlCheck))
+                if (CanMove(frompos, pos, board, pieceType, color))
                 {
-                    possible_moves.push_back(Movement(frompos, pos));
+                    if (!board->WouldBeInCheck(frompos, pos))
+                        possible_moves.push_back(Movement(frompos, pos));
                 }
             }
         }
@@ -267,9 +259,10 @@ std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::share
             {
                 continue;
             }
-            if (CanCapture(frompos, pos, board, pieceType, color, ctrlCheck))
+            if (CanCapture(frompos, pos, board, pieceType, color))
             {
-                possible_moves.push_back(Movement(frompos, pos));
+                if (!board->WouldBeInCheck(frompos, pos))
+                    possible_moves.push_back(Movement(frompos, pos));
             }
         }
     }
