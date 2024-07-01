@@ -1,5 +1,6 @@
 #include "board.h"
 #include "helper.h"
+#include "piece_group.h"
 #include "position.h"
 #include "shatranc_piece.h"
 #include "shatranj.h"
@@ -49,7 +50,10 @@ bool Board::WouldBeInCheck(const Movement &controlling)
     bool ret_is_check = IsCheck(color);
 
     if (res)
+    {
         Revert(1);
+        wouldBeInCheckMemory_.Add(curkey, ret_is_check);
+    }
 
     if (temp != fullMoveNumber_)
     {
@@ -58,20 +62,24 @@ bool Board::WouldBeInCheck(const Movement &controlling)
         throw std::runtime_error("Error, full move number changed");
     }
 
-    wouldBeInCheckMemory_.Add(curkey, ret_is_check);
     return ret_is_check;
 }
 
 bool Board::OpponnentCanCapturePos(const Position &pos)
 {
-    auto positions = GetPieces()->GetPositions();
-    for (const auto &position : positions)
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto curpiece = *GetPieces()->GetPieceByVal(position);
-        if (curpiece.GetColor() != currentTurn_)
+        auto curpieceopt = GetPieces()->Get(i);
+        if (!curpieceopt)
+        {
             continue;
-        auto calc = Piece::CanMove(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor()) ||
-                    Piece::CanCapture(position, pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor());
+        }
+
+        auto curpiece = *curpieceopt;
+        auto calc =
+            Piece::CanMove(curpiece.GetPos(), pos, GetSharedFromThis(), curpiece.GetPieceType(), curpiece.GetColor()) ||
+            Piece::CanCapture(curpiece.GetPos(), pos, GetSharedFromThis(), curpiece.GetPieceType(),
+                              curpiece.GetColor());
         if (calc)
             return true;
     }
@@ -80,20 +88,25 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
 
 bool Board::IsCheck(Color color)
 {
-    Piece *shah = nullptr;
-    auto positions = GetPieces()->GetPositions();
-    for (const auto &pos : positions) // for (const auto &piece : *(board->GetPieces()))
+    bool found = false;
+    Position shahpos(0, 0);
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto pieceopt = GetPieces()->GetPieceByVal(pos);
-        auto piece = *pieceopt;
-        if (color == piece.GetColor() && piece.IsShah())
+        auto curpieceopt = GetPieces()->Get(i);
+        if (!curpieceopt)
         {
-            shah = &piece;
+            continue;
+        }
+        auto curpiece = *curpieceopt;
+        if (color == curpiece.GetColor() && curpiece.IsShah())
+        {
+            shahpos = curpiece.GetPos();
+            found = true;
             break;
         }
     }
 
-    if (shah == nullptr)
+    if (!found)
     {
         std::cout << *this << std::endl;
         throw std::runtime_error("Shah piece not found, logical error!");
@@ -102,7 +115,7 @@ bool Board::IsCheck(Color color)
     // get opponent
     const Player &opponent = Opponent(currentTurn_);
 
-    return OpponnentCanCapturePos(shah->GetPos());
+    return OpponnentCanCapturePos(shahpos);
 }
 
 bool Board::IsPathClear(const Position &from, const Position &target)
@@ -168,7 +181,7 @@ bool Board::MovePiece(Position frompos, Position topos)
     {
         captured_piece_uptr = std::make_unique<Piece>(*captured_piece);
         if ((piece.IsPiyade() && can_capture) || (!piece.IsPiyade() && can_move))
-            RemovePiece(*captured_piece);
+            RemovePiece(topos);
     }
 
     bool promoted = false;
@@ -180,7 +193,7 @@ bool Board::MovePiece(Position frompos, Position topos)
         if (topos.Gety() == 0 || topos.Gety() == 7)
         {
             auto promoted_piece = PromotePiyade(piece);
-            RemovePiece(piece);
+            RemovePiece(piece.GetPos());
             AddPiece(promoted_piece);
             promoted = true;
         }
@@ -235,7 +248,7 @@ bool Board::Revert(int move_count)
         if (last_move->promoted)
         {
             Piece demoted_piece = DemotePromoted(piece);
-            RemovePiece(piece);
+            RemovePiece(piece.GetPos());
             AddPiece(demoted_piece);
         }
 
@@ -326,6 +339,10 @@ GameState Board::GetBoardState()
         {
             ret = GameState::kDraw;
         }
+        else
+        {
+            ret = GameState::kCheckmate;
+        }
     }
     else
     {
@@ -410,14 +427,17 @@ bool Board::Play(const std::string &from_pos, const std::string &to_pos)
 
 char *Board::BoardRepresantation::GetBoardReprensentation(Board *board)
 {
-    static char *ret = new char[64];
-    memset(ret, '.', 64);
-    auto positions = board->GetPieces()->GetPositions();
-    for (const auto &pos : positions) // for (const auto &piece : *(board->GetPieces()))
+    static char *ret = new char[PieceGroup::kSquareCount];
+    memset(ret, '.', PieceGroup::kSquareCount);
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        const auto &pieceopt = board->GetPieces()->GetPieceByVal(pos);
+        const auto &pieceopt = board->GetPieces()->Get(i);
+        if (!pieceopt)
+        {
+            continue;
+        }
         const auto &piece = *pieceopt;
-        ret[CombinedCoordinate(pos.Getx(), pos.Gety())] =
+        ret[CombinedCoordinate(piece.GetPos().Getx(), piece.GetPos().Gety())] =
             piece.GetColor() == Color::kWhite ? std::toupper(piece.GetSymbol()) : std::tolower(piece.GetSymbol());
     }
     return ret;
@@ -502,18 +522,18 @@ bool Board::AddPiece(Piece piece)
     return res;
 }
 
-void Board::RemovePiece(Piece &piece)
+void Board::RemovePiece(const Position &pos)
 {
     if constexpr (kDebug)
     {
-        std::cout << "Removing " << piece.GetPos().ToString() << std::endl;
+        std::cout << "Removing " << pos.ToString() << std::endl;
         std::cout << *this << std::endl;
     }
-    pieces_->RemovePiece(piece.GetPos());
+    pieces_->RemovePiece(pos);
     // piece.GetPlayer().lock()->GetPieces()->RemovePiece(piece);
     if constexpr (kDebug)
     {
-        std::cout << "Removed " << piece.GetPos().ToString() << std::endl;
+        std::cout << "Removed " << pos.ToString() << std::endl;
         std::cout << *this << std::endl;
     }
 }
@@ -607,7 +627,7 @@ void Board::ApplyFEN(const std::string &fen)
     currentTurn_ = fen_pieces[1] == "w" ? Color::kWhite : Color::kBlack;
     halfMoveClock_ = std::stoi(fen_pieces[2]);
     fullMoveNumber_ = std::stoi(fen_pieces[3]);
-    pieces_->clear();
+    pieces_->Clear();
     for (uint8_t row = 0; row < 8; row++)
     {
         uint8_t col = 7;
@@ -636,11 +656,13 @@ double Board::EvaluateBoard(Color color)
 {
     double score = 0;
 
-    auto positions = GetPieces()->GetPositions();
-
-    for (const auto &pos : positions)
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto pieceopt = GetPieces()->GetPieceByVal(pos);
+        auto pieceopt = GetPieces()->Get(i);
+        if (!pieceopt)
+        {
+            continue;
+        }
         auto piece = *pieceopt;
         if (piece.GetColor() == color)
         {

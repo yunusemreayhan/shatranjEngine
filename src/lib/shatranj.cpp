@@ -19,13 +19,13 @@ Shatranj::Shatranj(std::string player1, std::string player2)
 void Shatranj::InitializeBoard()
 {
     board_->AddPiece(Rook(Position("a1"), Color::kWhite));
-    board_->AddPiece(Rook(Position("h1"), Color::kWhite));
     board_->AddPiece(Horse(Position("b1"), Color::kWhite));
-    board_->AddPiece(Horse(Position("g1"), Color::kWhite));
     board_->AddPiece(Fil(Position("c1"), Color::kWhite));
-    board_->AddPiece(Fil(Position("f1"), Color::kWhite));
     board_->AddPiece(Vizier(Position("d1"), Color::kWhite));
     board_->AddPiece(Shah(Position("e1"), Color::kWhite));
+    board_->AddPiece(Fil(Position("f1"), Color::kWhite));
+    board_->AddPiece(Horse(Position("g1"), Color::kWhite));
+    board_->AddPiece(Rook(Position("h1"), Color::kWhite));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
@@ -33,13 +33,13 @@ void Shatranj::InitializeBoard()
         board_->AddPiece(Piyade(Position(ssinst.str()), Color::kWhite));
     }
     board_->AddPiece(Rook(Position("a8"), Color::kBlack));
-    board_->AddPiece(Rook(Position("h8"), Color::kBlack));
     board_->AddPiece(Horse(Position("b8"), Color::kBlack));
-    board_->AddPiece(Horse(Position("g8"), Color::kBlack));
     board_->AddPiece(Fil(Position("c8"), Color::kBlack));
-    board_->AddPiece(Fil(Position("f8"), Color::kBlack));
     board_->AddPiece(Vizier(Position("d8"), Color::kBlack));
     board_->AddPiece(Shah(Position("e8"), Color::kBlack));
+    board_->AddPiece(Fil(Position("f8"), Color::kBlack));
+    board_->AddPiece(Horse(Position("g8"), Color::kBlack));
+    board_->AddPiece(Rook(Position("h8"), Color::kBlack));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
@@ -119,7 +119,7 @@ void Shatranj::Run()
     std::cout << *board_ << std::endl;
 }
 
-bool Shatranj::PlaySeq(const std::vector<std::string> &seq)
+bool Shatranj::PlaySeq(const std::vector<std::string> &seq, bool printboard)
 {
     int counter = 0;
     bool succ = true;
@@ -127,18 +127,18 @@ bool Shatranj::PlaySeq(const std::vector<std::string> &seq)
     {
         if (Play(seqitr))
         {
-            if constexpr (kDebug)
+            if (printboard)
                 std::cout << "sequence success at:" << seqitr << std::endl;
             counter++;
         }
         else
         {
-            if constexpr (kDebug)
+            if (printboard)
                 std::cout << "sequence failed at:" << seqitr << std::endl;
             succ = false;
             break;
         }
-        if constexpr (kDebug)
+        if (printboard)
             std::cout << *(this->GetBoard()) << std::endl;
     }
     // TODO revert with counter

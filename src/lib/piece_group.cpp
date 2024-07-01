@@ -1,14 +1,22 @@
 #include "piece_group.h"
 #include "position.h"
 #include "shatranc_piece.h"
+#include "types.h"
 
 #include <algorithm>
+#include <optional>
 
 namespace shatranj
 {
+
+PieceGroup::PieceGroup()
+{
+    pieces_primitive_ = std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
+    pieces_primitive_.reserve(64);
+}
 bool PieceGroup::AddPiece(const Piece &piece)
 {
-    if (positions_.find(piece.GetPos()) != positions_.end())
+    if (pieces_primitive_[Coord2to1(piece.GetPos())].GetPieceType() != ChessPieceEnum::kNone)
     {
         if constexpr (kPieceGroupDebug)
         {
@@ -18,10 +26,19 @@ bool PieceGroup::AddPiece(const Piece &piece)
     }
     if constexpr (kPieceGroupDebug)
     {
-        std::cout << "Adding " << piece.GetPos().ToString() << std::endl;
+        std::cout << "Adding " << piece.GetPos().ToString() << " " << static_cast<uint>(Coord2to1(piece.GetPos()))
+                  << std::endl;
     }
-    positions_.insert(piece.GetPos());
-    pieces_.push_back(piece);
+    pieces_primitive_[Coord2to1(piece.GetPos())] = piece.GetPrimitive();
+    counter_++;
+    if (piece.GetColor() == Color::kBlack)
+    {
+        black_count_++;
+    }
+    else
+    {
+        white_count_++;
+    }
     return true;
 }
 
@@ -31,45 +48,40 @@ void PieceGroup::RemovePiece(const Position &pos)
     {
         std::cout << "Removing have " << pos.ToString() << std::endl;
     }
-    positions_.erase(pos);
-    pieces_.erase(std::remove_if(pieces_.begin(), pieces_.end(),
-                                 [&pos](const Piece &pieceitr) { return pos == pieceitr.GetPos(); }),
-                  pieces_.end());
+    if (pieces_primitive_[Coord2to1(pos)].GetColor() == Color::kBlack)
+    {
+        black_count_--;
+    }
+    else
+    {
+        white_count_--;
+    }
+    pieces_primitive_[Coord2to1(pos)] = PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false);
+    counter_--;
+}
+
+void PieceGroup::RemovePieceNoCounterUpdate(const Position &pos)
+{
+    if constexpr (kPieceGroupDebug)
+    {
+        std::cout << "Removing have " << pos.ToString() << std::endl;
+    }
+    pieces_primitive_[Coord2to1(pos)] = PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false);
 }
 
 bool PieceGroup::MovePiece(const Position &frompos, const Position &topos)
 {
-    if (positions_.find(frompos) == positions_.end())
-    {
-        if constexpr (kPieceGroupDebug)
-        {
-            std::cout << "No piece at " << frompos.ToString() << std::endl;
-        }
-        return false;
-    }
-    positions_.erase(frompos);
-    positions_.insert(topos);
-    (*GetPiece(frompos, false))->Move(topos);
+    pieces_primitive_[Coord2to1(topos)] = pieces_primitive_[Coord2to1(frompos)];
+    RemovePieceNoCounterUpdate(frompos);
     return true;
 }
 
-std::optional<Piece *> PieceGroup::GetPiece(const Position &pos, bool check)
+std::optional<PiecePrimitive *> PieceGroup::GetPiece(const Position &pos)
 {
-    if (check && positions_.find(pos) == positions_.end())
-    {
-        if constexpr (kPieceGroupDebug)
-        {
-            std::cout << "No piece at " << pos.ToString() << std::endl;
-        }
-        return std::nullopt;
-    }
-    for (auto it = pieces_.begin(); it != pieces_.end(); it++)
-    {
-        if ((it)->GetPos() == pos)
-        {
-            return &(*it);
-        }
-    }
+    PiecePrimitive *ret = &pieces_primitive_[Coord2to1(pos)];
+    if (ret->GetPieceType() != ChessPieceEnum::kNone)
+        return ret;
+
     if constexpr (kPieceGroupDebug)
     {
         std::cout << "No piece at " << pos.ToString() << " set says it must exist" << std::endl;
@@ -79,28 +91,21 @@ std::optional<Piece *> PieceGroup::GetPiece(const Position &pos, bool check)
 
 std::optional<Piece> PieceGroup::GetPieceByVal(const Position &pos)
 {
-    if (positions_.find(pos) == positions_.end())
-    {
-        return std::nullopt;
-    }
-    for (auto it = pieces_.begin(); it != pieces_.end(); it++)
-    {
-        if ((it)->GetPos() == pos)
-        {
-            return (*it);
-        }
-    }
+    auto coord = Coord2to1(pos);
+    PiecePrimitive *ret = &pieces_primitive_[coord];
+    if (ret->GetPieceType() != ChessPieceEnum::kNone)
+        return Get(coord);
     return std::nullopt;
 }
 
 std::vector<Piece> PieceGroup::GetSubPieces(Color color)
 {
     std::vector<Piece> ret;
-    for (auto &piece : pieces_)
+    for (auto pieceitr = pieces_primitive_.begin(); pieceitr != pieces_primitive_.end(); pieceitr++)
     {
-        if (piece.GetColor() == color)
+        if (pieceitr->GetColor() == color && pieceitr->GetPieceType() != ChessPieceEnum::kNone)
         {
-            ret.push_back(piece);
+            ret.push_back(FromPiecePrimitive(pieceitr));
         }
     }
     return ret;
@@ -116,10 +121,9 @@ const std::vector<Movement> &PieceGroup::GetPossibleMoves(Color color, const std
     std::vector<Movement> ret;
     if constexpr (kPieceGroupDebug)
         std::cout << "Getting possible moves for " << color << std::endl;
-    auto positions = GetPositions();
-    for (const auto &pos : positions)
+    for (auto pieceitr = pieces_primitive_.begin(); pieceitr != pieces_primitive_.end(); pieceitr++)
     {
-        const auto piece = *board->GetPieces()->GetPieceByVal(pos);
+        const Piece piece = FromPiecePrimitive(pieceitr);
         if (piece.GetColor() != color)
         {
             continue;
@@ -141,13 +145,29 @@ const std::vector<Movement> &PieceGroup::GetPossibleMoves(Color color, const std
     return possibleMovesMemory_.Get(fen);
 }
 
-bool PieceGroup::is_all_instance_of(ChessPieceEnum chessPiece) const
+bool PieceGroup::IsAllInstanceOf(ChessPieceEnum chessPiece) const
 {
-    return std::all_of(pieces_.begin(), pieces_.end(),
+    return std::all_of(pieces_primitive_.begin(), pieces_primitive_.end(),
                        [chessPiece](const auto &piece) { return piece.GetPieceType() == chessPiece; });
 }
-Piece &PieceGroup::get(size_t index)
+std::optional<Piece> PieceGroup::Get(size_t index)
 {
-    return pieces_[index];
+    auto &pieceatindex = pieces_primitive_[index];
+    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone)
+        return std::nullopt;
+    return FromPiecePrimitive(pieces_primitive_.begin() + index);
+}
+
+void PieceGroup::Clear()
+{
+    memset((void *)pieces_primitive_.data(), 0, sizeof(PiecePrimitive) * pieces_primitive_.size());
+    counter_ = 0;
+    black_count_ = 0;
+    white_count_ = 0;
+}
+
+Piece PieceGroup::FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primitr)
+{
+    return Piece(*primitr, Position{Coord1to2(std::distance(pieces_primitive_.begin(), primitr))});
 }
 } // namespace shatranj

@@ -76,4 +76,5 @@ template <typename TypeOfKey, typename TypeOfHold> class KeyBasedMemory
     std::queue<TypeOfKey> keys_;
     std::map<TypeOfKey, TypeOfHold> moves_;
 };
+
 } // namespace shatranj

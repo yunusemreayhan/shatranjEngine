@@ -19,7 +19,7 @@ class Shatranj
     static std::string GetInput();
     bool Play(const std::string &input);
     bool Play(const Movement &input);
-    bool PlaySeq(const std::vector<std::string> &seq);
+    bool PlaySeq(const std::vector<std::string> &seq, bool printboard = false);
     bool PlaySeq2(const std::vector<Movement> &seq);
     void Run();
 

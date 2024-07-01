@@ -81,7 +81,7 @@ class Board : public std::enable_shared_from_this<Board>
     std::string GenerateFEN(bool includeCounters = true) const;
     void ApplyFEN(const std::string &fen);
 
-    void RemovePiece(Piece &piece);
+    void RemovePiece(const Position &pos);
     const Player &GetCurrentPlayer() const
     {
         return GetPlayer(currentTurn_);

@@ -29,6 +29,10 @@ class PiecePrimitive // positionless piece
 {
   public:
     PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved);
+    PiecePrimitive(const PiecePrimitive &primitive)
+        : pieceType_(primitive.pieceType_), isWhite_(primitive.isWhite_), moved_(primitive.moved_)
+    {
+    }
 
     constexpr char GetSymbol() const
     {
@@ -242,10 +246,18 @@ class Piece : public PiecePrimitive
 {
   public:
     explicit Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool moved);
+    explicit Piece(PiecePrimitive primitive, Position pos) : PiecePrimitive(primitive), pos_(pos)
+    {
+    }
 
     const Position &GetPos() const
     {
         return pos_;
+    }
+
+    PiecePrimitive GetPrimitive() const
+    {
+        return PiecePrimitive(pieceType_, GetColor(), IsMoved());
     }
 
     static bool CanMove(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,

@@ -58,7 +58,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
     {
         shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
 
-        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 32);
+        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->Size(), 32);
         EXPECT_EQ(shatranj.PlaySeq({"a2a3"}), true);
         EXPECT_EQ(shatranj.GetBoard()->Revert(1), true);
         for (auto citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
@@ -67,30 +67,27 @@ TEST(SampleCaptureTest_Piyade, Positive)
             {
                 std::stringstream tempstrcomb;
                 tempstrcomb << citr << intitr;
+                auto piece =
+                    shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position(std::string(tempstrcomb.str())));
+
                 if (intitr == 8 || intitr == 1 || intitr == 2 || intitr == 7)
                 {
-                    std::cout << "checking existance " << tempstrcomb.str() << std::endl;
-                    EXPECT_EQ(shatranj.GetBoard()
-                                  ->GetPieces()
-                                  ->GetPieceByVal(shatranj::Position(std::string(tempstrcomb.str())))
-                                  .has_value(),
-                              true);
+                    std::cout << "checking existance " << tempstrcomb.str() << " piece pos "
+                              << piece->GetPos().ToString() << std::endl;
+                    EXPECT_EQ(piece.has_value(), true);
+                    EXPECT_EQ(tempstrcomb.str(), piece->GetPos().ToString());
                 }
                 else
                 {
                     std::cout << "checking existance " << tempstrcomb.str() << std::endl;
-                    EXPECT_EQ(shatranj.GetBoard()
-                                  ->GetPieces()
-                                  ->GetPieceByVal(shatranj::Position(std::string(tempstrcomb.str())))
-                                  .has_value(),
-                              false);
+                    EXPECT_EQ(piece.has_value(), false);
                 }
             }
         }
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5"}), true);
-        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 32);
+        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->Size(), 32);
         EXPECT_EQ(shatranj.PlaySeq({"a4b5"}), true);
-        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->size(), 31);
+        EXPECT_EQ(shatranj.GetBoard()->GetPieces()->Size(), 31);
     }
     {
         shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
@@ -253,8 +250,10 @@ TEST(SampleCaptureTest_LeakTest, Positive)
 
 TEST(SampleCaptureTest_DrawTest, Positive)
 {
+
     {
         shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
                                     "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
                   true);
@@ -274,23 +273,42 @@ TEST(SampleCaptureTest_DrawTest, Positive)
         EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
                   false); // shah can not take the piyade because it is being protected by fill
         EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3", "c3d1",
-                                    "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "f1g1"}),
+                                    "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "f1g1"},
+                                   true),
                   true);
-        EXPECT_EQ(shatranj.PlaySeq({"d8d7"}), false);
+        EXPECT_EQ(shatranj.PlaySeq({"d8d7"}, true), false);
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
+    }
+    {
 
-        EXPECT_EQ(shatranj.PlaySeq({"d8c7", "e5d7"}), true);
-        // print board
-        std::cout << *(shatranj.GetBoard()) << std::endl;
-        EXPECT_EQ(shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kDraw, true);
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+
+        EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
+                                    "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4", "e6e5",
+                                    "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"c8d8"}), true);
+        EXPECT_EQ(shatranj.PlaySeq({"d5b5"}),
+                  false); // is check should return false and seq should fail, since rook is next to king
+        EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5", "g8f6", "b1c3",
+                                    "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"c1c3"}),
+                  false); // is check should return false and seq should fail, since piyade is next to king
+        EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
+                  false); // shah can not take the piyade because it is being protected by fill
+        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3", "c3d1",
+                                    "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "e5d7"},
+                                   true),
+                  true);
+        EXPECT_EQ(shatranj.PlaySeq({"d8d7"}, true), true);
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kDraw);
-        EXPECT_EQ(shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kDraw, true);
-        EXPECT_EQ(shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kDraw, true);
-        std::cout << *(shatranj.GetBoard()) << std::endl;
-        EXPECT_EQ(shatranj.PlaySeq({"c7d7"}), false); // because of draw
-        EXPECT_EQ(shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kDraw, true);
-        std::cout << *(shatranj.GetBoard()) << std::endl;
-        shatranj.GetBoard()->Revert(1000);
-        std::cout << *(shatranj.GetBoard()) << std::endl;
+        EXPECT_EQ(shatranj.PlaySeq({"f1g1"}, true), false);
+        EXPECT_EQ(shatranj.PlaySeq({"f1g2"}, true), false);
     }
 }
 
