@@ -18,33 +18,34 @@ Shatranj::Shatranj(std::string player1, std::string player2)
 }
 void Shatranj::InitializeBoard()
 {
-    board_->AddPiece(Rook(Position("a1"), Color::kWhite));
-    board_->AddPiece(Horse(Position("b1"), Color::kWhite));
-    board_->AddPiece(Fil(Position("c1"), Color::kWhite));
-    board_->AddPiece(Vizier(Position("d1"), Color::kWhite));
-    board_->AddPiece(Shah(Position("e1"), Color::kWhite));
-    board_->AddPiece(Fil(Position("f1"), Color::kWhite));
-    board_->AddPiece(Horse(Position("g1"), Color::kWhite));
-    board_->AddPiece(Rook(Position("h1"), Color::kWhite));
+    board_->AddPiece(FromChar('R'), Position("a1"));
+    board_->AddPiece(FromChar('H'), Position("b1"));
+    board_->AddPiece(FromChar('F'), Position("c1"));
+    board_->AddPiece(FromChar('V'), Position("d1"));
+    board_->AddPiece(FromChar('S'), Position("e1"));
+    board_->AddPiece(FromChar('F'), Position("f1"));
+    board_->AddPiece(FromChar('H'), Position("g1"));
+    board_->AddPiece(FromChar('R'), Position("h1"));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
         ssinst << citr << "2";
-        board_->AddPiece(Piyade(Position(ssinst.str()), Color::kWhite));
+        board_->AddPiece(FromChar('P'), Position(ssinst.str()));
     }
-    board_->AddPiece(Rook(Position("a8"), Color::kBlack));
-    board_->AddPiece(Horse(Position("b8"), Color::kBlack));
-    board_->AddPiece(Fil(Position("c8"), Color::kBlack));
-    board_->AddPiece(Vizier(Position("d8"), Color::kBlack));
-    board_->AddPiece(Shah(Position("e8"), Color::kBlack));
-    board_->AddPiece(Fil(Position("f8"), Color::kBlack));
-    board_->AddPiece(Horse(Position("g8"), Color::kBlack));
-    board_->AddPiece(Rook(Position("h8"), Color::kBlack));
+
+    board_->AddPiece(FromChar('r'), Position("a8"));
+    board_->AddPiece(FromChar('h'), Position("b8"));
+    board_->AddPiece(FromChar('f'), Position("c8"));
+    board_->AddPiece(FromChar('v'), Position("d8"));
+    board_->AddPiece(FromChar('s'), Position("e8"));
+    board_->AddPiece(FromChar('f'), Position("f8"));
+    board_->AddPiece(FromChar('h'), Position("g8"));
+    board_->AddPiece(FromChar('r'), Position("h8"));
     for (const char citr : std::vector<char>{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'})
     {
         std::stringstream ssinst;
         ssinst << citr << "7";
-        board_->AddPiece(Piyade(Position(ssinst.str()), Color::kBlack));
+        board_->AddPiece(FromChar('p'), Position(ssinst.str()));
     }
 }
 std::optional<std::pair<std::string, std::string>> Shatranj::ParseInput(const std::string &input)

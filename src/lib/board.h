@@ -51,6 +51,8 @@ class Board : public std::enable_shared_from_this<Board>
     bool Revert(int move_count = 1);
     static Piece PromotePiyade(Piece &piyade);
     static Piece DemotePromoted(Piece &promoted);
+    static PiecePrimitive PromotePiyade(PiecePrimitive &piyade);
+    static PiecePrimitive DemotePromoted(PiecePrimitive &promoted);
     bool WouldBeInCheck(const Movement &controlling);
     bool OpponnentCanCapturePos(const Position &pos);
     bool IsCheck(Color color);
@@ -77,7 +79,7 @@ class Board : public std::enable_shared_from_this<Board>
         return pieces_;
     }
     void PrintValidMoves();
-    bool AddPiece(Piece piece);
+    bool AddPiece(const PiecePrimitive &piece, const Position &pos);
     std::string GenerateFEN(bool includeCounters = true) const;
     void ApplyFEN(const std::string &fen);
 

@@ -81,11 +81,11 @@ class PieceGroup
     {
         return blackShahPos_;
     }
+    std::optional<PiecePrimitive *> GetPiece(const Position &pos);
 
   private:
     void RemovePieceNoCounterUpdate(const Position &pos);
     Piece FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primitr);
-    std::optional<PiecePrimitive *> GetPiece(const Position &pos);
     std::vector<PiecePrimitive> pieces_primitive_;
     KeyBasedMemory<std::string, std::vector<Movement>> possibleMovesMemory_;
     constexpr static bool inline kDebug = kDebugGlobal;

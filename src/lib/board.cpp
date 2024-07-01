@@ -175,7 +175,7 @@ bool Board::MovePiece(Position frompos, Position topos)
         {
             auto promoted_piece = PromotePiyade(piece);
             RemovePiece(piece.GetPos());
-            AddPiece(promoted_piece);
+            AddPiece(promoted_piece, piece.GetPos());
             promoted = true;
         }
     }
@@ -215,7 +215,7 @@ bool Board::Revert(int move_count)
         }
 
         GetPieces()->MovePiece(last_move->to, last_move->from);
-        auto piece_opt = GetPieces()->GetPieceByVal(last_move->from);
+        auto piece_opt = GetPieces()->GetPiece(last_move->from);
         if (!piece_opt)
         {
             if constexpr (kDebug)
@@ -225,17 +225,17 @@ bool Board::Revert(int move_count)
             std::cout << "Piece not found, illogical board state at " << last_move->to.ToString() << std::endl;
             throw std::runtime_error("Piece not found, illogical board state at " + last_move->to.ToString());
         }
-        auto piece = *piece_opt;
+        auto *piece = *piece_opt;
         if (last_move->promoted)
         {
-            Piece demoted_piece = DemotePromoted(piece);
-            RemovePiece(piece.GetPos());
-            AddPiece(demoted_piece);
+            PiecePrimitive demoted_piece = DemotePromoted(*piece);
+            RemovePiece(last_move->from);
+            AddPiece(demoted_piece, last_move->from);
         }
 
         if (last_move->captured != nullptr)
         {
-            AddPiece(*last_move->captured);
+            AddPiece(last_move->captured->GetPrimitive(), last_move->captured->GetPos());
         }
         if (last_move->color == Color::kBlack)
         {
@@ -290,6 +290,15 @@ Piece Board::PromotePiyade(Piece &piyade)
 Piece Board::DemotePromoted(Piece &promoted)
 {
     return Piyade(promoted.GetPos(), promoted.GetColor());
+}
+
+PiecePrimitive Board::PromotePiyade(PiecePrimitive &piyade)
+{
+    return PiecePrimitive(ChessPieceEnum::kVizier, piyade.GetColor(), piyade.IsMoved());
+}
+PiecePrimitive Board::DemotePromoted(PiecePrimitive &promoted)
+{
+    return PiecePrimitive(ChessPieceEnum::kPiyade, promoted.GetColor(), promoted.IsMoved());
 }
 
 GameState Board::GetBoardState()
@@ -491,12 +500,12 @@ const Player &Board::GetPlayer(Color color) const
     return players_[0];
 }
 
-bool Board::AddPiece(Piece piece)
+bool Board::AddPiece(const PiecePrimitive &piece, const Position &pos)
 {
-    auto res = pieces_->AddPiece(piece.GetPrimitive(), piece.GetPos());
+    auto res = pieces_->AddPiece(piece, pos);
     if (!res)
     {
-        std::cout << "Adding " << piece.GetPos().ToString() << " failed" << std::endl;
+        std::cout << "Adding " << pos.ToString() << " failed" << std::endl;
         return false;
     }
 
@@ -624,7 +633,7 @@ void Board::ApplyFEN(const std::string &fen)
                 {
                     std::cout << "Adding " << piece << " at row:" << row << " col:" << col << std::endl;
                 }
-                AddPiece(FromChar(piece, Position(std::make_pair(7 - col, 7 - row))));
+                AddPiece(FromChar(piece), Position(std::make_pair(7 - col, 7 - row)));
             }
             col--;
         }

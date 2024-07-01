@@ -387,4 +387,37 @@ static Piece FromChar(char piecechar, Position pos)
 
     throw std::runtime_error("Invalid piece char: " + std::to_string(piecechar));
 }
+
+static PiecePrimitive FromChar(char piecechar)
+{
+    switch (piecechar)
+    {
+    case 'P':
+        return PiecePrimitive(ChessPieceEnum::kPiyade, Color::kWhite, false);
+    case 'p':
+        return PiecePrimitive(ChessPieceEnum::kPiyade, Color::kBlack, false);
+    case 'V':
+        return PiecePrimitive(ChessPieceEnum::kVizier, Color::kWhite, false);
+    case 'v':
+        return PiecePrimitive(ChessPieceEnum::kVizier, Color::kBlack, false);
+    case 'S':
+        return PiecePrimitive(ChessPieceEnum::kShah, Color::kWhite, false);
+    case 's':
+        return PiecePrimitive(ChessPieceEnum::kShah, Color::kBlack, false);
+    case 'H':
+        return PiecePrimitive(ChessPieceEnum::kHorse, Color::kWhite, false);
+    case 'h':
+        return PiecePrimitive(ChessPieceEnum::kHorse, Color::kBlack, false);
+    case 'F':
+        return PiecePrimitive(ChessPieceEnum::kFil, Color::kWhite, false);
+    case 'f':
+        return PiecePrimitive(ChessPieceEnum::kFil, Color::kBlack, false);
+    case 'R':
+        return PiecePrimitive(ChessPieceEnum::kRook, Color::kWhite, false);
+    case 'r':
+        return PiecePrimitive(ChessPieceEnum::kRook, Color::kBlack, false);
+    }
+
+    throw std::runtime_error("Invalid piece char: " + std::to_string(piecechar));
+}
 } // namespace shatranj
