@@ -156,7 +156,7 @@ const std::vector<Movement> &PieceGroup::GetPossibleMoves(Color color, const std
         {
             continue;
         }
-        auto insertable = Piece::GetPossibleMoves(piece.GetPos(), board, piece.GetPieceType(), piece.GetColor());
+        auto insertable = board->GetPossibleMoves(piece.GetPos(), piece.GetPieceType(), piece.GetColor());
         for (auto it = insertable.begin(); it != insertable.end(); it++)
         {
             if (it->from == it->to)
@@ -199,7 +199,13 @@ std::optional<PiecePrimitive *> PieceGroup::GetWhitePtr(size_t index)
         return std::nullopt;
     return &*(pieces_primitive_.begin() + index);
 }
-
+PiecePrimitive *PieceGroup::GetPtr(const Position &pos, Color color)
+{
+    auto *target = &pieces_primitive_[Coord2to1(pos)];
+    if (target->GetPieceType() != ChessPieceEnum::kNone && target->GetColor() == color)
+        return target;
+    return nullptr;
+}
 void PieceGroup::Clear()
 {
     memset((void *)pieces_primitive_.data(), 0, sizeof(PiecePrimitive) * pieces_primitive_.size());

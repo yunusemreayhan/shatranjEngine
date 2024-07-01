@@ -312,17 +312,9 @@ class Piece : public PiecePrimitive
         return PiecePrimitive(GetPieceType(), GetColor(), IsMoved());
     }
 
-    static bool CanMove(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                        Color color);
-    static bool CanThreat(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                          Color color);
-    static bool CanCapture(Position frompos, Position pos, const std::shared_ptr<Board> &board,
-                           ChessPieceEnum pieceType, Color color);
-    static bool CanGo(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
-                      Color color);
+    static bool CanMove(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
+    static bool CanPawnCapture(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
     bool Move(Position pos);
-    static std::vector<Movement> GetPossibleMoves(Position frompos, const std::shared_ptr<Board> &board,
-                                                  ChessPieceEnum pieceType, Color color);
 
     bool operator==(const Piece &other) const
     {

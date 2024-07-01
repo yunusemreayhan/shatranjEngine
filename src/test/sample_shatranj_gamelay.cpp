@@ -39,9 +39,8 @@ void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordina
         return;
     }
     auto lastcapturedpiece = *lastcapturedplace;
-    auto possiblemovesoflastcapturedpiece =
-        shatranj::Piece::GetPossibleMoves(lastcapturedpiece.GetPos(), shatranj.GetBoard(),
-                                          lastcapturedpiece.GetPieceType(), lastcapturedpiece.GetColor());
+    auto possiblemovesoflastcapturedpiece = shatranj.GetBoard()->GetPossibleMoves(
+        lastcapturedpiece.GetPos(), lastcapturedpiece.GetPieceType(), lastcapturedpiece.GetColor());
     for (const auto &move : possiblemovesoflastcapturedpiece)
     {
         auto found = std::find(expectedmoves.begin(), expectedmoves.end(), move.ToString()) != expectedmoves.end();

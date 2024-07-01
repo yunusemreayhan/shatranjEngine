@@ -72,7 +72,7 @@ template <typename TypeOfKey, typename TypeOfHold> class KeyBasedMemory
     }
 
   private:
-    const size_t maxkeyCount_ = 1000;
+    const size_t maxkeyCount_ = 100000;
     std::queue<TypeOfKey> keys_;
     std::map<TypeOfKey, TypeOfHold> moves_;
 };

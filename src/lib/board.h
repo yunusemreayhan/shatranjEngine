@@ -67,6 +67,11 @@ class Board : public std::enable_shared_from_this<Board>
     bool Play(const std::string &from_pos, const std::string &to_pos);
     std::string BoardToString() const;
     double EvaluateBoard(Color color);
+    bool CanPawnCapture(ChessPieceEnum pieceType, const Position &frompos, const Position &topos);
+    bool CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, const Position &topos);
+    std::vector<Movement> GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color);
+    bool CanGo(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
+    bool CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType);
     std::variant<double, Movement> MinimaxSearch(std::optional<Movement> playing_move, int &nodesvisited, int depth = 5,
                                                  Color maximizingColor = Color::kWhite, bool randomize = true,
                                                  double alpha = std::numeric_limits<double>::min(),

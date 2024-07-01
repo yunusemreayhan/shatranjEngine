@@ -78,14 +78,100 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
         }
 
         auto *curpiece = *curpieceopt;
-        auto calc = Piece::CanMove(PieceGroup::Coord1to2(i), pos, GetSharedFromThis(), curpiece->GetPieceType(),
-                                   curpiece->GetColor()) ||
-                    Piece::CanCapture(PieceGroup::Coord1to2(i), pos, GetSharedFromThis(), curpiece->GetPieceType(),
-                                      curpiece->GetColor());
-        if (calc)
+        auto frompos = PieceGroup::Coord1to2(i);
+        auto canmove = Piece::CanMove(frompos, pos, curpiece->GetPieceType(), curpiece->GetColor()) &&
+                       CollisionCheck(curpiece->GetPieceType(), frompos, pos);
+        auto cancapture = Piece::CanPawnCapture(frompos, pos, curpiece->GetPieceType(), curpiece->GetColor());
+
+        if (canmove || cancapture)
             return true;
     }
     return false;
+}
+
+std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color)
+{
+    if (GetCurrentTurn() != color)
+    {
+        return {};
+    }
+    std::vector<Movement> possible_moves;
+    const auto &pos_moves = Piece::GetPossibleRegularMoves(pieceType, color);
+    for (const auto &diff : pos_moves)
+    {
+        if (!Piece::CanMultipleMove(pieceType))
+        {
+            Position pos = frompos;
+            pos.Move(diff);
+            if (!pos.IsValid())
+            {
+                continue;
+            }
+            if (Piece::CanMove(frompos, pos, pieceType, color) && CollisionCheck(pieceType, frompos, pos))
+            {
+                auto control = Movement{frompos, pos};
+                if (!WouldBeInCheck(control))
+                    possible_moves.push_back(control);
+            }
+        }
+        else
+        {
+            for (int i = 1; i < 8; i++)
+            {
+                Position pos = frompos;
+                pos.Move(std::make_pair(static_cast<int>(std::floor(diff.Diffx() * i)),
+                                        static_cast<int>(std::floor(diff.Diffy() * i))));
+                if (!pos.IsValid())
+                    continue;
+
+                if (Piece::CanMove(frompos, pos, pieceType, color) && CollisionCheck(pieceType, frompos, pos))
+                {
+                    auto control = Movement{frompos, pos};
+                    if (!WouldBeInCheck(control))
+                        possible_moves.push_back(control);
+                }
+            }
+        }
+    }
+
+    if (pieceType == ChessPieceEnum::kPiyade)
+    {
+        const auto &cap_moves = Piece::GetPossibleCaptureMoves(pieceType, color);
+        for (const auto &diff : cap_moves)
+        {
+            Position pos = frompos;
+            pos.Move(diff);
+            if (!pos.IsValid())
+            {
+                continue;
+            }
+            if (CanPawnCapture(pieceType, frompos, pos))
+            {
+                auto control = Movement{frompos, pos};
+                if (!WouldBeInCheck(control))
+                    possible_moves.push_back(control);
+            }
+        }
+    }
+    return possible_moves;
+}
+
+bool Board::CanGo(Position frompos, Position pos, ChessPieceEnum pieceType, Color color)
+{
+    auto can_capture = Piece::CanPawnCapture(frompos, pos, pieceType, color);
+    auto can_move = Piece::CanMove(frompos, pos, pieceType, color) && CollisionCheck(pieceType, frompos, pos);
+    return can_capture || can_move;
+}
+
+bool Board::CanPawnCapture(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
+{
+    return Piece::CanPawnCapture(frompos, topos, pieceType, currentTurn_) &&
+           GetPieces()->GetPtr(topos, OpponentColor(currentTurn_)) != nullptr;
+}
+
+bool Board::CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType)
+{
+    return Piece::CanJumpOverOthers(pieceType) || IsPathClear(frompos, topos);
 }
 
 bool Board::IsCheck(Color color)
@@ -147,10 +233,10 @@ bool Board::MovePiece(Position frompos, Position topos)
         return false;
     }
 
-    const bool can_move = Piece::CanMove(frompos, topos, GetSharedFromThis(), piece->GetPieceType(), piece->GetColor());
+    const bool can_move = Piece::CanMove(frompos, topos, piece->GetPieceType(), piece->GetColor()) &&
+                          CollisionCheck(piece->GetPieceType(), frompos, topos);
 
-    const bool can_capture =
-        Piece::CanCapture(frompos, topos, GetSharedFromThis(), piece->GetPieceType(), piece->GetColor());
+    const bool can_capture = Piece::CanPawnCapture(frompos, topos, piece->GetPieceType(), piece->GetColor());
 
     if (!can_move && !can_capture)
     {
@@ -321,10 +407,10 @@ GameState Board::GetBoardState()
     }
     else if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
     {
-        if (Piece::CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
-                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor()) ||
-            Piece::CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), GetSharedFromThis(),
-                         current_turn_pieces[0].GetPieceType(), current_turn_pieces[0].GetColor()))
+        if (CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType(),
+                  current_turn_pieces[0].GetColor()) ||
+            CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType(),
+                  current_turn_pieces[0].GetColor()))
         {
             ret = GameState::kDraw;
         }
@@ -642,6 +728,29 @@ void Board::ApplyFEN(const std::string &fen)
     }
     if constexpr (kDebug)
         std::cout << *this << std::endl;
+}
+
+bool Board::CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
+{
+    const auto *frompospiece = GetPieces()->GetPiece(frompos);
+    const auto *piece = GetPieces()->GetPiece(topos);
+    if (piece != nullptr)
+    {
+        if (pieceType != ChessPieceEnum::kPiyade)
+        {
+            if ((piece)->GetColor() == frompospiece->GetColor())
+            {
+                return false;
+            }
+        }
+        else if (pieceType == ChessPieceEnum::kPiyade)
+        {
+            // piyade can not move over another piece
+            return false;
+        }
+    }
+
+    return CanJumpOrPathClear(frompos, topos, pieceType);
 }
 
 double Board::EvaluateBoard(Color color)
