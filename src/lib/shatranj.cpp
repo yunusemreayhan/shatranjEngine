@@ -92,7 +92,7 @@ bool Shatranj::Play(const Movement &input)
     if (kDebug)
         std::cout << "play: " << input.ToString() << std::endl;
 
-    return board_->Play(input, true);
+    return board_->Play(input);
 }
 
 void Shatranj::Run()

@@ -422,7 +422,7 @@ TEST(SampleCaptureTest_MinMax, Negative)
             throw;
         }
         auto duration = std::chrono::high_resolution_clock::now() - start;
-        std::cout << "seach time: " << std::chrono::duration_cast<std::chrono::seconds>(duration).count() << " sec"
+        std::cout << "seach time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms"
                   << std::endl;
         std::cout << std::get<shatranj::Movement>(pickedmove).ToString() << std::endl;
         std::cout << "nodes visited: " << countofnodesvisited << std::endl;

@@ -226,7 +226,7 @@ std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::share
             }
             if (CanMove(frompos, pos, board, pieceType, color))
             {
-                if (!board->WouldBeInCheck(frompos, pos))
+                if (!board->WouldBeInCheck(Movement{frompos, pos}))
                     possible_moves.push_back(Movement(frompos, pos));
             }
         }
@@ -242,7 +242,7 @@ std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::share
 
                 if (CanMove(frompos, pos, board, pieceType, color))
                 {
-                    if (!board->WouldBeInCheck(frompos, pos))
+                    if (!board->WouldBeInCheck(Movement{frompos, pos}))
                         possible_moves.push_back(Movement(frompos, pos));
                 }
             }
@@ -261,7 +261,7 @@ std::vector<Movement> Piece::GetPossibleMoves(Position frompos, const std::share
             }
             if (CanCapture(frompos, pos, board, pieceType, color))
             {
-                if (!board->WouldBeInCheck(frompos, pos))
+                if (!board->WouldBeInCheck(Movement{frompos, pos}))
                     possible_moves.push_back(Movement(frompos, pos));
             }
         }

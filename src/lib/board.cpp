@@ -28,24 +28,22 @@ Board::Board(const std::string &name1, const std::string &name2)
 {
 }
 // would be in check if I move piece to pos
-bool Board::WouldBeInCheck(Position from, Position pos)
+bool Board::WouldBeInCheck(const Movement &controlling)
 {
-    Movement controlling{from, pos};
-    auto curkey = GenerateFEN() + controlling.ToString();
+    auto curkey = GenerateFEN(false) + controlling.ToString();
     if (wouldBeInCheckMemory_.Have(curkey))
     {
         return wouldBeInCheckMemory_.Get(curkey);
     }
 
-    auto control = Movement{from, pos};
     Color color = currentTurn_;
     auto temp = fullMoveNumber_;
-    auto res = Play(control, false);
+    auto res = Play(controlling);
 
     if (!res)
     {
         std::cout << *this << std::endl;
-        std::cout << "Error in WouldBeInCheck, can not control " << control.ToString() << std::endl;
+        std::cout << "Error, can not control " << controlling.ToString() << std::endl;
     }
 
     bool ret_is_check = IsCheck(color);
@@ -56,8 +54,8 @@ bool Board::WouldBeInCheck(Position from, Position pos)
     if (temp != fullMoveNumber_)
     {
         std::cout << *this << std::endl;
-        std::cout << "Error in WouldBeInCheck, full move number changed " << control.ToString() << std::endl;
-        throw std::runtime_error("Error in WouldBeInCheck, full move number changed");
+        std::cout << "Error, full move number changed " << controlling.ToString() << std::endl;
+        throw std::runtime_error("Error, full move number changed");
     }
 
     wouldBeInCheckMemory_.Add(curkey, ret_is_check);
@@ -141,7 +139,7 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     return true;
 }
 
-bool Board::MovePiece(Position frompos, Position topos, bool ctrlCheck)
+bool Board::MovePiece(Position frompos, Position topos)
 {
     auto piece_opt = GetPieces()->GetPieceByVal(frompos);
     auto piece = *piece_opt;
@@ -161,15 +159,6 @@ bool Board::MovePiece(Position frompos, Position topos, bool ctrlCheck)
 
     if (!can_move && !can_capture)
     {
-        return false;
-    }
-
-    if (ctrlCheck && WouldBeInCheck(frompos, topos))
-    {
-        if constexpr (kDebugGlobal)
-        {
-            std::cout << "Would be in check" << std::endl;
-        }
         return false;
     }
 
@@ -312,9 +301,10 @@ Piece Board::DemotePromoted(Piece &promoted)
 GameState Board::GetBoardState()
 {
     GameState ret = GameState::kNormal;
-    if (boardStateMemory_.Have(GenerateFEN()))
+    auto fenkey = GenerateFEN(false);
+    if (boardStateMemory_.Have(fenkey))
     {
-        return boardStateMemory_.Get(GenerateFEN());
+        return boardStateMemory_.Get(fenkey);
     }
     auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
     auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
@@ -350,7 +340,7 @@ GameState Board::GetBoardState()
             ret = GameState::kStalemate;
         }
     }
-    boardStateMemory_.Add(GenerateFEN(), ret);
+    boardStateMemory_.Add(fenkey, ret);
     return ret;
 }
 
@@ -392,7 +382,7 @@ bool Board::Play(const std::string &input)
     return false;
 }
 
-bool Board::Play(const Movement &input, bool ctrlcheck)
+bool Board::Play(const Movement &input)
 {
     if (!input.from.IsValid() || !input.to.IsValid())
     {
@@ -406,15 +396,16 @@ bool Board::Play(const Movement &input, bool ctrlcheck)
         return false;
     }
 
-    return MovePiece(input.from, input.to, ctrlcheck);
+    return MovePiece(input.from, input.to);
 }
 
 bool Board::Play(const std::string &from_pos, const std::string &to_pos)
 {
     if (GetBoardState() != GameState::kNormal)
         return false;
-    
-    return Play(Movement(from_pos, to_pos), true);
+    const auto checking_movemend = Movement(from_pos, to_pos);
+
+    return !WouldBeInCheck(checking_movemend) && Play(checking_movemend);
 }
 
 char *Board::BoardRepresantation::GetBoardReprensentation(Board *board)
@@ -544,7 +535,7 @@ MoveHistory &Board::GetHistory() const
     return *history_;
 }
 
-std::string Board::GenerateFEN() const
+std::string Board::GenerateFEN(bool includeCounters) const
 {
     auto *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
 
@@ -591,7 +582,10 @@ std::string Board::GenerateFEN() const
     //  e4 than e3 is capturable point, no 2 squares move in shatranj
     //}
     // ret += " -";
-    ret += " " + std::to_string(halfMoveClock_) + " " + std::to_string(fullMoveNumber_);
+    if (includeCounters)
+    {
+        ret += " " + std::to_string(halfMoveClock_) + " " + std::to_string(fullMoveNumber_);
+    }
     return ret;
 }
 
@@ -740,7 +734,7 @@ std::variant<double, Movement> Board::MinimaxSearch(std::optional<Movement> play
     bool played_something = false;
     if (playing_move_opt)
     {
-        played_something = Play(*playing_move_opt, true);
+        played_something = Play(*playing_move_opt);
         if (!played_something)
         {
             std::cout << *this << std::endl;

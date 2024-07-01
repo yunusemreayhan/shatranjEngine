@@ -47,11 +47,11 @@ class Board : public std::enable_shared_from_this<Board>
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
     void MoveSuccesful(const Piece &piece, const Position &frompos, const Position &topos);
-    bool MovePiece(Position frompos, Position topos, bool check = true);
+    bool MovePiece(Position frompos, Position topos);
     bool Revert(int move_count = 1);
     static Piece PromotePiyade(Piece &piyade);
     static Piece DemotePromoted(Piece &promoted);
-    bool WouldBeInCheck(Position from, Position pos);
+    bool WouldBeInCheck(const Movement &controlling);
     bool OpponnentCanCapturePos(const Position &pos);
     bool IsCheck(Color color);
     GameState GetBoardState();
@@ -61,7 +61,7 @@ class Board : public std::enable_shared_from_this<Board>
     bool IsPathClear(const Position &from, const Position &target);
     bool IsUnderAttack(int posx, int posy, Player *player); // not used yet
     bool Play(const std::string &input);
-    bool Play(const Movement &input, bool ctrlcheck);
+    bool Play(const Movement &input);
     bool Play(const std::string &from_pos, const std::string &to_pos);
     std::string BoardToString() const;
     double EvaluateBoard(Color color);
@@ -78,7 +78,7 @@ class Board : public std::enable_shared_from_this<Board>
     }
     void PrintValidMoves();
     bool AddPiece(Piece piece);
-    std::string GenerateFEN() const;
+    std::string GenerateFEN(bool includeCounters = true) const;
     void ApplyFEN(const std::string &fen);
 
     void RemovePiece(Piece &piece);

@@ -108,7 +108,7 @@ std::vector<Piece> PieceGroup::GetSubPieces(Color color)
 
 const std::vector<Movement> &PieceGroup::GetPossibleMoves(Color color, const std::shared_ptr<Board> &board)
 {
-    auto fen = board->GenerateFEN();
+    auto fen = board->GenerateFEN(false);
     if (possibleMovesMemory_.Have(fen))
     {
         return possibleMovesMemory_.Get(fen);
