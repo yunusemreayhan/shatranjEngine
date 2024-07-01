@@ -104,7 +104,7 @@ bool PieceGroup::MovePiece(const Position &frompos, const Position &topos)
     return true;
 }
 
-std::optional<PiecePrimitive *> PieceGroup::GetPiece(const Position &pos)
+PiecePrimitive *PieceGroup::GetPiece(const Position &pos)
 {
     PiecePrimitive *ret = &pieces_primitive_[Coord2to1(pos)];
     if (ret->GetPieceType() != ChessPieceEnum::kNone)
@@ -114,7 +114,7 @@ std::optional<PiecePrimitive *> PieceGroup::GetPiece(const Position &pos)
     {
         std::cout << "No piece at " << pos.ToString() << " set says it must exist" << std::endl;
     }
-    return std::nullopt;
+    return nullptr;
 }
 
 std::optional<Piece> PieceGroup::GetPieceByVal(const Position &pos)

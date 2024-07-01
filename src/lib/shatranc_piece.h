@@ -371,40 +371,7 @@ class Shah : public Piece
 
 using ChessPiece = std::variant<Rook, Piyade, Vizier, Shah, Horse, Fil>;
 
-static Piece FromChar(char piecechar, Position pos)
-{
-    switch (piecechar)
-    {
-    case 'P':
-        return Piyade(pos, Color::kWhite);
-    case 'p':
-        return Piyade(pos, Color::kBlack);
-    case 'V':
-        return Vizier(pos, Color::kWhite);
-    case 'v':
-        return Vizier(pos, Color::kBlack);
-    case 'S':
-        return Shah(pos, Color::kWhite);
-    case 's':
-        return Shah(pos, Color::kBlack);
-    case 'H':
-        return Horse(pos, Color::kWhite);
-    case 'h':
-        return Horse(pos, Color::kBlack);
-    case 'F':
-        return Fil(pos, Color::kWhite);
-    case 'f':
-        return Fil(pos, Color::kBlack);
-    case 'R':
-        return Rook(pos, Color::kWhite);
-    case 'r':
-        return Rook(pos, Color::kBlack);
-    }
-
-    throw std::runtime_error("Invalid piece char: " + std::to_string(piecechar));
-}
-
-static PiecePrimitive FromChar(char piecechar)
+static inline PiecePrimitive FromChar(char piecechar)
 {
     switch (piecechar)
     {

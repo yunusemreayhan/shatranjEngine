@@ -82,7 +82,7 @@ class PieceGroup
     {
         return blackShahPos_;
     }
-    std::optional<PiecePrimitive *> GetPiece(const Position &pos);
+    PiecePrimitive *GetPiece(const Position &pos);
 
   private:
     void RemovePieceNoCounterUpdate(const Position &pos);

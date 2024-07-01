@@ -15,10 +15,10 @@ struct HistoryPoint
 {
     Position from;
     Position to;
+    ChessPieceEnum lastMovedPieceType;
     std::unique_ptr<Piece> captured;
     bool promoted;
     Color color;
-    ChessPieceEnum lastMovedPieceType;
 
     HistoryPoint(Position frompos, Position topos, ChessPieceEnum lastMovedPieceType, std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
 };

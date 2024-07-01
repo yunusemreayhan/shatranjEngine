@@ -69,7 +69,7 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
 {
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto curpieceopt = OpponentColor((*GetPieces()->GetPiece(pos))->GetColor()) == Color::kBlack
+        auto curpieceopt = OpponentColor(GetPieces()->GetPiece(pos)->GetColor()) == Color::kBlack
                                ? GetPieces()->GetBlackPtr(i)
                                : GetPieces()->GetWhitePtr(i);
         if (!curpieceopt)
@@ -137,8 +137,7 @@ bool Board::IsPathClear(const Position &from, const Position &target)
 
 bool Board::MovePiece(Position frompos, Position topos)
 {
-    auto piece_opt = GetPieces()->GetPiece(frompos);
-    auto *piece = *piece_opt;
+    auto *piece = GetPieces()->GetPiece(frompos);
     if (currentTurn_ != piece->GetColor())
     {
         if constexpr (kDebugGlobal)
@@ -169,8 +168,7 @@ bool Board::MovePiece(Position frompos, Position topos)
 
     bool promoted = false;
     GetPieces()->MovePiece(frompos, topos);
-    piece_opt = GetPieces()->GetPiece(topos);
-    piece = *piece_opt;
+    piece = GetPieces()->GetPiece(topos);
     if (piece->IsPiyade())
     {
         if (topos.Gety() == 0 || topos.Gety() == 7)
@@ -217,8 +215,8 @@ bool Board::Revert(int move_count)
         }
 
         GetPieces()->MovePiece(last_move->to, last_move->from);
-        auto piece_opt = GetPieces()->GetPiece(last_move->from);
-        if (!piece_opt)
+        auto *piece = GetPieces()->GetPiece(last_move->from);
+        if (nullptr == piece)
         {
             if constexpr (kDebug)
             {
@@ -227,7 +225,6 @@ bool Board::Revert(int move_count)
             std::cout << "Piece not found, illogical board state at " << last_move->to.ToString() << std::endl;
             throw std::runtime_error("Piece not found, illogical board state at " + last_move->to.ToString());
         }
-        auto *piece = *piece_opt;
         if (last_move->promoted)
         {
             PiecePrimitive demoted_piece = DemotePromoted(*piece);
@@ -402,8 +399,8 @@ bool Board::Play(const Movement &input)
         return false;
     }
 
-    auto piece = pieces_->GetPiece(input.from);
-    if (!piece || (*piece)->GetColor() != currentTurn_)
+    auto *piece = pieces_->GetPiece(input.from);
+    if (nullptr == piece || piece->GetColor() != currentTurn_)
     {
         return false;
     }
@@ -654,12 +651,11 @@ double Board::EvaluateBoard(Color color)
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
         auto pos = PieceGroup::Coord1to2(i);
-        auto pieceopt = GetPieces()->GetPiece(pos);
-        if (!pieceopt)
+        auto *piece = GetPieces()->GetPiece(pos);
+        if (nullptr == piece)
         {
             continue;
         }
-        auto *piece = *pieceopt;
         if (piece->GetColor() == color)
         {
             score += piece->GetPiecePoint(pos);
