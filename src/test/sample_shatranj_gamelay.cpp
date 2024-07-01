@@ -230,10 +230,10 @@ TEST(SampleCaptureTest_Fil, Positive)
 
 TEST(SampleCaptureTest_LeakTest, Positive)
 {
-    EXPECT_EQ(sizeof(shatranj::Piece), 3);
-    EXPECT_EQ(sizeof(shatranj::Piyade), 3);
-    EXPECT_EQ(sizeof(shatranj::Shah), 3);
-    EXPECT_EQ(sizeof(shatranj::PiecePrimitive), 2);
+    EXPECT_EQ(sizeof(shatranj::Piece), 2);
+    EXPECT_EQ(sizeof(shatranj::Piyade), 2);
+    EXPECT_EQ(sizeof(shatranj::Shah), 2);
+    EXPECT_EQ(sizeof(shatranj::PiecePrimitive), 1);
 
     if constexpr (shatranj::kStressTest)
         for (int i = 0; i < 1000; i++)

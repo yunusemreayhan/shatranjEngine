@@ -126,7 +126,7 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     Position cur(std::make_pair(cur_x, cur_y));
     while (cur != target)
     {
-        if (GetPieces()->GetPieceByVal(cur))
+        if (GetPieces()->GetPiece(cur))
         {
             return false;
         }
@@ -137,21 +137,21 @@ bool Board::IsPathClear(const Position &from, const Position &target)
 
 bool Board::MovePiece(Position frompos, Position topos)
 {
-    auto piece_opt = GetPieces()->GetPieceByVal(frompos);
-    auto piece = *piece_opt;
-    if (currentTurn_ != piece.GetColor())
+    auto piece_opt = GetPieces()->GetPiece(frompos);
+    auto *piece = *piece_opt;
+    if (currentTurn_ != piece->GetColor())
     {
         if constexpr (kDebugGlobal)
         {
-            std::cout << "its turn of " << currentTurn_ << " not " << piece.GetColor() << std::endl;
+            std::cout << "its turn of " << currentTurn_ << " not " << piece->GetColor() << std::endl;
         }
         return false;
     }
 
-    const bool can_move = Piece::CanMove(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor());
+    const bool can_move = Piece::CanMove(frompos, topos, GetSharedFromThis(), piece->GetPieceType(), piece->GetColor());
 
     const bool can_capture =
-        Piece::CanCapture(frompos, topos, GetSharedFromThis(), piece.GetPieceType(), piece.GetColor());
+        Piece::CanCapture(frompos, topos, GetSharedFromThis(), piece->GetPieceType(), piece->GetColor());
 
     if (!can_move && !can_capture)
     {
@@ -163,27 +163,27 @@ bool Board::MovePiece(Position frompos, Position topos)
     if (captured_piece)
     {
         captured_piece_uptr = std::make_unique<Piece>(*captured_piece);
-        if ((piece.IsPiyade() && can_capture) || (!piece.IsPiyade() && can_move))
+        if ((piece->IsPiyade() && can_capture) || (!piece->IsPiyade() && can_move))
             RemovePiece(topos);
     }
 
     bool promoted = false;
     GetPieces()->MovePiece(frompos, topos);
-    piece_opt = GetPieces()->GetPieceByVal(topos);
+    piece_opt = GetPieces()->GetPiece(topos);
     piece = *piece_opt;
-    if (piece.IsPiyade())
+    if (piece->IsPiyade())
     {
         if (topos.Gety() == 0 || topos.Gety() == 7)
         {
-            auto promoted_piece = PromotePiyade(piece);
-            RemovePiece(piece.GetPos());
-            AddPiece(promoted_piece, piece.GetPos());
+            auto promoted_piece = PromotePiyade(*piece);
+            RemovePiece(topos);
+            AddPiece(promoted_piece, topos);
             promoted = true;
         }
     }
-    GetHistory().AddMove(frompos, topos, piece.GetPieceType(), std::move(captured_piece_uptr), promoted,
-                         piece.GetColor());
-    MoveSuccesful(piece, frompos, topos);
+    GetHistory().AddMove(frompos, topos, piece->GetPieceType(), std::move(captured_piece_uptr), promoted,
+                         piece->GetColor());
+    MoveSuccesful(*piece, frompos, topos);
 
     return true;
 }
@@ -261,7 +261,7 @@ bool Board::Revert(int move_count)
     return true;
 }
 
-void Board::MoveSuccesful(const Piece &piece, const Position & /*fromPos*/, const Position & /*toPos*/)
+void Board::MoveSuccesful(const PiecePrimitive &piece, const Position & /*fromPos*/, const Position & /*toPos*/)
 {
     // TODO(yunus) :  not sure if needed but last move textual iformation could be saved later
     if (piece.IsPiyade())
@@ -402,8 +402,8 @@ bool Board::Play(const Movement &input)
         return false;
     }
 
-    auto piece = pieces_->GetPieceByVal(input.from);
-    if (!piece || piece->GetColor() != currentTurn_)
+    auto piece = pieces_->GetPiece(input.from);
+    if (!piece || (*piece)->GetColor() != currentTurn_)
     {
         return false;
     }
@@ -653,19 +653,20 @@ double Board::EvaluateBoard(Color color)
 
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto pieceopt = GetPieces()->Get(i);
+        auto pos = PieceGroup::Coord1to2(i);
+        auto pieceopt = GetPieces()->GetPiece(pos);
         if (!pieceopt)
         {
             continue;
         }
-        auto piece = *pieceopt;
-        if (piece.GetColor() == color)
+        auto *piece = *pieceopt;
+        if (piece->GetColor() == color)
         {
-            score += piece.GetPiecePoint();
+            score += piece->GetPiecePoint(pos);
         }
         else
         {
-            score -= piece.GetPiecePoint();
+            score -= piece->GetPiecePoint(pos);
         }
     }
     return score;

@@ -31,8 +31,10 @@ const std::vector<Step> PiecePrimitive::kPiyadeBlackCaptureSteps = {{1, -1}, {-1
 const std::vector<Step> PiecePrimitive::kEmptySteps = {};
 
 PiecePrimitive::PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved)
-    : pieceType_(pieceType), isWhite_(color == Color::kWhite), moved_(moved)
 {
+    SetPieceType(pieceType);
+    SetWhite(color == Color::kWhite);
+    SetMoved(moved);
 }
 
 Piece::Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool moved)
@@ -55,11 +57,10 @@ bool Piece::CanMove(Position frompos, Position pos, const std::shared_ptr<Board>
     }
 
     auto diff = pos.Diff(frompos);
+    auto regmoves = GetPossibleRegularMoves(pieceType, color);
     if (!CanMultipleMove(pieceType))
     {
-        if (std::find(GetPossibleRegularMoves(pieceType, color).begin(),
-                      GetPossibleRegularMoves(pieceType, color).end(),
-                      diff) == GetPossibleRegularMoves(pieceType, color).end())
+        if (std::find(regmoves.begin(), regmoves.end(), diff) == regmoves.end())
         {
             return false;
         }
@@ -72,9 +73,8 @@ bool Piece::CanMove(Position frompos, Position pos, const std::shared_ptr<Board>
             if (diff.Diffx() % i == 0 && diff.Diffy() % i == 0)
             {
                 Step multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
-                const auto findres = std::find(GetPossibleRegularMoves(pieceType, color).begin(),
-                                               GetPossibleRegularMoves(pieceType, color).end(), multiplemoveinstance);
-                if (findres != GetPossibleRegularMoves(pieceType, color).end())
+                const auto findres = std::find(regmoves.begin(), regmoves.end(), multiplemoveinstance);
+                if (findres != regmoves.end())
                 {
                     check = true;
                     break;
@@ -136,12 +136,11 @@ bool Piece::CanThreat(Position frompos, Position pos, const std::shared_ptr<Boar
     {
         return false;
     }
+    auto capmoves = GetPossibleCaptureMoves(pieceType, color);
     auto diff = pos.Diff(frompos);
     if (!CanMultipleMove(pieceType))
     {
-        if (std::find(GetPossibleCaptureMoves(pieceType, color).begin(),
-                      GetPossibleCaptureMoves(pieceType, color).end(),
-                      diff) == GetPossibleCaptureMoves(pieceType, color).end())
+        if (std::find(capmoves.begin(), capmoves.end(), diff) == capmoves.end())
         {
             return false;
         }
@@ -154,9 +153,8 @@ bool Piece::CanThreat(Position frompos, Position pos, const std::shared_ptr<Boar
             if (diff.Diffx() % i == 0 && diff.Diffy() % i == 0)
             {
                 const auto multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
-                const auto findres = std::find(GetPossibleCaptureMoves(pieceType, color).begin(),
-                                               GetPossibleCaptureMoves(pieceType, color).end(), multiplemoveinstance);
-                if (findres != GetPossibleCaptureMoves(pieceType, color).end())
+                const auto findres = std::find(capmoves.begin(), capmoves.end(), multiplemoveinstance);
+                if (findres != capmoves.end())
                 {
                     check = true;
                     break;
@@ -205,7 +203,7 @@ bool Piece::Move(Position pos)
         return false;
     }
     pos_ = pos;
-    moved_ = true;
+    SetMoved(true);
     return true;
 }
 

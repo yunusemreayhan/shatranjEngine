@@ -46,7 +46,7 @@ class Board : public std::enable_shared_from_this<Board>
     const Player &GetPlayer(Color color) const;
 
     // Implement move logic functions here (similar to the provided ShatranjPiece functions)
-    void MoveSuccesful(const Piece &piece, const Position &frompos, const Position &topos);
+    void MoveSuccesful(const PiecePrimitive &piece, const Position &frompos, const Position &topos);
     bool MovePiece(Position frompos, Position topos);
     bool Revert(int move_count = 1);
     static Piece PromotePiyade(Piece &piyade);

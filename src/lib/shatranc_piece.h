@@ -30,9 +30,9 @@ class PiecePrimitive // positionless piece
   public:
     PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved);
 
-    constexpr char GetSymbol() const
+    inline constexpr char GetSymbol() const
     {
-        switch (pieceType_)
+        switch (GetPieceType())
         {
         case ChessPieceEnum::kPiyade:
             return 'P';
@@ -53,9 +53,9 @@ class PiecePrimitive // positionless piece
         return ' ';
     }
 
-    constexpr std::string_view GetName() const
+    inline constexpr std::string_view GetName() const
     {
-        switch (pieceType_)
+        switch (GetPieceType())
         {
         case ChessPieceEnum::kPiyade:
             return "Piyade";
@@ -74,11 +74,6 @@ class PiecePrimitive // positionless piece
         }
 
         return " ";
-    }
-
-    constexpr ChessPieceEnum GetPieceType() const
-    {
-        return pieceType_;
     }
 
     const static std::vector<Step> kRookSteps;
@@ -129,7 +124,7 @@ class PiecePrimitive // positionless piece
 
     const static std::vector<Step> kEmptySteps;
 
-    static constexpr inline const std::vector<Step> &GetPossibleCaptureMoves(ChessPieceEnum pieceType, Color color)
+    inline static constexpr const std::vector<Step> &GetPossibleCaptureMoves(ChessPieceEnum pieceType, Color color)
     {
         switch (pieceType)
         {
@@ -155,7 +150,7 @@ class PiecePrimitive // positionless piece
         return kEmptySteps;
     }
 
-    static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
+    inline static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
     {
         switch (pieceType)
         {
@@ -173,7 +168,7 @@ class PiecePrimitive // positionless piece
         return false;
     }
 
-    static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
+    inline static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
     {
         switch (pieceType)
         {
@@ -191,51 +186,112 @@ class PiecePrimitive // positionless piece
         return false;
     }
 
-    constexpr bool IsPiyade() const
+    inline constexpr bool IsPiyade() const
     {
-        return pieceType_ == ChessPieceEnum::kPiyade;
+        return GetPieceType() == ChessPieceEnum::kPiyade;
     }
 
-    constexpr bool IsVizier() const
+    inline constexpr bool IsVizier() const
     {
-        return pieceType_ == ChessPieceEnum::kVizier;
+        return GetPieceType() == ChessPieceEnum::kVizier;
     }
 
-    constexpr bool IsShah() const
+    inline constexpr bool IsShah() const
     {
-        return pieceType_ == ChessPieceEnum::kShah;
+        return GetPieceType() == ChessPieceEnum::kShah;
     }
 
-    constexpr bool IsHorse() const
+    inline constexpr bool IsHorse() const
     {
-        return pieceType_ == ChessPieceEnum::kHorse;
+        return GetPieceType() == ChessPieceEnum::kHorse;
     }
 
     constexpr bool IsFil() const
     {
-        return pieceType_ == ChessPieceEnum::kFil;
+        return GetPieceType() == ChessPieceEnum::kFil;
     }
 
-    constexpr bool IsRook() const
+    inline constexpr bool IsRook() const
     {
-        return pieceType_ == ChessPieceEnum::kRook;
+        return GetPieceType() == ChessPieceEnum::kRook;
     }
 
-    constexpr bool IsMoved() const
+    inline Color GetColor() const
     {
-        return moved_;
+        return IsWhite() ? Color::kWhite : Color::kBlack;
     }
 
-    Color GetColor() const
+    inline static double GetCenterDistance(Position pos)
     {
-        return isWhite_ ? Color::kWhite : Color::kBlack;
+        const static Position kCenter(4, 4);
+        auto res = kCenter.Diff(pos);
+        return res.OklideanDistance();
+    }
+
+    inline double GetVizierDistanceForPiyade(Position pos) const
+    {
+        if (GetColor() == Color::kBlack)
+        {
+            return std::abs(0 - pos.Gety());
+        }
+
+        return std::abs(7 - pos.Gety());
+    }
+
+    inline double GetPiecePoint(Position pos) const
+    {
+        switch (GetPieceType())
+        {
+        case ChessPieceEnum::kPiyade:
+            return 1.0 / (1 + GetVizierDistanceForPiyade(pos)) / GetCenterDistance(pos);
+        case ChessPieceEnum::kVizier:
+            return 2.0 / GetCenterDistance(pos);
+        case ChessPieceEnum::kShah:
+            return 1.0 / GetCenterDistance(pos);
+        case ChessPieceEnum::kHorse:
+            return 3.0 / GetCenterDistance(pos);
+        case ChessPieceEnum::kFil:
+            return 2.0 / GetCenterDistance(pos);
+        case ChessPieceEnum::kRook:
+            return 4.0 / GetCenterDistance(pos);
+        case ChessPieceEnum::kNone:
+            return 0 * GetCenterDistance(pos);
+        }
+
+        return 0;
+    }
+
+    bool IsWhite() const
+    {
+        return static_cast<bool>(data_ & 0b10000000);
+    }
+
+    constexpr ChessPieceEnum GetPieceType() const
+    {
+        return static_cast<ChessPieceEnum>(data_ & 0b00111111);
+    }
+
+    bool IsMoved() const
+    {
+        return static_cast<bool>(data_ & 0b01000000);
     }
 
   protected:
-    ChessPieceEnum pieceType_;
+    void SetWhite(bool isWhite)
+    {
+        data_ = (data_ & 0b01111111) | (static_cast<uint8_t>(isWhite) << 7);
+    }
 
-    int8_t isWhite_ : 1;
-    int8_t moved_ : 1;
+    void SetMoved(bool moved)
+    {
+        data_ = (data_ & 0b10111111) | (static_cast<uint8_t>(moved) << 6);
+    }
+
+    void SetPieceType(ChessPieceEnum pieceType)
+    {
+        data_ = (data_ & 0b11000000) | static_cast<uint8_t>(pieceType);
+    }
+    uint8_t data_;
 };
 
 class Piece : public PiecePrimitive
@@ -253,7 +309,7 @@ class Piece : public PiecePrimitive
 
     PiecePrimitive GetPrimitive() const
     {
-        return PiecePrimitive(pieceType_, GetColor(), IsMoved());
+        return PiecePrimitive(GetPieceType(), GetColor(), IsMoved());
     }
 
     static bool CanMove(Position frompos, Position pos, const std::shared_ptr<Board> &board, ChessPieceEnum pieceType,
@@ -270,47 +326,7 @@ class Piece : public PiecePrimitive
 
     bool operator==(const Piece &other) const
     {
-        return pieceType_ == other.pieceType_ && pos_ == other.pos_ && GetColor() == other.GetColor();
-    }
-
-    double GetCenterDistance() const
-    {
-        const static Position kCenter(4, 4);
-        auto res =  kCenter.Diff(GetPos());
-        return res.OklideanDistance();
-    }
-
-    double GetVizierDistanceForPiyade() const
-    {
-        if (GetColor() == Color::kBlack)
-        {
-            return std::abs(0 - GetPos().Gety());
-        }
-
-        return std::abs(7 - GetPos().Gety());
-    }
-
-    constexpr double GetPiecePoint() const
-    {
-        switch (pieceType_)
-        {
-        case ChessPieceEnum::kPiyade:
-            return 1.0 / (1 + GetVizierDistanceForPiyade()) / GetCenterDistance();
-        case ChessPieceEnum::kVizier:
-            return 2.0 / GetCenterDistance();
-        case ChessPieceEnum::kShah:
-            return 1.0 / GetCenterDistance();
-        case ChessPieceEnum::kHorse:
-            return 3.0 / GetCenterDistance();
-        case ChessPieceEnum::kFil:
-            return 2.0 / GetCenterDistance();
-        case ChessPieceEnum::kRook:
-            return 4.0 / GetCenterDistance();
-        case ChessPieceEnum::kNone:
-            return 0 * GetCenterDistance();
-        }
-
-        return 0;
+        return GetPieceType() == other.GetPieceType() && pos_ == other.pos_ && GetColor() == other.GetColor();
     }
 
   protected:
