@@ -23,6 +23,7 @@ class Shatranj
     bool PlaySeq2(const std::vector<Movement> &seq);
     void Run();
     std::optional<shatranj::Movement> PickMoveInBoard(int depth = 6);
+    bool PickAndPlay(int depth = 6);
 
     std::shared_ptr<Board> &GetBoard()
     {

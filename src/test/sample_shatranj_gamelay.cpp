@@ -494,6 +494,32 @@ TEST(SampleCaptureTest_MinMax, Expectations)
     }
 }
 
+TEST(Shatranj_SampleQuestions, FindingMath)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("1r1r4/8/1h6/2p5/2P5/1HS5/R3R3/1s6 b 0 10");
+        std::cout << *(shatranj.GetBoard()) << std::endl;
+        size_t counter = 0;
+        shatranj::RunWithTiming("Looking for black checkmate", [&]() -> bool {
+            while (shatranj.PickAndPlay(5))
+            {
+                std::cout << *(shatranj.GetBoard()) << std::endl;
+                EXPECT_LE(counter++, 10);
+                if (counter > 10)
+                {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
+        EXPECT_EQ(shatranj.GetBoard()->GetCurrentTurn(), shatranj::Color::kWhite);
+    }
+}
+
 TEST(SampleCaptureTest_SampleSelfPlay, Negative)
 {
     shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));

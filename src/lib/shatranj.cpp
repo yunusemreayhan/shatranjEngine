@@ -203,4 +203,15 @@ std::optional<shatranj::Movement> Shatranj::PickMoveInBoard(int depth)
     return std::nullopt;
 }
 
+bool Shatranj::PickAndPlay(int depth)
+{
+    auto move = PickMoveInBoard(depth);
+    if (move)
+    {
+        std::cout << "picked and playing: " << move->ToString() << std::endl;
+        return Play(*move);
+    }
+    return false;
+}
+
 } // namespace shatranj
