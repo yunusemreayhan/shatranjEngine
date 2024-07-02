@@ -2,6 +2,7 @@
 #include <cassert>
 #include <chrono>
 #include <limits.h>
+#include <memory>
 #include <optional>
 #include <sstream>
 #include <utility>
@@ -64,6 +65,7 @@ void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordina
         }
     }
 }
+
 TEST(SampleCaptureTest_Piyade, Positive)
 {
     {
@@ -485,14 +487,14 @@ TEST(SampleCaptureTest_MinMax, Expectations)
         shatranj.GetBoard()->ApplyFEN("rh1vs1hr/p1ppp1pp/1p1H1p1f/8/2H5/7F/PPPPPPPP/R1FV1S1R b 12 8");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 3);
-        auto picked_move = shatranj.PickMoveInBoard(2);
+        auto picked_move = shatranj.PickMoveInBoard(5);
         EXPECT_NE(picked_move, std::nullopt);
         std::cout << "picked move : " << picked_move->ToString() << std::endl;
         EXPECT_EQ(picked_move->ToString() == "c7d6" || picked_move->ToString() == "e7d6", true);
     }
 }
 
-TEST(SampleCaptureTest_MinMax, Negative)
+TEST(SampleCaptureTest_SampleSelfPlay, Negative)
 {
     shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
     std::cout << *(shatranj.GetBoard()) << std::endl;
@@ -512,31 +514,12 @@ TEST(SampleCaptureTest_MinMax, Negative)
     });
     for (int i = 0; i < 100; i++)
     {
-        int countofnodesvisited = 0;
-        std::variant<double, shatranj::Movement> pickedmove;
-        auto res = shatranj::RunWithTiming("minmax search ", [&]() -> bool {
-            try
-            {
-                auto alpha = -std::numeric_limits<double>::max();
-                auto beta = std::numeric_limits<double>::max();
-                pickedmove = shatranj.GetBoard()->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta, 1,
-                                                                shatranj.GetBoard()->GetCurrentTurn(), true);
-            }
-            catch (...)
-            {
-                auto state = shatranj.GetBoard()->GetBoardState();
-                std::cout << "exception in search, state : " << static_cast<int>(state) << std::endl;
-                return state == shatranj::GameState::kNormal;
-            }
-            return true;
-        });
-        std::cout << "nodes visited: " << countofnodesvisited << std::endl;
-        std::cout << *(shatranj.GetBoard()) << std::endl;
-        if (res)
+        std::optional<shatranj::Movement> pickedmove = shatranj.PickMoveInBoard(2);
+        if (pickedmove)
         {
-            std::cout << std::get<shatranj::Movement>(pickedmove).ToString() << std::endl;
-            moves.push_back(std::get<shatranj::Movement>(pickedmove));
-            ASSERT_TRUE(shatranj.Play(std::get<shatranj::Movement>(pickedmove)));
+            std::cout << pickedmove->ToString() << std::endl;
+            moves.push_back(*pickedmove);
+            ASSERT_TRUE(shatranj.Play(*pickedmove));
         }
         else
         {

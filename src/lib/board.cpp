@@ -766,8 +766,6 @@ double Board::EvaluateBoard(Color color)
         {
             continue;
         }
-        const auto &moves = GetPossibleMovesCalcOpponentToo(color);
-        const auto &movesopponent = GetPossibleMovesCalcOpponentToo(OpponentColor(color));
         if (piece->GetColor() == color)
         {
             score += piece->GetPiecePoint(pos);
@@ -776,8 +774,29 @@ double Board::EvaluateBoard(Color color)
         {
             score -= piece->GetPiecePoint(pos);
         }
-
-        score += 0.01 * (moves.size() - movesopponent.size());
+        auto state = GetBoardState();
+        if (currentTurn_ == color)
+        {
+            if (state == GameState::kCheckmate || state == GameState::kStalemate)
+            {
+                score -= 1000;
+            }
+            else if (state == GameState::kCheck)
+            {
+                score -= 100;
+            }
+        }
+        else
+        {
+            if (state == GameState::kCheckmate || state == GameState::kStalemate)
+            {
+                score += 1000;
+            }
+            else if (state == GameState::kCheck)
+            {
+                score += 100;
+            }
+        }
     }
     return score;
 }
