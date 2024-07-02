@@ -24,7 +24,7 @@
         {
             "label": "configure debug",
             "type": "shell",
-            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo",
+            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Debug",
             "dependsOn": "configure"
         },
         {

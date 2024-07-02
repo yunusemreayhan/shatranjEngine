@@ -506,7 +506,7 @@ bool Board::Play(const Movement &input)
 
 bool Board::Play(const std::string &from_pos, const std::string &to_pos)
 {
-    if (GetBoardState() != GameState::kNormal)
+    if (GetBoardState() != GameState::kNormal && GetBoardState() != GameState::kCheck)
         return false;
     const auto checking_movemend = Movement(from_pos, to_pos);
 

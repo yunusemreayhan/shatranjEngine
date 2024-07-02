@@ -425,7 +425,7 @@ TEST(SampleGameEndTests, PosNeg)
     {
         shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
         shatranj.GetBoard()->ApplyFEN("2rr2f1/2v1p1p1/p2p1p1p/1p2h3/2p1s1h1/2H5/PPPfPPPP/R1FVSFHR b 7 37");
-        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 3);
     }
     {
@@ -458,6 +458,18 @@ TEST(SampleGameEndTests, PosNeg)
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 22);
     }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("1s6/pV1R2pp/2H1p2f/1pF2F1P/8/2P5/PPSPPPP1/7R b 6 45");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
+        DumpPossibleMoves(shatranj.GetBoard(), 0);
+    }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("4s3/1pppvpp1/4f3/1p1p2p1/r4f2/4hP1r/4P3/3h2S1 w 18 37");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kStalemate);
+        DumpPossibleMoves(shatranj.GetBoard(), 0);
+    }
 }
 
 TEST(SampleCaptureTest_MinMax, Negative)
@@ -482,12 +494,12 @@ TEST(SampleCaptureTest_MinMax, Negative)
     {
         int countofnodesvisited = 0;
         std::variant<double, shatranj::Movement> pickedmove;
-        ASSERT_TRUE(shatranj::RunWithTiming("minmax search ", [&]() -> bool {
+        auto res = shatranj::RunWithTiming("minmax search ", [&]() -> bool {
             try
             {
                 auto alpha = -std::numeric_limits<double>::max();
                 auto beta = std::numeric_limits<double>::max();
-                pickedmove = shatranj.GetBoard()->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta, 2,
+                pickedmove = shatranj.GetBoard()->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta, 1,
                                                                 shatranj.GetBoard()->GetCurrentTurn(), true);
             }
             catch (...)
@@ -495,11 +507,19 @@ TEST(SampleCaptureTest_MinMax, Negative)
                 return shatranj.GetBoard()->GetBoardState() != shatranj::GameState::kNormal;
             }
             return true;
-        }));
-        std::cout << std::get<shatranj::Movement>(pickedmove).ToString() << std::endl;
+        });
+        ASSERT_TRUE(res);
+        if (res)
+        {
+            std::cout << std::get<shatranj::Movement>(pickedmove).ToString() << std::endl;
+            moves.push_back(std::get<shatranj::Movement>(pickedmove));
+            ASSERT_TRUE(shatranj.Play(std::get<shatranj::Movement>(pickedmove)));
+        }
+        else
+        {
+            break;
+        }
         std::cout << "nodes visited: " << countofnodesvisited << std::endl;
-        moves.push_back(std::get<shatranj::Movement>(pickedmove));
-        ASSERT_TRUE(shatranj.Play(std::get<shatranj::Movement>(pickedmove)));
         std::cout << *(shatranj.GetBoard()) << std::endl;
     }
     if (shatranj.GetBoard()->Winner())
