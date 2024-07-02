@@ -310,7 +310,7 @@ class PiecePrimitive // positionless piece
         case ChessPieceEnum::kFil:
             return 3.0;
         case ChessPieceEnum::kRook:
-            return 10.0;
+            return 5.0;
         case ChessPieceEnum::kNone:
             return 0;
         }

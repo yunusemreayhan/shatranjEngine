@@ -82,6 +82,7 @@ class PieceGroup
         return blackShahPos_;
     }
     PiecePrimitive *GetPiece(const Position &pos);
+    const PiecePrimitive *GetPiece(const Position &pos) const;
 
   private:
     void RemovePieceNoCounterUpdate(const Position &pos);

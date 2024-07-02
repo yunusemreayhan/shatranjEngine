@@ -25,21 +25,6 @@ class MoveHistory;
 class Board
 {
   public:
-    struct BoardRepresantation
-    {
-        static std::string *GetBoardReprensentation(Board *board);
-
-        constexpr inline static std::string *GetPieceFromCoordinate(std::string *board_repr, uint8_t xpos, uint8_t ypos)
-        {
-            return &board_repr[CombinedCoordinate(xpos, ypos)];
-        }
-
-      private:
-        constexpr inline static uint8_t CombinedCoordinate(uint8_t xpos, uint8_t ypos)
-        {
-            return xpos + 8 * ypos;
-        }
-    };
     friend struct BoardRepresantation;
     Board(const std::string &name1, const std::string &name2);
 
@@ -82,6 +67,10 @@ class Board
     {
         return pieces_;
     }
+    const std::shared_ptr<PieceGroup> &GetPieces() const
+    {
+        return pieces_;
+    }
     void PrintValidMoves();
     bool AddPiece(const PiecePrimitive &piece, const Position &pos);
     std::string GenerateFEN(bool includeCounters = true) const;
@@ -121,7 +110,7 @@ class Board
     MoveHistory &GetHistory() const;
 
     const std::vector<Movement> &GetPossibleMoves(Color color);
-    const std::vector<Movement> &GetPossibleOpponentMoves(Color color);
+    const std::vector<Movement> &GetPossibleMovesCalcOpponentToo(Color color);
 
   private:
     std::shared_ptr<PieceGroup> pieces_;

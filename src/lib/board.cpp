@@ -513,29 +513,8 @@ bool Board::Play(const std::string &from_pos, const std::string &to_pos)
     return !WouldBeInCheck(checking_movemend) && Play(checking_movemend);
 }
 
-std::string *Board::BoardRepresantation::GetBoardReprensentation(Board *board)
-{
-    static std::string *ret = new std::string[PieceGroup::kSquareCount];
-    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
-    {
-        ret[i] = ".";
-    }
-    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
-    {
-        const auto &pos = PieceGroup::Coord1to2(i);
-        const auto &piece = board->GetPieces()->GetPiece(pos);
-        if (piece == nullptr)
-        {
-            continue;
-        }
-        ret[CombinedCoordinate(pos.Getx(), pos.Gety())] = piece->GetSymbol();
-    }
-    return ret;
-}
-
 std::string Board::BoardToString() const
 {
-    std::string *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
@@ -555,7 +534,16 @@ std::string Board::BoardToString() const
 
         for (int8_t xitr = 0; xitr < 8; xitr++)
         {
-            ret += *BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
+            const auto &pos = Position(xitr, yitr);
+            const auto *piece = GetPieces()->GetPiece(pos);
+            if (piece == nullptr)
+            {
+                ret += '.';
+            }
+            else
+            {
+                ret += piece->GetSymbol();
+            }
             ret += ' ';
         }
         if constexpr (kDebugTablePrint)
@@ -584,6 +572,7 @@ std::string Board::BoardToString() const
            std::string(currentTurn_ == Color::kWhite ? "White which is uppercase" : "Black which is lowercase") + '\n';
     ret += "  current move count : " + std::to_string(fullMoveNumber_) + '\n';
     ret += "  half move count : " + std::to_string(halfMoveClock_) + '\n';
+    ret += "  board FEN : " + GenerateFEN() + '\n';
 
     return ret;
 }
@@ -647,16 +636,16 @@ MoveHistory &Board::GetHistory() const
 
 std::string Board::GenerateFEN(bool includeCounters) const
 {
-    auto *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
-
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
         int spaces = 0;
         for (int8_t xitr = 0; xitr < 8; xitr++)
         {
-            const std::string piece = *BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
-            if (piece == std::string("."))
+
+            const auto &pos = Position(xitr, yitr);
+            const auto *piece = GetPieces()->GetPiece(pos);
+            if (piece == nullptr)
             {
                 spaces++;
             }
@@ -667,7 +656,7 @@ std::string Board::GenerateFEN(bool includeCounters) const
                     ret += std::to_string(spaces);
                     spaces = 0;
                 }
-                ret += piece;
+                ret += piece->GetSymbolOld();
             }
             if (xitr == 7)
             {
@@ -771,14 +760,14 @@ double Board::EvaluateBoard(Color color)
 
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto pos = PieceGroup::Coord1to2(i);
+        const auto &pos = PieceGroup::Coord1to2(i);
         auto *piece = GetPieces()->GetPiece(pos);
         if (nullptr == piece)
         {
             continue;
         }
-        const auto &moves = GetPossibleMoves(color);
-        const auto &movesopponent = GetPossibleOpponentMoves(OpponentColor(color));
+        const auto &moves = GetPossibleMovesCalcOpponentToo(color);
+        const auto &movesopponent = GetPossibleMovesCalcOpponentToo(OpponentColor(color));
         if (piece->GetColor() == color)
         {
             score += piece->GetPiecePoint(pos);
@@ -788,7 +777,7 @@ double Board::EvaluateBoard(Color color)
             score -= piece->GetPiecePoint(pos);
         }
 
-        score += 0.1 * (moves.size() - movesopponent.size());
+        score += 0.01 * (moves.size() - movesopponent.size());
     }
     return score;
 }
@@ -842,7 +831,7 @@ const std::vector<Movement> &Board::GetPossibleMoves(Color color)
     if constexpr (kGetPossibleDebug)
         std::cout << "Using calculated possible moves with size " << ret.size() << std::endl;
 
-    possibleMovesMemory_.Add(fen, std::move(ret));
+    possibleMovesMemory_.Add(fen, ret);
     if constexpr (kGetPossibleDebug)
         if (ret.size() == 0)
         {
@@ -852,7 +841,7 @@ const std::vector<Movement> &Board::GetPossibleMoves(Color color)
     return possibleMovesMemory_.Get(fen);
 }
 
-const std::vector<Movement> &Board::GetPossibleOpponentMoves(Color color)
+const std::vector<Movement> &Board::GetPossibleMovesCalcOpponentToo(Color color)
 {
     auto fen = GenerateFEN(false) + (color == Color::kBlack ? std::string("b") : std::string("w"));
     if (possibleMovesMemory_.Have(fen))
@@ -904,7 +893,7 @@ const std::vector<Movement> &Board::GetPossibleOpponentMoves(Color color)
 
     if constexpr (kGetPossibleDebug)
         std::cout << "Using calculated possible opponent moves with size " << ret.size() << std::endl;
-    possibleMovesMemory_.Add(fen, std::move(ret));
+    possibleMovesMemory_.Add(fen, ret);
     if constexpr (kGetPossibleDebug)
         if (ret.size() == 0)
         {

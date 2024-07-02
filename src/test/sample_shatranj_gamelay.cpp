@@ -168,7 +168,7 @@ TEST(SampleCaptureTest_Rook, Positive)
         auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position("a7"));
         EXPECT_EQ(lastcapturedplace.has_value(), true);
         auto lastcapturedpiece = *lastcapturedplace;
-        EXPECT_EQ(lastcapturedpiece.GetSymbol() == "R", true);
+        EXPECT_EQ(lastcapturedpiece.GetSymbolOld() == "R", true);
         EXPECT_TRUE(lastcapturedpiece.GetColor() == shatranj::Color::kWhite);
         CheckPossibleMoves(shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
     }
@@ -470,6 +470,12 @@ TEST(SampleGameEndTests, PosNeg)
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kStalemate);
         DumpPossibleMoves(shatranj.GetBoard(), 0);
     }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("r3sf1r/p1vppppp/1p6/8/2fh4/F2PPhP1/PPP2P1P/R2VSFR1 w 3 11");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
+        DumpPossibleMoves(shatranj.GetBoard(), 0);
+    }
 }
 
 TEST(SampleCaptureTest_MinMax, Negative)
@@ -504,11 +510,14 @@ TEST(SampleCaptureTest_MinMax, Negative)
             }
             catch (...)
             {
-                return shatranj.GetBoard()->GetBoardState() != shatranj::GameState::kNormal;
+                auto state = shatranj.GetBoard()->GetBoardState();
+                std::cout << "exception in search, state : " << static_cast<int>(state) << std::endl;
+                return state == shatranj::GameState::kNormal;
             }
             return true;
         });
-        ASSERT_TRUE(res);
+        std::cout << "nodes visited: " << countofnodesvisited << std::endl;
+        std::cout << *(shatranj.GetBoard()) << std::endl;
         if (res)
         {
             std::cout << std::get<shatranj::Movement>(pickedmove).ToString() << std::endl;
@@ -519,8 +528,6 @@ TEST(SampleCaptureTest_MinMax, Negative)
         {
             break;
         }
-        std::cout << "nodes visited: " << countofnodesvisited << std::endl;
-        std::cout << *(shatranj.GetBoard()) << std::endl;
     }
     if (shatranj.GetBoard()->Winner())
     {

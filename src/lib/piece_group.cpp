@@ -118,6 +118,19 @@ PiecePrimitive *PieceGroup::GetPiece(const Position &pos)
     return nullptr;
 }
 
+const PiecePrimitive *PieceGroup::GetPiece(const Position &pos) const
+{
+    const PiecePrimitive *ret = &pieces_primitive_[Coord2to1(pos)];
+    if (ret->GetPieceType() != ChessPieceEnum::kNone)
+        return ret;
+
+    if constexpr (kPieceGroupDebug)
+    {
+        std::cout << "No piece at " << pos.ToString() << " set says it must exist" << std::endl;
+    }
+    return nullptr;
+}
+
 std::optional<Piece> PieceGroup::GetPieceByVal(const Position &pos)
 {
     auto coord = Coord2to1(pos);
