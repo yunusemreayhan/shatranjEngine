@@ -513,27 +513,29 @@ bool Board::Play(const std::string &from_pos, const std::string &to_pos)
     return !WouldBeInCheck(checking_movemend) && Play(checking_movemend);
 }
 
-char *Board::BoardRepresantation::GetBoardReprensentation(Board *board)
+std::string *Board::BoardRepresantation::GetBoardReprensentation(Board *board)
 {
-    static char *ret = new char[PieceGroup::kSquareCount];
-    memset(ret, '.', PieceGroup::kSquareCount);
+    static std::string *ret = new std::string[PieceGroup::kSquareCount];
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        const auto &pieceopt = board->GetPieces()->Get(i);
-        if (!pieceopt)
+        ret[i] = ".";
+    }
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
+    {
+        const auto &pos = PieceGroup::Coord1to2(i);
+        const auto &piece = board->GetPieces()->GetPiece(pos);
+        if (piece == nullptr)
         {
             continue;
         }
-        const auto &piece = *pieceopt;
-        ret[CombinedCoordinate(piece.GetPos().Getx(), piece.GetPos().Gety())] =
-            piece.GetColor() == Color::kWhite ? std::toupper(piece.GetSymbol()) : std::tolower(piece.GetSymbol());
+        ret[CombinedCoordinate(pos.Getx(), pos.Gety())] = piece->GetSymbol();
     }
     return ret;
 }
 
 std::string Board::BoardToString() const
 {
-    char *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
+    std::string *board_repr = BoardRepresantation::GetBoardReprensentation(const_cast<Board *>(this));
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
@@ -553,7 +555,7 @@ std::string Board::BoardToString() const
 
         for (int8_t xitr = 0; xitr < 8; xitr++)
         {
-            ret += BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
+            ret += *BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
             ret += ' ';
         }
         if constexpr (kDebugTablePrint)
@@ -653,8 +655,8 @@ std::string Board::GenerateFEN(bool includeCounters) const
         int spaces = 0;
         for (int8_t xitr = 0; xitr < 8; xitr++)
         {
-            const auto &piece = BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
-            if (piece == '.')
+            const std::string piece = *BoardRepresantation::GetPieceFromCoordinate(board_repr, xitr, yitr);
+            if (piece == std::string("."))
             {
                 spaces++;
             }

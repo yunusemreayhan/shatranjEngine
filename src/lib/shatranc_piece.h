@@ -30,29 +30,88 @@ class PiecePrimitive // positionless piece
   public:
     PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved);
 
-    inline constexpr char GetSymbol() const
+    inline std::string GetSymbol() const
     {
-        switch (GetPieceType())
-        {
-        case ChessPieceEnum::kPiyade:
-            return 'P';
-        case ChessPieceEnum::kVizier:
-            return 'V';
-        case ChessPieceEnum::kShah:
-            return 'S';
-        case ChessPieceEnum::kHorse:
-            return 'H';
-        case ChessPieceEnum::kFil:
-            return 'F';
-        case ChessPieceEnum::kRook:
-            return 'R';
-        case ChessPieceEnum::kNone:
-            return ' ';
-        }
+        if (GetColor() == Color::kWhite)
+            switch (GetPieceType())
+            {
+            case ChessPieceEnum::kShah:
+                return "\u2654";
+            case ChessPieceEnum::kVizier:
+                return "\u2655";
+            case ChessPieceEnum::kRook:
+                return "\u2656";
+            case ChessPieceEnum::kFil:
+                return "\u2657";
+            case ChessPieceEnum::kPiyade:
+                return "\u2659";
+            case ChessPieceEnum::kHorse:
+                return "\u2658";
+            case ChessPieceEnum::kNone:
+                return " ";
+            }
+        else
+            switch (GetPieceType())
+            {
+            case ChessPieceEnum::kShah:
+                return "\u265A";
+            case ChessPieceEnum::kVizier:
+                return "\u265B";
+            case ChessPieceEnum::kRook:
+                return "\u265C";
+            case ChessPieceEnum::kFil:
+                return "\u265D";
+            case ChessPieceEnum::kHorse:
+                return "\u265E";
+            case ChessPieceEnum::kPiyade:
+                return "\u265F";
+            case ChessPieceEnum::kNone:
+                return " ";
+            }
 
-        return ' ';
+        return " ";
     }
+    inline std::string GetSymbolOld() const
+    {
+        if (GetColor() == Color::kWhite)
+            switch (GetPieceType())
+            {
+            case ChessPieceEnum::kPiyade:
+                return "P";
+            case ChessPieceEnum::kVizier:
+                return "V";
+            case ChessPieceEnum::kShah:
+                return "S";
+            case ChessPieceEnum::kHorse:
+                return "H";
+            case ChessPieceEnum::kFil:
+                return "F";
+            case ChessPieceEnum::kRook:
+                return "R";
+            case ChessPieceEnum::kNone:
+                return " ";
+            }
+        else
+            switch (GetPieceType())
+            {
+            case ChessPieceEnum::kPiyade:
+                return "p";
+            case ChessPieceEnum::kVizier:
+                return "v";
+            case ChessPieceEnum::kShah:
+                return "s";
+            case ChessPieceEnum::kHorse:
+                return "h";
+            case ChessPieceEnum::kFil:
+                return "f";
+            case ChessPieceEnum::kRook:
+                return "r";
+            case ChessPieceEnum::kNone:
+                return " ";
+            }
 
+        return " ";
+    }
     inline constexpr std::string_view GetName() const
     {
         switch (GetPieceType())

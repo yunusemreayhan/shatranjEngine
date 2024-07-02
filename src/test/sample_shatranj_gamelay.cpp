@@ -168,7 +168,7 @@ TEST(SampleCaptureTest_Rook, Positive)
         auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position("a7"));
         EXPECT_EQ(lastcapturedplace.has_value(), true);
         auto lastcapturedpiece = *lastcapturedplace;
-        EXPECT_EQ(lastcapturedpiece.GetSymbol() == 'R', true);
+        EXPECT_EQ(lastcapturedpiece.GetSymbol() == "R", true);
         EXPECT_TRUE(lastcapturedpiece.GetColor() == shatranj::Color::kWhite);
         CheckPossibleMoves(shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
     }

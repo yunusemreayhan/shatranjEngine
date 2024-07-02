@@ -27,11 +27,11 @@ class Board
   public:
     struct BoardRepresantation
     {
-        static char *GetBoardReprensentation(Board *board);
+        static std::string *GetBoardReprensentation(Board *board);
 
-        constexpr inline static char GetPieceFromCoordinate(char* board_repr, uint8_t xpos, uint8_t ypos)
+        constexpr inline static std::string *GetPieceFromCoordinate(std::string *board_repr, uint8_t xpos, uint8_t ypos)
         {
-            return board_repr[CombinedCoordinate(xpos, ypos)];
+            return &board_repr[CombinedCoordinate(xpos, ypos)];
         }
 
       private:
