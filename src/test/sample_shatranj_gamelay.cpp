@@ -478,6 +478,20 @@ TEST(SampleGameEndTests, PosNeg)
     }
 }
 
+TEST(SampleCaptureTest_MinMax, Expectations)
+{
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("rh1vs1hr/p1ppp1pp/1p1H1p1f/8/2H5/7F/PPPPPPPP/R1FV1S1R b 12 8");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
+        DumpPossibleMoves(shatranj.GetBoard(), 3);
+        auto picked_move = shatranj.PickMoveInBoard(2);
+        EXPECT_NE(picked_move, std::nullopt);
+        std::cout << "picked move : " << picked_move->ToString() << std::endl;
+        EXPECT_EQ(picked_move->ToString() == "c7d6" || picked_move->ToString() == "e7d6", true);
+    }
+}
+
 TEST(SampleCaptureTest_MinMax, Negative)
 {
     shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));

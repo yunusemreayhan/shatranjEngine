@@ -174,4 +174,33 @@ bool Shatranj::PlaySeq2(const std::vector<Movement> &seq)
     return succ;
 }
 
+std::optional<shatranj::Movement> Shatranj::PickMoveInBoard(int depth)
+{
+    int countofnodesvisited = 0;
+    std::variant<double, shatranj::Movement> pickedmove;
+    auto res = shatranj::RunWithTiming("minmax search ", [&]() -> shatranj::GameState {
+        try
+        {
+            auto alpha = -std::numeric_limits<double>::max();
+            auto beta = std::numeric_limits<double>::max();
+            pickedmove = board_->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta, depth,
+                                               board_->GetCurrentTurn(), true);
+        }
+        catch (...)
+        {
+            auto state = board_->GetBoardState();
+            std::cout << "exception in search, state : " << static_cast<int>(state) << std::endl;
+            return state;
+        }
+        return shatranj::GameState::kNormal;
+    });
+    std::cout << "nodes visited: " << countofnodesvisited << std::endl;
+    std::cout << *(board_) << std::endl;
+    if (shatranj::GameState::kNormal == res)
+    {
+        return std::get<shatranj::Movement>(pickedmove);
+    }
+    return std::nullopt;
+}
+
 } // namespace shatranj

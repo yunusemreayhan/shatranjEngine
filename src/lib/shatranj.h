@@ -22,8 +22,12 @@ class Shatranj
     bool PlaySeq(const std::vector<std::string> &seq, bool printboard = false);
     bool PlaySeq2(const std::vector<Movement> &seq);
     void Run();
+    std::optional<shatranj::Movement> PickMoveInBoard(int depth = 6);
 
-    std::shared_ptr<Board>& GetBoard() { return board_; }
+    std::shared_ptr<Board> &GetBoard()
+    {
+        return board_;
+    }
 
   private:
     std::shared_ptr<Board> board_;
