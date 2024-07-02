@@ -37,5 +37,6 @@ constexpr static inline bool kCaptureDebug = false;
 constexpr static inline bool kPieceGroupDebug = false;
 constexpr static inline bool kBoardDebug = false;
 constexpr static inline bool kMinMaxDebug = false;
+constexpr static inline bool kGetPossibleDebug = false;
 
 } // namespace shatranj

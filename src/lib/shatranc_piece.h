@@ -243,19 +243,17 @@ class PiecePrimitive // positionless piece
         switch (GetPieceType())
         {
         case ChessPieceEnum::kPiyade:
-            return 1.0 / (1 + GetVizierDistanceForPiyade(pos)) / GetCenterDistance(pos);
-        case ChessPieceEnum::kVizier:
-            return 2.0 / GetCenterDistance(pos);
+            return 1.0;
         case ChessPieceEnum::kShah:
-            return 1.0 / GetCenterDistance(pos);
+            return 200.0;
+        case ChessPieceEnum::kVizier:
         case ChessPieceEnum::kHorse:
-            return 3.0 / GetCenterDistance(pos);
         case ChessPieceEnum::kFil:
-            return 2.0 / GetCenterDistance(pos);
+            return 3.0;
         case ChessPieceEnum::kRook:
-            return 4.0 / GetCenterDistance(pos);
+            return 10.0;
         case ChessPieceEnum::kNone:
-            return 0 * GetCenterDistance(pos);
+            return 0;
         }
 
         return 0;

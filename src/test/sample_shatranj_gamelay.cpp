@@ -18,7 +18,7 @@ namespace
 
 void DumpPossibleMoves(std::shared_ptr<shatranj::Board> &board, size_t expected_moves = 0)
 {
-    auto posmoves = board->GetPieces()->GetPossibleMoves(board->GetCurrentTurn(), board);
+    auto posmoves = board->GetPossibleMoves(board->GetCurrentTurn());
     std::cout << *(board) << std::endl;
     for (const auto &move : posmoves)
     {
@@ -409,8 +409,7 @@ TEST(RevertTest2, Positive)
             }
         };
 
-        oneplayandrevert(shatranj.GetBoard()->GetPieces()->GetPossibleMoves(shatranj.GetBoard()->GetCurrentTurn(),
-                                                                            shatranj.GetBoard()));
+        oneplayandrevert(shatranj.GetBoard()->GetPossibleMoves(shatranj.GetBoard()->GetCurrentTurn()));
         CheckPossibleMoves(shatranj, "a2", {"a2a3"});
     }
 }
@@ -441,6 +440,24 @@ TEST(SampleGameEndTests, PosNeg)
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
         DumpPossibleMoves(shatranj.GetBoard(), 0);
     }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("1h1vsf1r/r1ppp1p1/pp2fp1h/7p/8/1P1FPS1P/P1PP1PPR/RHFV2H1 b 1 9");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
+        DumpPossibleMoves(shatranj.GetBoard(), 22);
+    }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("rhfvsfhr/2Hppppp/8/1p6/p7/P3F2H/1PPPPPPP/R2VSF1R b 6 6");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
+        DumpPossibleMoves(shatranj.GetBoard(), 1);
+    }
+    {
+        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj.GetBoard()->ApplyFEN("rhfvsf1r/ppppp1pp/8/5pH1/5h2/2P3P1/PP1PPP1P/RH1VSFFR b 0 6");
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
+        DumpPossibleMoves(shatranj.GetBoard(), 22);
+    }
 }
 
 TEST(SampleCaptureTest_MinMax, Negative)
@@ -463,24 +480,22 @@ TEST(SampleCaptureTest_MinMax, Negative)
     });
     for (int i = 0; i < 100; i++)
     {
-        auto start = std::chrono::high_resolution_clock::now();
         int countofnodesvisited = 0;
         std::variant<double, shatranj::Movement> pickedmove;
-        try
-        {
-            pickedmove = shatranj.GetBoard()->MinimaxSearch(
-                std::nullopt, countofnodesvisited,
-                shatranj.GetBoard()->GetCurrentTurn() == shatranj::Color::kBlack ? 2 : 2,
-                shatranj.GetBoard()->GetCurrentTurn(), true);
-        }
-        catch (...)
-        {
-            ASSERT_FALSE(shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kNormal);
-            break;
-        }
-        auto duration = std::chrono::high_resolution_clock::now() - start;
-        std::cout << "seach time: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms"
-                  << std::endl;
+        ASSERT_TRUE(shatranj::RunWithTiming("minmax search ", [&]() -> bool {
+            try
+            {
+                auto alpha = -std::numeric_limits<double>::max();
+                auto beta = std::numeric_limits<double>::max();
+                pickedmove = shatranj.GetBoard()->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta, 2,
+                                                                shatranj.GetBoard()->GetCurrentTurn(), true);
+            }
+            catch (...)
+            {
+                return shatranj.GetBoard()->GetBoardState() != shatranj::GameState::kNormal;
+            }
+            return true;
+        }));
         std::cout << std::get<shatranj::Movement>(pickedmove).ToString() << std::endl;
         std::cout << "nodes visited: " << countofnodesvisited << std::endl;
         moves.push_back(std::get<shatranj::Movement>(pickedmove));
@@ -497,6 +512,8 @@ TEST(SampleCaptureTest_MinMax, Negative)
             std::cout << "draw" << std::endl;
         if (shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kStalemate)
             std::cout << "stalemate" << std::endl;
+        if (shatranj.GetBoard()->GetBoardState() == shatranj::GameState::kCheckmate)
+            std::cout << "checkmate" << std::endl;
     }
     std::cout << *(shatranj.GetBoard()) << std::endl;
 }

@@ -93,6 +93,9 @@ std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum p
 {
     if (GetCurrentTurn() != color)
     {
+        if constexpr (kGetPossibleDebug)
+            std::cout << "GetPossibleMoves, can not get possible moves for " << frompos.ToString()
+                      << " not same color with turn " << color << std::endl;
         return {};
     }
     std::vector<Movement> possible_moves;
@@ -421,7 +424,7 @@ GameState Board::GetBoardState()
     }
     else
     {
-        const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
+        const auto &moves = GetPossibleMoves(currentTurn_);
 
         if (moves.empty())
         {
@@ -432,6 +435,13 @@ GameState Board::GetBoardState()
             else
             {
                 ret = GameState::kStalemate;
+            }
+        }
+        else
+        {
+            if (IsCheck(currentTurn_))
+            {
+                ret = GameState::kCheck;
             }
         }
     }
@@ -618,7 +628,7 @@ void Board::RemovePiece(const Position &pos)
 
 void Board::PrintValidMoves()
 {
-    const auto &moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
+    const auto &moves = GetPossibleMoves(currentTurn_);
 
     for (const auto &move : moves)
     {
@@ -765,6 +775,8 @@ double Board::EvaluateBoard(Color color)
         {
             continue;
         }
+        const auto &moves = GetPossibleMoves(color);
+        const auto &movesopponent = GetPossibleOpponentMoves(OpponentColor(color));
         if (piece->GetColor() == color)
         {
             score += piece->GetPiecePoint(pos);
@@ -773,6 +785,8 @@ double Board::EvaluateBoard(Color color)
         {
             score -= piece->GetPiecePoint(pos);
         }
+
+        score += 0.1 * (moves.size() - movesopponent.size());
     }
     return score;
 }
@@ -785,36 +799,148 @@ void Shuffle(std::vector<Movement> &movements)
     std::shuffle(movements.begin(), movements.end(), gen);
 }
 
-std::variant<double, Movement> Board::PickOrEvaluate(std::optional<Movement> playing_move_opt, int &nodesvisited,
-                                                     int depth, Color maximizingColor, bool randomize, double alpha,
-                                                     double beta)
+const std::vector<Movement> &Board::GetPossibleMoves(Color color)
 {
-    bool isMaximizing = maximizingColor == currentTurn_;
+    auto fen = GenerateFEN(false) + (color == Color::kBlack ? std::string("b") : std::string("w"));
+    if (possibleMovesMemory_.Have(fen))
+    {
+        const auto &ret = possibleMovesMemory_.Get(fen);
+        if constexpr (kGetPossibleDebug)
+            std::cout << "Using cached possible moves " << ret.size() << " for " << color << " " << fen << std::endl;
+        return ret;
+    }
+    std::vector<Movement> ret;
+    if constexpr (kPieceGroupDebug)
+        std::cout << "Getting possible moves for " << color << std::endl;
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
+    {
+        auto pos = PieceGroup::Coord1to2(i);
+        auto *piece_primitive = GetPieces()->GetPiece(pos);
+        if (piece_primitive == nullptr)
+            continue;
+        if constexpr (kGetPossibleDebug)
+            std::cout << "Checking " << pos.ToString() << " " << piece_primitive->GetName() << std::endl;
+        if (piece_primitive->GetColor() != color)
+        {
+            continue;
+        }
+        auto insertable = GetPossibleMoves(pos, piece_primitive->GetPieceType(), piece_primitive->GetColor());
+        for (auto it = insertable.begin(); it != insertable.end(); it++)
+        {
+            if (it->from == it->to)
+            {
+                throw std::runtime_error("from == to in GetPossibleMoves " + it->from.ToString());
+            }
+            ret.push_back(*it);
+        }
+    }
+    if constexpr (kPieceGroupDebug)
+        std::cout << "Got " << ret.size() << " possible moves" << std::endl;
+    Shuffle(ret);
+    if constexpr (kGetPossibleDebug)
+        std::cout << "Using calculated possible moves with size " << ret.size() << std::endl;
 
-    bool toplevel = !playing_move_opt;
-    auto moves = GetPieces()->GetPossibleMoves(currentTurn_, GetSharedFromThis());
+    possibleMovesMemory_.Add(fen, std::move(ret));
+    if constexpr (kGetPossibleDebug)
+        if (ret.size() == 0)
+        {
+            std::cout << "No possible moves for " << OpponentColor(currentTurn_) << " " << GenerateFEN() << std::endl;
+            std::cout << *this << std::endl;
+        }
+    return possibleMovesMemory_.Get(fen);
+}
+
+const std::vector<Movement> &Board::GetPossibleOpponentMoves(Color color)
+{
+    auto fen = GenerateFEN(false) + (color == Color::kBlack ? std::string("b") : std::string("w"));
+    if (possibleMovesMemory_.Have(fen))
+    {
+        const auto &ret = possibleMovesMemory_.Get(fen);
+        if constexpr (kGetPossibleDebug)
+            std::cout << "Using cached possible opponent moves " << ret.size() << " for " << color << " " << fen
+                      << std::endl;
+        return ret;
+    }
+    std::vector<Movement> ret;
+    if constexpr (kPieceGroupDebug)
+        std::cout << "Getting possible moves for " << color << std::endl;
+    bool turned_switch_temp = false;
+    if (GetCurrentTurn() != color)
+    {
+        SwitchTurn();
+        turned_switch_temp = true;
+    }
+    DeferedCall my_defered_call([&]() {
+        if (turned_switch_temp)
+        {
+            SwitchTurn();
+        }
+    });
+    for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
+    {
+        auto pos = PieceGroup::Coord1to2(i);
+        auto *piece_primitive = GetPieces()->GetPiece(pos);
+        if (piece_primitive == nullptr)
+            continue;
+        if (piece_primitive->GetColor() != color)
+        {
+            continue;
+        }
+        auto insertable = GetPossibleMoves(pos, piece_primitive->GetPieceType(), piece_primitive->GetColor());
+        for (auto it = insertable.begin(); it != insertable.end(); it++)
+        {
+            if (it->from == it->to)
+            {
+                throw std::runtime_error("from == to in GetPossibleMoves " + it->from.ToString());
+            }
+            ret.push_back(*it);
+        }
+    }
+    if constexpr (kPieceGroupDebug)
+        std::cout << "Got " << ret.size() << " possible moves" << std::endl;
+    Shuffle(ret);
+
+    if constexpr (kGetPossibleDebug)
+        std::cout << "Using calculated possible opponent moves with size " << ret.size() << std::endl;
+    possibleMovesMemory_.Add(fen, std::move(ret));
+    if constexpr (kGetPossibleDebug)
+        if (ret.size() == 0)
+        {
+            std::cout << "No possible moves for " << OpponentColor(currentTurn_) << " " << GenerateFEN() << std::endl;
+            std::cout << *this << std::endl;
+        }
+    return possibleMovesMemory_.Get(fen);
+}
+std::variant<double, Movement> Board::PickOrEvaluate(const std::optional<Movement> &playing_move, int &nodesvisited,
+                                                     double &alpha, double &beta, int depth, Color maximizingColor,
+                                                     bool randomize)
+{
+    bool is_maximizing = maximizingColor == currentTurn_;
+
+    bool toplevel = !playing_move.has_value();
+    const auto &moves = GetPossibleMoves(currentTurn_);
     if (moves.size() == 0 && toplevel)
     {
         std::cout << *this << std::endl;
         std::cout << GenerateFEN() << std::endl;
-        std::cout << "No possible moves game over, " << OpponentColor(currentTurn_) << " won!" << std::endl;
+        std::cout << "No possible moves game over, " << OpponentColor(currentTurn_) << " won! current depth " << depth
+                  << " " << (*playing_move).ToString() << "  toplevel " << toplevel << " moves.size() " << moves.size()
+                  << std::endl;
 
         throw std::runtime_error("No possible moves, game over");
     }
     if (moves.size() == 0)
     {
-        return EvaluateBoard(maximizingColor);
+        auto res = EvaluateBoard(maximizingColor);
+        return res;
     }
-    auto temp_eval = isMaximizing ? std::numeric_limits<double>::min() : std::numeric_limits<double>::max();
+    auto temp_eval = is_maximizing ? -std::numeric_limits<double>::max() : std::numeric_limits<double>::max();
     auto pickedmove = moves[0];
-    if (randomize)
-        Shuffle(moves);
 
     for (const auto &possible_move : moves)
     {
-        auto eval =
-            MinimaxSearch(Movement(possible_move), nodesvisited, depth - 1, maximizingColor, randomize, alpha, beta);
-        if (isMaximizing)
+        auto eval = MinimaxSearch(possible_move, nodesvisited, alpha, beta, depth - 1, maximizingColor, randomize);
+        if (is_maximizing)
         {
             if (temp_eval < std::get<double>(eval))
             {
@@ -829,6 +955,7 @@ std::variant<double, Movement> Board::PickOrEvaluate(std::optional<Movement> pla
         }
         else
         {
+
             if (temp_eval > std::get<double>(eval))
             {
                 pickedmove = possible_move;
@@ -846,20 +973,20 @@ std::variant<double, Movement> Board::PickOrEvaluate(std::optional<Movement> pla
     return Movement(pickedmove);
 }
 
-std::variant<double, Movement> Board::MinimaxSearch(std::optional<Movement> playing_move_opt, int &nodesvisited,
-                                                    int depth, Color maximizingColor, bool randomize, double alpha,
-                                                    double beta)
+std::variant<double, Movement> Board::MinimaxSearch(const std::optional<Movement> &playing_move, int &nodesvisited,
+                                                    double alpha, double beta, int depth, Color maximizingColor,
+                                                    bool randomize)
 {
     bool played_something = false;
-    if (playing_move_opt)
+    if (playing_move)
     {
-        played_something = Play(*playing_move_opt);
+        played_something = Play(*playing_move);
         if (!played_something)
         {
             std::cout << *this << std::endl;
-            std::cout << "Invalid move " << playing_move_opt->ToString() << "  boardstatefen " << GenerateFEN()
+            std::cout << "Invalid move " << playing_move->ToString() << "  boardstatefen " << GenerateFEN()
                       << std::endl;
-            throw std::runtime_error("Invalid move " + playing_move_opt->ToString());
+            throw std::runtime_error("Invalid move " + playing_move->ToString());
         }
         nodesvisited++;
     }
@@ -874,7 +1001,7 @@ std::variant<double, Movement> Board::MinimaxSearch(std::optional<Movement> play
         return res;
     }
 
-    return PickOrEvaluate(playing_move_opt, nodesvisited, depth, maximizingColor, randomize, alpha, beta);
+    return PickOrEvaluate(playing_move, nodesvisited, alpha, beta, depth, maximizingColor, randomize);
 }
 
 } // namespace shatranj

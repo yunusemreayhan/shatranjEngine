@@ -22,7 +22,7 @@ class Piece;
 class Position;
 class MoveHistory;
 
-class Board : public std::enable_shared_from_this<Board>
+class Board
 {
   public:
     struct BoardRepresantation
@@ -72,13 +72,12 @@ class Board : public std::enable_shared_from_this<Board>
     std::vector<Movement> GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color);
     bool CanGo(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
     bool CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType);
-    std::variant<double, Movement> MinimaxSearch(std::optional<Movement> playing_move, int &nodesvisited, int depth = 5,
-                                                 Color maximizingColor = Color::kWhite, bool randomize = true,
-                                                 double alpha = std::numeric_limits<double>::min(),
-                                                 double beta = std::numeric_limits<double>::max());
-    std::variant<double, Movement> PickOrEvaluate(std::optional<Movement> playing_move_opt, int &nodesvisited,
-                                                  int depth, Color maximizingColor, bool randomize, double alpha,
-                                                  double beta);
+    std::variant<double, Movement> MinimaxSearch(const std::optional<Movement> &playing_move, int &nodesvisited,
+                                                 double alpha, double beta, int depth = 5,
+                                                 Color maximizingColor = Color::kWhite, bool randomize = true);
+    std::variant<double, Movement> PickOrEvaluate(const std::optional<Movement> &playing_move, int &nodesvisited,
+                                                  double &alpha, double &beta, int depth = 5,
+                                                  Color maximizingColor = Color::kWhite, bool randomize = true);
     std::shared_ptr<PieceGroup> &GetPieces()
     {
         return pieces_;
@@ -96,10 +95,6 @@ class Board : public std::enable_shared_from_this<Board>
     Color GetCurrentTurn() const
     {
         return currentTurn_;
-    }
-    std::shared_ptr<Board> GetSharedFromThis()
-    {
-        return shared_from_this();
     }
 
     friend std::ostream &operator<<(std::ostream &ostr, const Board &board)
@@ -125,6 +120,9 @@ class Board : public std::enable_shared_from_this<Board>
 
     MoveHistory &GetHistory() const;
 
+    const std::vector<Movement> &GetPossibleMoves(Color color);
+    const std::vector<Movement> &GetPossibleOpponentMoves(Color color);
+
   private:
     std::shared_ptr<PieceGroup> pieces_;
     std::vector<Player> players_;
@@ -134,6 +132,7 @@ class Board : public std::enable_shared_from_this<Board>
     int fullMoveNumber_ = 1;
     KeyBasedMemory<std::string, GameState> boardStateMemory_;
     KeyBasedMemory<std::string, bool> wouldBeInCheckMemory_;
+    KeyBasedMemory<std::string, std::vector<Movement>> possibleMovesMemory_;
     constexpr static inline bool kDebug = kBoardDebug;
 };
 } // namespace shatranj

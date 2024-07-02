@@ -7,18 +7,24 @@
             "label": "build debug",
             "type": "shell",
             "command": "cmake --build ./build --target all",
-            "dependsOn":"configure debug"
+            "dependsOn": "configure debug",
+            "problemMatcher": [
+                "$gcc"
+            ]
         },
         {
             "label": "build release",
             "type": "shell",
             "command": "cmake --build ./build --target all",
-            "dependsOn": "configure release"
+            "dependsOn": "configure release",
+            "problemMatcher": [
+                "$gcc"
+            ]
         },
         {
             "label": "configure debug",
             "type": "shell",
-            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Debug",
+            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=RelWithDebInfo",
             "dependsOn": "configure"
         },
         {

@@ -1,4 +1,5 @@
 #include "piece_group.h"
+#include "helper.h"
 #include "position.h"
 #include "shatranc_piece.h"
 #include "types.h"
@@ -137,40 +138,6 @@ std::vector<Piece> PieceGroup::GetSubPieces(Color color)
         }
     }
     return ret;
-}
-
-const std::vector<Movement> &PieceGroup::GetPossibleMoves(Color color, const std::shared_ptr<Board> &board)
-{
-    auto fen = board->GenerateFEN(false);
-    if (possibleMovesMemory_.Have(fen))
-    {
-        return possibleMovesMemory_.Get(fen);
-    }
-    std::vector<Movement> ret;
-    if constexpr (kPieceGroupDebug)
-        std::cout << "Getting possible moves for " << color << std::endl;
-    for (auto pieceitr = pieces_primitive_.begin(); pieceitr != pieces_primitive_.end(); pieceitr++)
-    {
-        const Piece piece = FromPiecePrimitive(pieceitr);
-        if (piece.GetColor() != color)
-        {
-            continue;
-        }
-        auto insertable = board->GetPossibleMoves(piece.GetPos(), piece.GetPieceType(), piece.GetColor());
-        for (auto it = insertable.begin(); it != insertable.end(); it++)
-        {
-            if (it->from == it->to)
-            {
-                throw std::runtime_error("from == to in GetPossibleMoves " + it->from.ToString());
-            }
-            ret.push_back(*it);
-        }
-    }
-    if constexpr (kPieceGroupDebug)
-        std::cout << "Got " << ret.size() << " possible moves" << std::endl;
-
-    possibleMovesMemory_.Add(fen, std::move(ret));
-    return possibleMovesMemory_.Get(fen);
 }
 
 bool PieceGroup::IsAllInstanceOf(ChessPieceEnum chessPiece) const

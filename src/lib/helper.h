@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+#include <iostream>
 #include <map>
 #include <queue>
 #include <string>
@@ -45,16 +47,6 @@ template <typename TypeOfKey, typename TypeOfHold> class KeyBasedMemory
         return moves_.find(key) != moves_.end();
     }
 
-    void Add(const TypeOfKey &key, const TypeOfHold &&moves)
-    {
-        moves_[key] = moves;
-        if (moves_.size() > maxkeyCount_)
-        {
-            moves_.erase(keys_.front());
-            keys_.pop();
-        }
-        keys_.push(key);
-    }
     void Add(const TypeOfKey &key, const TypeOfHold &moves)
     {
         moves_[key] = moves;
@@ -72,9 +64,19 @@ template <typename TypeOfKey, typename TypeOfHold> class KeyBasedMemory
     }
 
   private:
-    const size_t maxkeyCount_ = 100000;
+    const size_t maxkeyCount_ = 10000000;
     std::queue<TypeOfKey> keys_;
     std::map<TypeOfKey, TypeOfHold> moves_;
 };
+
+template <typename T> auto RunWithTiming(const std::string &header, const T &ftocall) -> decltype(ftocall())
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    auto ret = ftocall();
+    auto duration = std::chrono::high_resolution_clock::now() - start;
+    std::cout << header << " took: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms"
+              << std::endl;
+    return ret;
+}
 
 } // namespace shatranj

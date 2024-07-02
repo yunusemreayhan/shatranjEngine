@@ -70,8 +70,6 @@ class PieceGroup
     PiecePrimitive *GetPtr(const Position &pos, Color color);
     bool HavePieceAtPosWithColor(const Position &pos, Color color);
 
-    const std::vector<Movement> &GetPossibleMoves(Color color, const std::shared_ptr<Board> &board);
-
     constexpr inline static size_t kSquareCount = 64;
 
     Position GetWhiteShahPos() const
@@ -89,7 +87,6 @@ class PieceGroup
     void RemovePieceNoCounterUpdate(const Position &pos);
     Piece FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primitr);
     std::vector<PiecePrimitive> pieces_primitive_;
-    KeyBasedMemory<std::string, std::vector<Movement>> possibleMovesMemory_;
     constexpr static bool inline kDebug = kDebugGlobal;
     size_t counter_ = 0;
     size_t black_count_ = 0;
