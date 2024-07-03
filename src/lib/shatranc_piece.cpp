@@ -10,25 +10,10 @@
 namespace shatranj
 {
 
-const std::vector<Step> PiecePrimitive::kRookSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
-const std::vector<Step> PiecePrimitive::kPiyadeWhiteSteps = {{0, +1}};
-const std::vector<Step> PiecePrimitive::kPiyadeBlackSteps = {{0, -1}};
-
-const std::vector<Step> PiecePrimitive::kVizierSteps = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-
-const std::vector<Step> PiecePrimitive::kShahSteps = {{0, 1}, {1, 0},  {0, -1}, {-1, 0},
-                                                      {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-
-const std::vector<Step> PiecePrimitive::kHorseSteps = {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1},
-                                                       {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}};
-
-const std::vector<Step> PiecePrimitive::kFilSteps = {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}};
-
-const std::vector<Step> PiecePrimitive::kPiyadeWhiteCaptureSteps = {{1, +1}, {-1, +1}};
-
-const std::vector<Step> PiecePrimitive::kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
-
-const std::vector<Step> PiecePrimitive::kEmptySteps = {};
+std::array<std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+    PiecePrimitive::move_per_square_table;
+std::array<std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+    PiecePrimitive::capture_per_square_table;
 
 PiecePrimitive::PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved)
 {
@@ -44,7 +29,7 @@ Piece::Piece(ChessPieceEnum pieceType, Position pos, const Color color, bool mov
         throw std::invalid_argument("Position is invalid " + pos.ToString());
 }
 
-bool Piece::CanMove(Position frompos, Position topos, ChessPieceEnum pieceType, Color color)
+bool Piece::CanMove(Position frompos, Position topos, ChessPieceEnum pieceType)
 {
     if (frompos == topos)
     {
@@ -55,84 +40,24 @@ bool Piece::CanMove(Position frompos, Position topos, ChessPieceEnum pieceType, 
         return false;
     }
 
-    auto diff = topos.Diff(frompos);
-    auto regmoves = GetPossibleRegularMoves(pieceType, color);
-    if (!CanMultipleMove(pieceType))
-    {
-        if (std::find(regmoves.begin(), regmoves.end(), diff) == regmoves.end())
-        {
-            return false;
-        }
-    }
-    else
-    {
-        bool check = false;
-        for (int i = 1; i < 8; i++)
-        {
-            if (diff.Diffx() % i == 0 && diff.Diffy() % i == 0)
-            {
-                Step multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
-                const auto findres = std::find(regmoves.begin(), regmoves.end(), multiplemoveinstance);
-                if (findres != regmoves.end())
-                {
-                    check = true;
-                    break;
-                }
-            }
-        }
-        if (!check)
-        {
-            return false;
-        }
-    }
-    return true;
+    return CanMoveWithMem(pieceType, frompos, topos);
 }
 
-bool Piece::CanPawnCapture(Position frompos, Position pos, ChessPieceEnum pieceType, Color color)
+bool Piece::CanPawnCapture(Position frompos, Position topos, ChessPieceEnum pieceType)
 {
-    if (pieceType != ChessPieceEnum::kPiyade)
+    if (pieceType != ChessPieceEnum::kPiyadeBlack && pieceType != ChessPieceEnum::kPiyadeWhite)
     {
         return false;
     }
-    if (frompos == pos)
+    if (frompos == topos)
     {
         return false;
     }
-    if (!pos.IsValid())
+    if (!topos.IsValid())
     {
         return false;
     }
-    auto capmoves = GetPossibleCaptureMoves(pieceType, color);
-    auto diff = pos.Diff(frompos);
-    if (!CanMultipleMove(pieceType))
-    {
-        if (std::find(capmoves.begin(), capmoves.end(), diff) == capmoves.end())
-        {
-            return false;
-        }
-    }
-    else
-    {
-        bool check = false;
-        for (int i = 1; i < 8; i++)
-        {
-            if (diff.Diffx() % i == 0 && diff.Diffy() % i == 0)
-            {
-                const auto multiplemoveinstance = Step::StepFromDouble(diff.Diffxd() / i, diff.Diffyd() / i);
-                const auto findres = std::find(capmoves.begin(), capmoves.end(), multiplemoveinstance);
-                if (findres != capmoves.end())
-                {
-                    check = true;
-                    break;
-                }
-            }
-        }
-        if (!check)
-        {
-            return false;
-        }
-    }
-    return true;
+    return CanCaptureWithMem(pieceType, frompos, topos);
 }
 
 bool Piece::Move(Position pos)
@@ -153,7 +78,8 @@ Rook::Rook(Position pos, Color color) : Piece(ChessPieceEnum::kRook, pos, color,
 {
 }
 
-Piyade::Piyade(Position pos, Color color) : Piece(ChessPieceEnum::kPiyade, pos, color, false)
+Piyade::Piyade(Position pos, Color color)
+    : Piece(color == Color::kWhite ? ChessPieceEnum::kPiyadeWhite : ChessPieceEnum::kPiyadeBlack, pos, color, false)
 {
 }
 

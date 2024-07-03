@@ -40,7 +40,7 @@ class Step
         return x_ == other.x_ && y_ == other.y_;
     }
 
-    void operator*=(int8_t factor)
+    Step &Times(int8_t factor)
     {
         int tempx = x_ * factor;
         int tempy = y_ * factor;
@@ -53,6 +53,7 @@ class Step
 
         x_ = static_cast<int8_t>(tempx);
         y_ = static_cast<int8_t>(tempy);
+        return *this;
     }
     static Step StepFromDouble(double posx, double posy)
     {
