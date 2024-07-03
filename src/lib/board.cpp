@@ -397,19 +397,33 @@ GameState Board::GetBoardState()
     {
         return boardStateMemory_.Get(fenkey);
     }
-    auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
-    auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
 
-    if (current_turn_pieces.size() == 1 && opponent_pieces.size() > 2)
+    size_t current_turn_pieces_count;
+    size_t opponent_pieces_count;
+
+    if (currentTurn_ == Color::kWhite)
+    {
+        current_turn_pieces_count = GetPieces()->GetWhiteCount();
+        opponent_pieces_count = GetPieces()->GetBlackCount();
+    }
+    else
+    {
+        current_turn_pieces_count = GetPieces()->GetBlackCount();
+        opponent_pieces_count = GetPieces()->GetWhiteCount();
+    }
+
+    if (current_turn_pieces_count == 1 && opponent_pieces_count > 2)
     {
         ret = GameState::kCheckmate;
     }
-    else if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 1)
+    else if (current_turn_pieces_count == 1 && opponent_pieces_count == 1)
     {
         ret = GameState::kDraw;
     }
-    else if (current_turn_pieces.size() == 1 && opponent_pieces.size() == 2)
+    else if (current_turn_pieces_count == 1 && opponent_pieces_count == 2)
     {
+        auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
+        auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
         if (CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType(),
                   current_turn_pieces[0].GetColor()) ||
             CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType(),

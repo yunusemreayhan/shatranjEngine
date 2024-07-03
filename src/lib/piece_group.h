@@ -55,6 +55,16 @@ class PieceGroup
         return counter_;
     }
 
+    size_t GetBlackCount() const
+    {
+        return black_count_;
+    }
+
+    size_t GetWhiteCount() const
+    {
+        return white_count_;
+    }
+
     bool Empty() const
     {
         return counter_ == 0;
