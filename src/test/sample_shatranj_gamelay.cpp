@@ -29,6 +29,45 @@ void DumpPossibleMoves(std::shared_ptr<shatranj::Board> &board, size_t expected_
     EXPECT_EQ(posmoves.size(), expected_moves);
 }
 
+void Compare(shatranj::Shatranj &game, const std::vector<shatranj::Movement> &first,
+             const std::vector<shatranj::Movement> &second)
+{
+    std::cout << "possible moves of last captured piece: ";
+    for (auto &move : first)
+    {
+        std::cout << move.ToString() << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "expected moves: ";
+    for (const auto &move : second)
+    {
+        std::cout << move.ToString() << " ";
+    }
+    std::cout << std::endl;
+    for (const auto &move : first)
+    {
+        auto found = std::find(second.begin(), second.end(), move.ToString()) != second.end();
+        if (!found)
+        {
+            std::cout << "not expected move found " << move.ToString() << std::endl;
+        }
+        EXPECT_TRUE(found);
+    }
+    for (const auto &move : second)
+    {
+        auto found =
+            std::find_if(first.begin(), first.end(), [&move](const shatranj::Movement &movefromcaptured) -> bool {
+                return movefromcaptured == move;
+            }) != first.end();
+        EXPECT_TRUE(found);
+        if (!found)
+        {
+            std::cout << *(game.GetBoard()) << std::endl;
+            std::cout << "expected move not found " << move.ToString() << std::endl;
+        }
+    }
+}
+
 void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordinates,
                         const std::vector<std::string> &expectedmoves)
 {
@@ -43,46 +82,18 @@ void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordina
     auto possiblemovesoflastcapturedpiece = shatranj.GetBoard()->GetPossibleMoves(
         lastcapturedpiece.GetPos(), lastcapturedpiece.GetPieceType(), lastcapturedpiece.GetColor());
 
-    std::cout << "possible moves of last captured piece: ";
-    for (auto &move : possiblemovesoflastcapturedpiece)
-    {
-        std::cout << move.ToString() << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "expected moves: ";
+    std::vector<shatranj::Movement> expected_moves_movementlist;
     for (const auto &move : expectedmoves)
     {
-        std::cout << move << " ";
+        expected_moves_movementlist.push_back(shatranj::Movement(move));
     }
-    std::cout << std::endl;
-    for (const auto &move : possiblemovesoflastcapturedpiece)
-    {
-        auto found = std::find(expectedmoves.begin(), expectedmoves.end(), move.ToString()) != expectedmoves.end();
-        if (!found)
-        {
-            std::cout << "not expected move found " << move.ToString() << std::endl;
-        }
-        EXPECT_TRUE(found);
-    }
-    for (const auto &move : expectedmoves)
-    {
-        auto found = std::find_if(possiblemovesoflastcapturedpiece.begin(), possiblemovesoflastcapturedpiece.end(),
-                                  [&move](const shatranj::Movement &movefromcaptured) -> bool {
-                                      return movefromcaptured.ToString() == move;
-                                  }) != possiblemovesoflastcapturedpiece.end();
-        EXPECT_TRUE(found);
-        if (!found)
-        {
-            std::cout << *(shatranj.GetBoard()) << std::endl;
-            std::cout << "expected move not found " << move << std::endl;
-        }
-    }
+    Compare(shatranj, possiblemovesoflastcapturedpiece, expected_moves_movementlist);
 }
 
 TEST(SampleCaptureTest_Piyade, Positive)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.GetBoard()->GetPieces()->Size(), 32);
         EXPECT_EQ(shatranj.PlaySeq({"a2a3"}), true);
@@ -116,7 +127,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
         EXPECT_EQ(shatranj.GetBoard()->GetPieces()->Size(), 31);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"a4a5"}), true);
@@ -124,7 +135,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
     {
         {
             // piyade can not capture in front check get possible moves only 2 crosses possible front filled
-            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+            shatranj::Shatranj shatranj;
 
             CheckPossibleMoves(shatranj, "a1", {});
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
@@ -133,7 +144,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
         }
         {
             // piyade can not capture in front check get possible moves all 3 possible, front empty
-            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+            shatranj::Shatranj shatranj;
 
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "e2e3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             std::cout << *(shatranj.GetBoard()) << std::endl;
@@ -142,14 +153,14 @@ TEST(SampleCaptureTest_Piyade, Positive)
         }
         {
             // piyade can not capture in front
-            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+            shatranj::Shatranj shatranj;
 
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             EXPECT_EQ(shatranj.PlaySeq({"b4c3"}), true);
         }
         {
             // piyade can not capture in front
-            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+            shatranj::Shatranj shatranj;
 
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
             EXPECT_EQ(shatranj.PlaySeq({"b4b3"}), false);
@@ -157,7 +168,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
     }
     {
         // piyade can promote to vizier
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"g3h2"}), true);
@@ -175,7 +186,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
 TEST(SampleCaptureTest_Rook, Positive)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5", "a4b5", "f7f6"}, true), true);
         EXPECT_EQ(shatranj.PlaySeq({"a1a7", "d7d6"}, true), true);
@@ -189,7 +200,7 @@ TEST(SampleCaptureTest_Rook, Positive)
         CheckPossibleMoves(shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.PlaySeq({"b1c3"}), true);
         CheckPossibleMoves(shatranj, "a1", {});
@@ -199,7 +210,7 @@ TEST(SampleCaptureTest_Rook, Positive)
         EXPECT_EQ(shatranj.PlaySeq({"a1b1"}), true);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_NO_THROW(shatranj.GetBoard()->ApplyFEN("r1fvsf1r/pppppppp/h4h2/3H4/8/8/PPPPPPPP/R1FVSFHR w 0 3"));
 
@@ -210,7 +221,7 @@ TEST(SampleCaptureTest_Rook, Positive)
 TEST(SampleCaptureTest_Horse, Positive)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
         CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
@@ -225,7 +236,7 @@ TEST(SampleCaptureTest_Horse, Positive)
         CheckPossibleMoves(shatranj, "c6", {"c6b4", "c6a5", "c6e5", "c6d4", "c6b8"});
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         CheckPossibleMoves(shatranj, "b1", {"b1a3", "b1c3"});
         EXPECT_EQ(shatranj.PlaySeq({"b1c3", "g8f6", "c3d5"}), true);
@@ -238,7 +249,7 @@ TEST(SampleCaptureTest_Horse, Positive)
 
 TEST(SampleCaptureTest_Fil, Positive)
 {
-    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+    shatranj::Shatranj shatranj;
 
     CheckPossibleMoves(shatranj, "c1", {"c1a3", "c1e3"});
 }
@@ -253,7 +264,7 @@ TEST(SampleCaptureTest_LeakTest, Positive)
     if constexpr (shatranj::kStressTest)
         for (int i = 0; i < 1000; i++)
         {
-            shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+            shatranj::Shatranj shatranj;
             EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
                                         "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
                       true);
@@ -279,7 +290,7 @@ TEST(SampleCaptureTest_DrawTest, Positive)
 {
 
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
                                     "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
@@ -308,7 +319,7 @@ TEST(SampleCaptureTest_DrawTest, Positive)
     }
     {
 
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
                                     "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
@@ -341,7 +352,7 @@ TEST(SampleCaptureTest_DrawTest, Positive)
 
 TEST(SampleCaptureTest_GenerateFEN, Negative)
 {
-    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+    shatranj::Shatranj shatranj;
 
     EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w 0 1"));
     EXPECT_EQ(shatranj.PlaySeq({"e2e3"}), true);
@@ -353,7 +364,7 @@ TEST(SampleCaptureTest_GenerateFEN, Negative)
 TEST(SampleCaptureTest_ApplyFEN, Negative)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         shatranj.GetBoard()->ApplyFEN(std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
         auto e3opt = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position{"e3"});
@@ -370,7 +381,7 @@ TEST(SampleCaptureTest_ApplyFEN, Negative)
         EXPECT_EQ(shatranj.GetBoard()->GetHalfMoveClock(), 0);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         shatranj.GetBoard()->ApplyFEN(std::string("s7/8/4p3/8/8/4P3/8/7S w 0 2"));
         auto a8opt = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position{"a8"});
@@ -398,7 +409,7 @@ TEST(RevertTest, Positive)
 {
 
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
 
         for (int i = 0; i < 10; i++)
         {
@@ -413,7 +424,7 @@ TEST(RevertTest, Positive)
 TEST(RevertTest2, Positive)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         EXPECT_EQ(shatranj.PlaySeq({"b1c3", "b8a6", "c3d5", "g8f6", "g1h3"}), true);
         EXPECT_EQ(shatranj.GetBoard()->Revert(1), true);
         auto oneplayandrevert = [&](const std::vector<shatranj::Movement> &moves) {
@@ -437,61 +448,61 @@ TEST(RevertTest2, Positive)
 TEST(SampleGameEndTests, PosNeg)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("1r1vr3/1p2sp2/p1p5/3pp2p/2f3p1/2H2P2/PPPf1PPP/1RFVSF1R w 1 43");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 19);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("2rr2f1/2v1p1p1/p2p1p1p/1p2h3/2p1s1h1/2H5/PPPfPPPP/R1FVSFHR b 7 37");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 3);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("2rvs2r/pp1p1pp1/3fp2p/2p1h2h/2f5/2H5/PPPP1PPP/1RFVSFHR w 0 21");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 20);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("r1fv3r/2ppp1sp/pp3ppf/4h3/8/2H5/PPPPPPhP/R1FVSFHR w 6 20");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
         DumpPossibleMoves(shatranj.GetBoard(), 0);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("1h1vsf1r/r1ppp1p1/pp2fp1h/7p/8/1P1FPS1P/P1PP1PPR/RHFV2H1 b 1 9");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 22);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("rhfvsfhr/2Hppppp/8/1p6/p7/P3F2H/1PPPPPPP/R2VSF1R b 6 6");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 1);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("rhfvsf1r/ppppp1pp/8/5pH1/5h2/2P3P1/PP1PPP1P/RH1VSFFR b 0 6");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 22);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("1s6/pV1R2pp/2H1p2f/1pF2F1P/8/2P5/PPSPPPP1/7R b 6 45");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
         DumpPossibleMoves(shatranj.GetBoard(), 0);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("4s3/1pppvpp1/4f3/1p1p2p1/r4f2/4hP1r/4P3/3h2S1 w 18 37");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kStalemate);
         DumpPossibleMoves(shatranj.GetBoard(), 0);
     }
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("r3sf1r/p1vppppp/1p6/8/2fh4/F2PPhP1/PPP2P1P/R2VSFR1 w 3 11");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
         DumpPossibleMoves(shatranj.GetBoard(), 0);
@@ -501,11 +512,14 @@ TEST(SampleGameEndTests, PosNeg)
 TEST(SampleCaptureTest_MinMax, Expectations)
 {
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        int noofvisitednodes = 0;
+        std::chrono::microseconds duration = std::chrono::microseconds(0);
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("rh1vs1hr/p1ppp1pp/1p1H1p1f/8/2H5/7F/PPPPPPPP/R1FV1S1R b 12 8");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 3);
-        auto picked_move = shatranj.PickMoveInBoard(4);
+        auto picked_move = shatranj.PickMoveInBoard(4, &noofvisitednodes, &duration);
+        std::cout << "nodes visited per second : " << noofvisitednodes / (duration.count() / 10000) << std::endl;
         EXPECT_NE(picked_move, std::nullopt);
         std::cout << "picked move : " << picked_move->ToString() << std::endl;
         EXPECT_EQ(picked_move->ToString() == "c7d6" || picked_move->ToString() == "e7d6", true);
@@ -516,12 +530,14 @@ TEST(Shatranj_SampleQuestions, FindingCheckmate)
 {
     for (int i = 0; i < 1; i++)
     {
-        shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+        shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("1r1r4/8/1h6/2p5/2P5/1HS5/R3R3/1s6 b 0 10");
         std::cout << *(shatranj.GetBoard()) << std::endl;
         size_t counter = 0;
+        int noofnodes = 0;
+        std::chrono::microseconds duration = std::chrono::microseconds(0);
         shatranj::RunWithTiming("Looking for black checkmate", [&]() -> bool {
-            while (shatranj.PickAndPlay(5))
+            while (shatranj.PickAndPlay(5, &noofnodes, &duration))
             {
                 std::cout << *(shatranj.GetBoard()) << std::endl;
                 EXPECT_LE(counter++, 10);
@@ -538,9 +554,61 @@ TEST(Shatranj_SampleQuestions, FindingCheckmate)
     }
 }
 
+TEST(Shatranj_SampleQuestions, FindingCheckmate2)
+{
+    for (int i = 0; i < 1; i++)
+    {
+        shatranj::Shatranj shatranj;
+        shatranj.GetBoard()->ApplyFEN("1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10");
+        int noofnodes = 0;
+        std::chrono::microseconds duration = std::chrono::microseconds(0);
+        // 1r4k1/8/5PP1/K1n5/6NR/7B/1r6/7R w - - 0 1
+        std::cout << *(shatranj.GetBoard()) << std::endl;
+        size_t counter = 0;
+        auto wanted_winning_color = shatranj.GetBoard()->GetCurrentTurn();
+        auto ret = shatranj::RunWithTiming(
+            "Looking for black checkmate",
+            [&]() -> bool {
+                while (true)
+                {
+                    bool played = shatranj.GetBoard()->GetCurrentTurn() == wanted_winning_color
+                                      ? shatranj.PickAndPlayWinningSequence(11, &noofnodes)
+                                      : shatranj.PickAndPlay(3, &noofnodes);
+                    if (!played)
+                    {
+                        break;
+                    }
+                    std::cout << *(shatranj.GetBoard()) << std::endl;
+                    EXPECT_LE(counter++, 10);
+                    if (counter > 10)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            },
+            &duration);
+
+        EXPECT_EQ(ret, true);
+        EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
+        EXPECT_EQ(shatranj.GetBoard()->GetCurrentTurn(), shatranj::Color::kBlack);
+    }
+}
+
+TEST(ShatranjGetCheckingMoves, Positive)
+{
+    shatranj::Shatranj shatranj;
+    shatranj.GetBoard()->ApplyFEN("1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10");
+    // 1r4k1/8/5PP1/K1n5/6NR/7B/1r6/7R w - - 0 1
+    auto movesOfCheck = shatranj.GetBoard()->GetPossibleCheckMoves(shatranj.GetBoard()->GetCurrentTurn());
+    std::vector<shatranj::Movement> expecteds = {{"h4h8"}, {"f6f7"}, {"g4h6"}};
+    Compare(shatranj, movesOfCheck, expecteds);
+}
 TEST(SampleCaptureTest_SampleSelfPlay, Negative)
 {
-    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+    int countofvisitednode = 0;
+    std::chrono::microseconds duration = std::chrono::microseconds(0);
+    shatranj::Shatranj shatranj;
     std::cout << *(shatranj.GetBoard()) << std::endl;
     std::vector<shatranj::Movement> moves;
     shatranj::DeferedCall callback([&]() {
@@ -558,8 +626,10 @@ TEST(SampleCaptureTest_SampleSelfPlay, Negative)
     });
     for (int i = 0; i < 100; i++)
     {
+        std::chrono::microseconds tempduration = std::chrono::microseconds(0);
         std::optional<shatranj::Movement> pickedmove =
-            i % 2 == 0 ? shatranj.PickMoveInBoard(2) : shatranj.PickMoveInBoard(2);
+            i % 2 == 0 ? shatranj.PickMoveInBoard(2, &countofvisitednode, &tempduration)
+                       : shatranj.PickMoveInBoard(2, &countofvisitednode, &tempduration);
         if (pickedmove)
         {
             std::cout << pickedmove->ToString() << std::endl;
@@ -570,6 +640,7 @@ TEST(SampleCaptureTest_SampleSelfPlay, Negative)
         {
             break;
         }
+        duration += tempduration;
     }
     if (shatranj.GetBoard()->Winner())
     {
@@ -585,6 +656,11 @@ TEST(SampleCaptureTest_SampleSelfPlay, Negative)
             std::cout << "checkmate" << std::endl;
     }
     std::cout << *(shatranj.GetBoard()) << std::endl;
+    if (duration.count() > 0)
+        std::cout << "nodes per second: " << 1000000 * static_cast<long>(countofvisitednode) / duration.count()
+                  << std::endl;
+    else
+        std::cout << "duration is 0" << std::endl;
 }
 
 } // namespace

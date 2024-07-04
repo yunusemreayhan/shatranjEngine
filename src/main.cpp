@@ -3,7 +3,7 @@
 
 int main()
 {
-    shatranj::Shatranj shatranj(std::string("player1"), std::string("player2"));
+    shatranj::Shatranj shatranj;
     shatranj.Run();
     return 0;
 }

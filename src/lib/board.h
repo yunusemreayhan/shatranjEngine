@@ -25,8 +25,8 @@ class MoveHistory;
 class Board
 {
   public:
-    friend struct BoardRepresantation;
-    Board(const std::string &name1, const std::string &name2);
+    virtual ~Board() = default;
+    Board();
 
     const Player &GetPlayer(Color color) const;
 
@@ -46,21 +46,19 @@ class Board
     Player Opponent(const Color &pColor);
     void SwitchTurn();
     bool IsPathClear(const Position &from, const Position &target);
-    bool IsUnderAttack(int posx, int posy, Player *player); // not used yet
-    bool Play(const std::string &input);
     bool Play(const Movement &input);
-    bool Play(const std::string &from_pos, const std::string &to_pos);
-    std::string BoardToString() const;
+    bool PlayWithoutIsCheckControl(const Movement &input);
+    std::string BoardToString();
     double EvaluateBoard(Color color);
     bool CanPawnCapture(ChessPieceEnum pieceType, const Position &frompos, const Position &topos);
     bool CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, const Position &topos);
     std::vector<Movement> GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color);
     bool CanGo(Position frompos, Position pos, ChessPieceEnum pieceType);
     bool CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType);
-    std::variant<double, Movement> MinimaxSearch(const std::optional<Movement> &playing_move, int &nodesvisited,
+    std::variant<double, Movement> MinimaxSearch(const std::optional<Movement> &playing_move, int *nodesvisited,
                                                  double alpha, double beta, int depth = 5,
                                                  Color maximizingColor = Color::kWhite, bool randomize = true);
-    std::variant<double, Movement> PickOrEvaluate(const std::optional<Movement> &playing_move, int &nodesvisited,
+    std::variant<double, Movement> PickOrEvaluate(const std::optional<Movement> &playing_move, int *nodesvisited,
                                                   double &alpha, double &beta, int depth = 5,
                                                   Color maximizingColor = Color::kWhite, bool randomize = true);
     std::shared_ptr<PieceGroup> &GetPieces()
@@ -86,7 +84,7 @@ class Board
         return currentTurn_;
     }
 
-    friend std::ostream &operator<<(std::ostream &ostr, const Board &board)
+    friend std::ostream &operator<<(std::ostream &ostr, Board &board)
     {
         ostr << board.BoardToString();
         return ostr;
@@ -109,8 +107,13 @@ class Board
 
     MoveHistory &GetHistory() const;
 
-    const std::vector<Movement> &GetPossibleMoves(Color color);
-    const std::vector<Movement> &GetPossibleMovesCalcOpponentToo(Color color);
+    const std::vector<Movement> GetPossibleMoves(Color color);
+    const std::vector<Movement> GetPossibleMovesCalcOpponentToo(Color color);
+    const std::vector<Movement> GetPossibleCheckMoves(Color color);
+    std::pair<Movement, bool> LookForCheckMateMoveDfs(int depth, Color colorForCheckMate, int *totalnodes,
+                                                      std::vector<Movement> &moves_so_far,
+                                                      std::optional<const Movement> playing_move = std::nullopt);
+    bool IsCheckAfterMove(const Movement &Movement);
 
   private:
     std::shared_ptr<PieceGroup> pieces_;
@@ -119,9 +122,6 @@ class Board
     Color currentTurn_;
     int halfMoveClock_ = 0;
     int fullMoveNumber_ = 1;
-    KeyBasedMemory<std::string, GameState> boardStateMemory_;
-    KeyBasedMemory<std::string, bool> wouldBeInCheckMemory_;
-    KeyBasedMemory<std::string, std::vector<Movement>> possibleMovesMemory_;
     constexpr static inline bool kDebug = kBoardDebug;
 };
 } // namespace shatranj

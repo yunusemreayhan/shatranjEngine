@@ -93,6 +93,7 @@ class PieceGroup
     }
     PiecePrimitive *GetPiece(const Position &pos);
     const PiecePrimitive *GetPiece(const Position &pos) const;
+    std::string ToStringAsBoard() const;
 
   private:
     void RemovePieceNoCounterUpdate(const Position &pos);
