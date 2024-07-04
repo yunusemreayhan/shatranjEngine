@@ -9,6 +9,7 @@ add_executable(dummy_chess_enginetest ${TEST})
 target_link_libraries(dummy_chess_enginetest ${GTEST} ${GTEST_MAIN} ${GMOCK} dummy_chess_engine)
 include_directories(../lib)
 
+enable_testing()
 
 include(GoogleTest)
-gtest_discover_tests(dummy_chess_enginetest) # discovers tests by asking the compiled test executable to enumerate its tests
+gtest_discover_tests(dummy_chess_enginetest)

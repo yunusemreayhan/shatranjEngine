@@ -1,6 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string_view>
 #include <variant>
@@ -17,18 +20,33 @@ class Player;
 
 enum class ChessPieceEnum : std::uint8_t
 {
-    kNone,
-    kPiyade,
-    kVizier,
     kShah,
-    kHorse,
+    kVizier,
     kFil,
-    kRook
+    kHorse,
+    kRook,
+    kPiyadeWhite,
+    kPiyadeBlack,
+    kCountpiecetypes,
+    kNone
 };
 class PiecePrimitive // positionless piece
 {
   public:
     PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved);
+
+    const static inline std::vector<Step> kRookSteps = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+    const static inline std::vector<Step> kPiyadeWhiteSteps = {{0, +1}};
+    const static inline std::vector<Step> kPiyadeBlackSteps = {{0, -1}};
+    const static inline std::vector<Step> kVizierSteps = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+    const static inline std::vector<Step> kShahSteps = {{0, 1}, {1, 0},  {0, -1}, {-1, 0},
+                                                        {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+    const static inline std::vector<Step> kHorseSteps = {{+1, +2}, {+2, +1}, {-1, +2}, {-2, +1},
+                                                         {-1, -2}, {-2, -1}, {+1, -2}, {+2, -1}};
+    const static inline std::vector<Step> kFilSteps = {{2, 2}, {2, -2}, {-2, 2}, {-2, -2}};
+    const static inline std::vector<Step> kPiyadeWhiteCaptureSteps = {{1, +1}, {-1, +1}};
+    const static inline std::vector<Step> kPiyadeBlackCaptureSteps = {{1, -1}, {-1, -1}};
+    const static inline std::vector<Step> kEmptySteps = {};
 
     inline std::string GetSymbol() const
     {
@@ -43,12 +61,16 @@ class PiecePrimitive // positionless piece
                 return "\u2656";
             case ChessPieceEnum::kFil:
                 return "\u2657";
-            case ChessPieceEnum::kPiyade:
+            case ChessPieceEnum::kPiyadeWhite:
                 return "\u2659";
             case ChessPieceEnum::kHorse:
                 return "\u2658";
             case ChessPieceEnum::kNone:
                 return " ";
+            case ChessPieceEnum::kPiyadeBlack:
+                throw std::runtime_error("PiyadeBlack should not be here");
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("kCountpiecetypes should not be here");
             }
         else
             switch (GetPieceType())
@@ -63,10 +85,14 @@ class PiecePrimitive // positionless piece
                 return "\u265D";
             case ChessPieceEnum::kHorse:
                 return "\u265E";
-            case ChessPieceEnum::kPiyade:
+            case ChessPieceEnum::kPiyadeBlack:
                 return "\u265F";
             case ChessPieceEnum::kNone:
                 return " ";
+            case ChessPieceEnum::kPiyadeWhite:
+                throw std::runtime_error("PiyadeWhite should not be here");
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("kCountpiecetypes should not be here");
             }
 
         return " ";
@@ -76,7 +102,7 @@ class PiecePrimitive // positionless piece
         if (GetColor() == Color::kWhite)
             switch (GetPieceType())
             {
-            case ChessPieceEnum::kPiyade:
+            case ChessPieceEnum::kPiyadeWhite:
                 return "P";
             case ChessPieceEnum::kVizier:
                 return "V";
@@ -90,24 +116,32 @@ class PiecePrimitive // positionless piece
                 return "R";
             case ChessPieceEnum::kNone:
                 return " ";
+            case ChessPieceEnum::kPiyadeBlack:
+                throw std::runtime_error("PiyadeBlack should not be here");
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("kCountpiecetypes should not be here");
             }
         else
             switch (GetPieceType())
             {
-            case ChessPieceEnum::kPiyade:
+            case ChessPieceEnum::kPiyadeBlack:
                 return "p";
             case ChessPieceEnum::kVizier:
                 return "v";
             case ChessPieceEnum::kShah:
                 return "s";
-            case ChessPieceEnum::kHorse:
-                return "h";
             case ChessPieceEnum::kFil:
                 return "f";
+            case ChessPieceEnum::kHorse:
+                return "h";
             case ChessPieceEnum::kRook:
                 return "r";
             case ChessPieceEnum::kNone:
                 return " ";
+            case ChessPieceEnum::kPiyadeWhite:
+                throw std::runtime_error("PiyadeWhite should not be here");
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("kCountpiecetypes should not be here");
             }
 
         return " ";
@@ -116,8 +150,10 @@ class PiecePrimitive // positionless piece
     {
         switch (GetPieceType())
         {
-        case ChessPieceEnum::kPiyade:
-            return "Piyade";
+        case ChessPieceEnum::kPiyadeWhite:
+            return "WPiyade";
+        case ChessPieceEnum::kPiyadeBlack:
+            return "BPiyade";
         case ChessPieceEnum::kVizier:
             return "Vizier";
         case ChessPieceEnum::kShah:
@@ -130,37 +166,21 @@ class PiecePrimitive // positionless piece
             return "Rook";
         case ChessPieceEnum::kNone:
             return "None";
+        case ChessPieceEnum::kCountpiecetypes:
+            throw std::runtime_error("kCountpiecetypes should not be here");
         }
 
         return " ";
     }
 
-    const static std::vector<Step> kRookSteps;
-    const static std::vector<Step> kPiyadeWhiteSteps;
-    const static std::vector<Step> kPiyadeBlackSteps;
-
-    const static std::vector<Step> kVizierSteps;
-
-    const static std::vector<Step> kShahSteps;
-
-    const static std::vector<Step> kHorseSteps;
-
-    const static std::vector<Step> kFilSteps;
-
-    static constexpr inline const std::vector<Step> &GetPossibleRegularMoves(ChessPieceEnum pieceType, Color color)
+    static constexpr inline const std::vector<Step> &GetPossibleRegularMoves(ChessPieceEnum pieceType)
     {
         switch (pieceType)
         {
-        case ChessPieceEnum::kPiyade:
-            switch (color)
-            {
-            case Color::kWhite:
-                return kPiyadeWhiteSteps;
-            case Color::kBlack:
-                return kPiyadeBlackSteps;
-            default:
-                return kEmptySteps;
-            }
+        case ChessPieceEnum::kPiyadeWhite:
+            return kPiyadeWhiteSteps;
+        case ChessPieceEnum::kPiyadeBlack:
+            return kPiyadeBlackSteps;
         case ChessPieceEnum::kVizier:
             return kVizierSteps;
         case ChessPieceEnum::kShah:
@@ -173,182 +193,294 @@ class PiecePrimitive // positionless piece
             return kRookSteps;
         case ChessPieceEnum::kNone:
             return kEmptySteps;
+        case ChessPieceEnum::kCountpiecetypes:
+            throw std::runtime_error("kCountpiecetypes should not be here");
         }
 
         return kEmptySteps;
     }
-    const static std::vector<Step> kPiyadeWhiteCaptureSteps;
+    static std::array<
+        std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+        move_per_square_table;
 
-    const static std::vector<Step> kPiyadeBlackCaptureSteps;
-
-    const static std::vector<Step> kEmptySteps;
-
-    inline static constexpr const std::vector<Step> &GetPossibleCaptureMoves(ChessPieceEnum pieceType, Color color)
+    static void InitMovePerSquareTable()
     {
+        for (size_t i = 0; i < 8; i++)
+        {
+            for (size_t j = 0; j < 8; j++)
+            {
+                for (ChessPieceEnum piece_type = ChessPieceEnum::kShah; piece_type < ChessPieceEnum::kCountpiecetypes;
+                     piece_type = static_cast<ChessPieceEnum>(static_cast<int>(piece_type) + 1))
+                {
+                    GetPreComputedMoveTable(piece_type, Position(i, j));
+                }
+            }
+        }
+    }
+
+    static std::set<Position> &GetPreComputedMoveTable(ChessPieceEnum pieceType, const Position &frompos)
+    {
+        std::set<Position> &ret = move_per_square_table[frompos.Getx()][frompos.Gety()][static_cast<size_t>(pieceType)];
+
+        if (!ret.empty())
+            return ret;
+
+        auto tocalc = GetPossibleRegularMoves(pieceType);
+
+        for (const auto &step : tocalc)
+        {
+            if (CanMultipleMove(pieceType))
+            {
+                for (int8_t i = 0; i < 8; i++)
+                {
+                    Position newpos = frompos;
+                    auto mstep = step;
+                    newpos.Move(mstep.Times(i));
+                    if (newpos.IsValid())
+                        ret.insert(newpos);
+                }
+            }
+            else
+            {
+                Position newpos = frompos;
+                newpos.Move(step);
+                if (newpos.IsValid())
+                    ret.insert(newpos);
+            }
+        }
+
+        return ret;
+    }
+
+    inline static constexpr const std::vector<Step> &GetPossibleCaptureMoves(ChessPieceEnum pieceType)
+    {
+        if (pieceType != ChessPieceEnum::kPiyadeBlack && pieceType != ChessPieceEnum::kPiyadeWhite)
+            return kEmptySteps;
         switch (pieceType)
         {
-        case ChessPieceEnum::kPiyade:
-            switch (color)
-            {
-            case Color::kWhite:
-                return kPiyadeWhiteCaptureSteps;
-            case Color::kBlack:
-                return kPiyadeBlackCaptureSteps;
-            default:
-                return kEmptySteps;
-            }
-        case ChessPieceEnum::kVizier:
-        case ChessPieceEnum::kShah:
-        case ChessPieceEnum::kHorse:
-        case ChessPieceEnum::kFil:
-        case ChessPieceEnum::kRook:
-        case ChessPieceEnum::kNone:
+        case ChessPieceEnum::kPiyadeBlack:
+            return kPiyadeBlackCaptureSteps;
+        case ChessPieceEnum::kPiyadeWhite:
+            return kPiyadeWhiteCaptureSteps;
+        default:
             return kEmptySteps;
         }
 
         return kEmptySteps;
     }
 
-    inline static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
+    static std::array<
+        std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+        capture_per_square_table;
+
+    static void InitCapturePerSquareTable()
     {
-        switch (pieceType)
+        for (size_t i = 0; i < 8; i++)
         {
-        case ChessPieceEnum::kPiyade:
-        case ChessPieceEnum::kVizier:
-        case ChessPieceEnum::kShah:
-        case ChessPieceEnum::kHorse:
-        case ChessPieceEnum::kFil:
-        case ChessPieceEnum::kNone:
+            for (size_t j = 0; j < 8; j++)
+            {
+                for (ChessPieceEnum piece_type = ChessPieceEnum::kShah; piece_type < ChessPieceEnum::kCountpiecetypes;
+                     piece_type = static_cast<ChessPieceEnum>(static_cast<int>(piece_type) + 1))
+                {
+                    GetPreComputedCaptureTable(piece_type, Position(i, j));
+                }
+            }
+        }
+    }
+    static std::set<Position> &GetPreComputedCaptureTable(ChessPieceEnum pieceType, const Position &frompos)
+    {
+        std::set<Position> &ret =
+            capture_per_square_table[frompos.Getx()][frompos.Gety()][static_cast<size_t>(pieceType)];
+
+        if (!ret.empty())
+            return ret;
+
+        auto tocalc = GetPossibleCaptureMoves(pieceType);
+
+        for (const auto &step : tocalc)
+        {
+            Position newpos = frompos;
+            if (CanMultipleMove(pieceType))
+            {
+                for (int8_t i = 0; i < 8; i++)
+                {
+                    auto mstep = step;
+                    newpos.Move(mstep.Times(i));
+                    if (newpos.IsValid())
+                        ret.insert(newpos);
+                }
+            }
+            else
+            {
+                newpos.Move(step);
+                if (newpos.IsValid())
+                    ret.insert(newpos);
+            }
+        }
+
+        return ret;
+    }
+
+        static bool CanMoveWithMem(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
+        {
+            auto check = GetPreComputedMoveTable(pieceType, frompos);
+            return check.find(topos) != check.end();
+        }
+
+        static bool CanCaptureWithMem(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
+        {
+            auto check = GetPreComputedCaptureTable(pieceType, frompos);
+            return check.find(topos) != check.end();
+        }
+
+        inline static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
+        {
+            switch (pieceType)
+            {
+            case ChessPieceEnum::kPiyadeBlack:
+            case ChessPieceEnum::kPiyadeWhite:
+            case ChessPieceEnum::kVizier:
+            case ChessPieceEnum::kShah:
+            case ChessPieceEnum::kHorse:
+            case ChessPieceEnum::kFil:
+                return false;
+            case ChessPieceEnum::kRook:
+                return true;
+            case ChessPieceEnum::kNone:
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("this should not be called here CanMultipleMove");
+            }
+
             return false;
-        case ChessPieceEnum::kRook:
-            return true;
         }
 
-        return false;
-    }
-
-    inline static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
-    {
-        switch (pieceType)
+        inline static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
         {
-        case ChessPieceEnum::kPiyade:
-        case ChessPieceEnum::kVizier:
-        case ChessPieceEnum::kShah:
-        case ChessPieceEnum::kRook:
-        case ChessPieceEnum::kNone:
+            switch (pieceType)
+            {
+            case ChessPieceEnum::kPiyadeBlack:
+            case ChessPieceEnum::kPiyadeWhite:
+            case ChessPieceEnum::kVizier:
+            case ChessPieceEnum::kShah:
+            case ChessPieceEnum::kRook:
+                return false;
+            case ChessPieceEnum::kFil:
+            case ChessPieceEnum::kHorse:
+                return true;
+            case ChessPieceEnum::kNone:
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("this should not be called here CanJumpOverOthers");
+            }
+
             return false;
-        case ChessPieceEnum::kFil:
-        case ChessPieceEnum::kHorse:
-            return true;
         }
 
-        return false;
-    }
-
-    inline constexpr bool IsPiyade() const
-    {
-        return GetPieceType() == ChessPieceEnum::kPiyade;
-    }
-
-    inline constexpr bool IsVizier() const
-    {
-        return GetPieceType() == ChessPieceEnum::kVizier;
-    }
-
-    inline constexpr bool IsShah() const
-    {
-        return GetPieceType() == ChessPieceEnum::kShah;
-    }
-
-    inline constexpr bool IsHorse() const
-    {
-        return GetPieceType() == ChessPieceEnum::kHorse;
-    }
-
-    constexpr bool IsFil() const
-    {
-        return GetPieceType() == ChessPieceEnum::kFil;
-    }
-
-    inline constexpr bool IsRook() const
-    {
-        return GetPieceType() == ChessPieceEnum::kRook;
-    }
-
-    inline Color GetColor() const
-    {
-        return IsWhite() ? Color::kWhite : Color::kBlack;
-    }
-
-    inline static double GetCenterDistance(Position pos)
-    {
-        const static Position kCenter(4, 4);
-        auto res = kCenter.Diff(pos);
-        return res.OklideanDistance();
-    }
-
-    inline double GetVizierDistanceForPiyade(Position pos) const
-    {
-        if (GetColor() == Color::kBlack)
+        inline constexpr bool IsPiyade() const
         {
-            return std::abs(0 - pos.Gety());
+            return GetPieceType() == ChessPieceEnum::kPiyadeBlack || GetPieceType() == ChessPieceEnum::kPiyadeWhite;
         }
 
-        return std::abs(7 - pos.Gety());
-    }
-
-    inline double GetPiecePoint(Position pos) const
-    {
-        switch (GetPieceType())
+        inline constexpr bool IsVizier() const
         {
-        case ChessPieceEnum::kPiyade:
-            return 1.0;
-        case ChessPieceEnum::kShah:
-            return 200.0;
-        case ChessPieceEnum::kVizier:
-        case ChessPieceEnum::kHorse:
-        case ChessPieceEnum::kFil:
-            return 3.0;
-        case ChessPieceEnum::kRook:
-            return 5.0;
-        case ChessPieceEnum::kNone:
+            return GetPieceType() == ChessPieceEnum::kVizier;
+        }
+
+        inline constexpr bool IsShah() const
+        {
+            return GetPieceType() == ChessPieceEnum::kShah;
+        }
+
+        inline constexpr bool IsHorse() const
+        {
+            return GetPieceType() == ChessPieceEnum::kHorse;
+        }
+
+        constexpr bool IsFil() const
+        {
+            return GetPieceType() == ChessPieceEnum::kFil;
+        }
+
+        inline constexpr bool IsRook() const
+        {
+            return GetPieceType() == ChessPieceEnum::kRook;
+        }
+
+        inline Color GetColor() const
+        {
+            return IsWhite() ? Color::kWhite : Color::kBlack;
+        }
+
+        inline static double GetCenterDistance(Position pos)
+        {
+            const static Position kCenter(4, 4);
+            auto res = kCenter.Diff(pos);
+            return res.OklideanDistance();
+        }
+
+        inline double GetVizierDistanceForPiyade(Position pos) const
+        {
+            if (GetColor() == Color::kBlack)
+            {
+                return std::abs(0 - pos.Gety());
+            }
+
+            return std::abs(7 - pos.Gety());
+        }
+
+        inline double GetPiecePoint() const
+        {
+            switch (GetPieceType())
+            {
+            case ChessPieceEnum::kPiyadeBlack:
+            case ChessPieceEnum::kPiyadeWhite:
+                return 1.0;
+            case ChessPieceEnum::kShah:
+                return 200.0;
+            case ChessPieceEnum::kVizier:
+            case ChessPieceEnum::kHorse:
+            case ChessPieceEnum::kFil:
+                return 3.0;
+            case ChessPieceEnum::kRook:
+                return 5.0;
+            case ChessPieceEnum::kNone:
+            case ChessPieceEnum::kCountpiecetypes:
+                throw std::runtime_error("this should not be called here GetPiecePoint");
+            }
+
             return 0;
         }
 
-        return 0;
-    }
+        bool IsWhite() const
+        {
+            return static_cast<bool>(data_ & 0b10000000);
+        }
 
-    bool IsWhite() const
-    {
-        return static_cast<bool>(data_ & 0b10000000);
-    }
+        constexpr ChessPieceEnum GetPieceType() const
+        {
+            return static_cast<ChessPieceEnum>(data_ & 0b00111111);
+        }
 
-    constexpr ChessPieceEnum GetPieceType() const
-    {
-        return static_cast<ChessPieceEnum>(data_ & 0b00111111);
-    }
+        bool IsMoved() const
+        {
+            return static_cast<bool>(data_ & 0b01000000);
+        }
 
-    bool IsMoved() const
-    {
-        return static_cast<bool>(data_ & 0b01000000);
-    }
+      protected:
+        void SetWhite(bool isWhite)
+        {
+            data_ = (data_ & 0b01111111) | (static_cast<uint8_t>(isWhite) << 7);
+        }
 
-  protected:
-    void SetWhite(bool isWhite)
-    {
-        data_ = (data_ & 0b01111111) | (static_cast<uint8_t>(isWhite) << 7);
-    }
+        void SetMoved(bool moved)
+        {
+            data_ = (data_ & 0b10111111) | (static_cast<uint8_t>(moved) << 6);
+        }
 
-    void SetMoved(bool moved)
-    {
-        data_ = (data_ & 0b10111111) | (static_cast<uint8_t>(moved) << 6);
-    }
-
-    void SetPieceType(ChessPieceEnum pieceType)
-    {
-        data_ = (data_ & 0b11000000) | static_cast<uint8_t>(pieceType);
-    }
-    uint8_t data_;
+        void SetPieceType(ChessPieceEnum pieceType)
+        {
+            data_ = (data_ & 0b11000000) | static_cast<uint8_t>(pieceType);
+        }
+        uint8_t data_;
 };
 
 class Piece : public PiecePrimitive
@@ -369,8 +501,8 @@ class Piece : public PiecePrimitive
         return PiecePrimitive(GetPieceType(), GetColor(), IsMoved());
     }
 
-    static bool CanMove(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
-    static bool CanPawnCapture(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
+    static bool CanMove(Position frompos, Position topos, ChessPieceEnum pieceType);
+    static bool CanPawnCapture(Position frompos, Position pos, ChessPieceEnum pieceType);
     bool Move(Position pos);
 
     bool operator==(const Piece &other) const
@@ -425,9 +557,9 @@ static inline PiecePrimitive FromChar(char piecechar)
     switch (piecechar)
     {
     case 'P':
-        return PiecePrimitive(ChessPieceEnum::kPiyade, Color::kWhite, false);
+        return PiecePrimitive(ChessPieceEnum::kPiyadeWhite, Color::kWhite, false);
     case 'p':
-        return PiecePrimitive(ChessPieceEnum::kPiyade, Color::kBlack, false);
+        return PiecePrimitive(ChessPieceEnum::kPiyadeBlack, Color::kBlack, false);
     case 'V':
         return PiecePrimitive(ChessPieceEnum::kVizier, Color::kWhite, false);
     case 'v':

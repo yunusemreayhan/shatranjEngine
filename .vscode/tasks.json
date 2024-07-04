@@ -4,9 +4,21 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "ctest",
+            "type": "shell",
+            "command": "ctest -C ${CMAKE_BUILD_TYPE} -j 8",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "build release",
+            "options": {
+                "cwd": "${workspaceFolder}/build/release"
+            }
+        },
+        {
             "label": "build debug",
             "type": "shell",
-            "command": "cmake --build ./build --target all",
+            "command": "cmake --build ./build/debug --target all",
             "dependsOn": "configure debug",
             "problemMatcher": [
                 "$gcc"
@@ -15,7 +27,7 @@
         {
             "label": "build release",
             "type": "shell",
-            "command": "cmake --build ./build --target all",
+            "command": "mkdir -p build/debug && cmake --build ./build/release --target all",
             "dependsOn": "configure release",
             "problemMatcher": [
                 "$gcc"
@@ -24,13 +36,13 @@
         {
             "label": "configure debug",
             "type": "shell",
-            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Debug",
+            "command": "cmake -S . -B ./build/debug -DCMAKE_BUILD_TYPE=Debug",
             "dependsOn": "configure"
         },
         {
             "label": "configure release",
             "type": "shell",
-            "command": "cmake -S . -B ./build -DCMAKE_BUILD_TYPE=Release",
+            "command": "mkdir -p build/release && cmake -S . -B ./build/release -DCMAKE_BUILD_TYPE=Release",
             "dependsOn": "configure"
         }
     ]

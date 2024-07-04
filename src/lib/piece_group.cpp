@@ -13,7 +13,6 @@ namespace shatranj
 PieceGroup::PieceGroup()
 {
     pieces_primitive_ = std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
-    pieces_primitive_.reserve(64);
 }
 bool PieceGroup::AddPiece(const PiecePrimitive &piece, const Position &pos)
 {
@@ -188,7 +187,7 @@ PiecePrimitive *PieceGroup::GetPtr(const Position &pos, Color color)
 }
 void PieceGroup::Clear()
 {
-    memset((void *)pieces_primitive_.data(), 0, sizeof(PiecePrimitive) * pieces_primitive_.size());
+    pieces_primitive_ = std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
     counter_ = 0;
     black_count_ = 0;
     white_count_ = 0;

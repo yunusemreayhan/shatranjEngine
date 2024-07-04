@@ -55,7 +55,7 @@ class Board
     bool CanPawnCapture(ChessPieceEnum pieceType, const Position &frompos, const Position &topos);
     bool CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, const Position &topos);
     std::vector<Movement> GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color);
-    bool CanGo(Position frompos, Position pos, ChessPieceEnum pieceType, Color color);
+    bool CanGo(Position frompos, Position pos, ChessPieceEnum pieceType);
     bool CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType);
     std::variant<double, Movement> MinimaxSearch(const std::optional<Movement> &playing_move, int &nodesvisited,
                                                  double alpha, double beta, int depth = 5,

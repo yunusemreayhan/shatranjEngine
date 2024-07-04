@@ -20,7 +20,8 @@ struct HistoryPoint
     bool promoted;
     Color color;
 
-    HistoryPoint(Position frompos, Position topos, ChessPieceEnum lastMovedPieceType, std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
+    HistoryPoint(Position frompos, Position topos, ChessPieceEnum lastMovedPieceType,
+                 std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
 };
 
 struct MoveHistory

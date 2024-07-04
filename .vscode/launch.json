@@ -12,10 +12,36 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "(gdb) dummy_chess_engine_bin",
+            "name": "(gdb) dummy_chess_engine_bin debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/dummy_chess_engine_bin",
+            "program": "${workspaceFolder}/build/debug/src/dummy_chess_engine_bin",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "build",
+            "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "(gdb) dummy_chess_engine_bin release",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/release/src/dummy_chess_engine_bin",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -41,7 +67,7 @@
             "name": "(gdb) dummy_chess_enginetest debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/test/dummy_chess_enginetest",
+            "program": "${workspaceFolder}/build/debug/src/test/dummy_chess_enginetest",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -67,7 +93,7 @@
             "name": "(gdb) dummy_chess_enginetest release",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/src/test/dummy_chess_enginetest",
+            "program": "${workspaceFolder}/build/release/src/test/dummy_chess_enginetest",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
