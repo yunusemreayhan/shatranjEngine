@@ -3,7 +3,8 @@
 #include "position.h"
 #include "shatranc_piece.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     shatranj::Piece::InitCapturePerSquareTable();
     shatranj::Piece::InitMovePerSquareTable();
     ::testing::InitGoogleTest(&argc, argv);

@@ -7,12 +7,12 @@
 #include <sstream>
 #include <utility>
 
+#include "helper.h"
 #include "position.h"
 #include "shatranc_piece.h"
 #include "shatranj.h"
 #include "types.h"
 #include "gtest/gtest.h"
-#include "helper.h"
 
 namespace
 {
@@ -586,4 +586,5 @@ TEST(SampleCaptureTest_SampleSelfPlay, Negative)
     }
     std::cout << *(shatranj.GetBoard()) << std::endl;
 }
+
 } // namespace
