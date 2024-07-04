@@ -156,7 +156,7 @@ std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum p
     return possible_moves;
 }
 
-bool Board::CanGo(Position frompos, Position pos, ChessPieceEnum pieceType, Color color)
+bool Board::CanGo(Position frompos, Position pos, ChessPieceEnum pieceType)
 {
     auto can_capture = Piece::CanPawnCapture(frompos, pos, pieceType);
     auto can_move = Piece::CanMove(frompos, pos, pieceType) && CollisionCheck(pieceType, frompos, pos);
@@ -423,10 +423,9 @@ GameState Board::GetBoardState()
     {
         auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
         auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
-        if (CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType(),
-                  current_turn_pieces[0].GetColor()) ||
-            CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType(),
-                  current_turn_pieces[0].GetColor()))
+        if (CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(),
+                  current_turn_pieces[0].GetPieceType()) ||
+            CanGo(current_turn_pieces[1].GetPos(), opponent_pieces[0].GetPos(), current_turn_pieces[0].GetPieceType()))
         {
             ret = GameState::kDraw;
         }
@@ -782,11 +781,11 @@ double Board::EvaluateBoard(Color color)
         }
         if (piece->GetColor() == color)
         {
-            score += piece->GetPiecePoint(pos);
+            score += piece->GetPiecePoint();
         }
         else
         {
-            score -= piece->GetPiecePoint(pos);
+            score -= piece->GetPiecePoint();
         }
         auto state = GetBoardState();
         if (currentTurn_ == color)

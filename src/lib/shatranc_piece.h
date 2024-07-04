@@ -427,7 +427,7 @@ class PiecePrimitive // positionless piece
             return std::abs(7 - pos.Gety());
         }
 
-        inline double GetPiecePoint(Position pos) const
+        inline double GetPiecePoint() const
         {
             switch (GetPieceType())
             {
