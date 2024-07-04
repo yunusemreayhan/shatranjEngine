@@ -5,6 +5,7 @@
 #include "types.h"
 
 #include <algorithm>
+#include <cassert>
 #include <optional>
 
 namespace shatranj
@@ -75,17 +76,26 @@ void PieceGroup::RemovePiece(const Position &pos)
 
 void PieceGroup::RemovePieceNoCounterUpdate(const Position &pos)
 {
+    auto *target = &pieces_primitive_[Coord2to1(pos)];
     if constexpr (kPieceGroupDebug)
     {
         std::cout << "Removing have " << pos.ToString() << std::endl;
     }
-    pieces_primitive_[Coord2to1(pos)] = PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false);
+    *target = PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false);
 }
 
 bool PieceGroup::MovePiece(const Position &frompos, const Position &topos)
 {
     auto calccoord = Coord2to1(topos);
     auto *target = &pieces_primitive_[calccoord];
+
+    if (target->GetPieceType() == ChessPieceEnum::kShah)
+    {
+        std::cout << "Cannot override shah at " << topos.ToString() << std::endl;
+        std::cout << ToStringAsBoard() << std::endl;
+        throw std::runtime_error("Cannot remove shah from the board, that would be ridiculous :).");
+    }
+
     *target = pieces_primitive_[Coord2to1(frompos)];
     RemovePieceNoCounterUpdate(frompos);
     if (target->IsShah())
@@ -201,5 +211,63 @@ Piece PieceGroup::FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primi
 bool PieceGroup::HavePieceAtPosWithColor(const Position &pos, Color color)
 {
     return static_cast<bool>(pieces_primitive_[Coord2to1(pos)].GetColor() == color);
+}
+
+std::string PieceGroup::ToStringAsBoard() const
+{
+    std::string ret;
+    for (int8_t yitr = 7; yitr >= 0; yitr--)
+    {
+        if (yitr == 7)
+        {
+            ret += "  ";
+            for (int8_t xitr = 0; xitr < 8; xitr++)
+            {
+                ret += static_cast<char>(xitr + 'a');
+                ret += ' ';
+            }
+            ret += '\n';
+        }
+
+        ret += static_cast<char>('1' + yitr);
+        ret += ' ';
+
+        for (int8_t xitr = 0; xitr < 8; xitr++)
+        {
+            const auto &pos = Position(xitr, yitr);
+            const auto *piece = GetPiece(pos);
+            if (piece == nullptr)
+            {
+                ret += '.';
+            }
+            else
+            {
+                ret += piece->GetSymbol();
+            }
+            ret += ' ';
+        }
+        if constexpr (kDebugTablePrint)
+        {
+            ret += static_cast<char>('0' + yitr);
+            ret += ' ';
+        }
+        ret += '\n';
+
+        if constexpr (kDebugTablePrint)
+        {
+            if (yitr == 0)
+            {
+                ret += "  ";
+                for (int8_t xitr = 0; xitr < 8; xitr++)
+                {
+                    ret += static_cast<char>(xitr + '0');
+                    ret += ' ';
+                }
+                ret += '\n';
+            }
+        }
+    }
+
+    return ret;
 }
 } // namespace shatranj

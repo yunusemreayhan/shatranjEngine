@@ -10,9 +10,13 @@
 namespace shatranj
 {
 
-std::array<std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+std::array<
+    std::array<std::array<PreComputeTableInternalContainer, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>,
+    8>
     PiecePrimitive::move_per_square_table;
-std::array<std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+std::array<
+    std::array<std::array<PreComputeTableInternalContainer, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>,
+    8>
     PiecePrimitive::capture_per_square_table;
 
 PiecePrimitive::PiecePrimitive(ChessPieceEnum pieceType, Color color, bool moved)

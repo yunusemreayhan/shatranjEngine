@@ -69,14 +69,27 @@ template <typename TypeOfKey, typename TypeOfHold> class KeyBasedMemory
     std::map<TypeOfKey, TypeOfHold> moves_;
 };
 
-template <typename T> auto RunWithTiming(const std::string &header, const T &ftocall) -> decltype(ftocall())
+template <typename T>
+auto RunWithTiming(const std::string &header, const T &ftocall,
+                   std::chrono::microseconds *duration = nullptr) -> decltype(ftocall())
 {
     auto start = std::chrono::high_resolution_clock::now();
     auto ret = ftocall();
+    auto mduration = std::chrono::high_resolution_clock::now() - start;
+    if (duration)
+        *duration += std::chrono::duration_cast<std::chrono::microseconds>(mduration);
+    std::cout << header << " took: " << std::chrono::duration_cast<std::chrono::microseconds>(mduration).count()
+              << " us" << std::endl;
+    return ret;
+}
+
+template <typename T> auto RunWithTimingNoRet(const std::string &header, const T &ftocall)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    ftocall();
     auto duration = std::chrono::high_resolution_clock::now() - start;
     std::cout << header << " took: " << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() << " ms"
               << std::endl;
-    return ret;
 }
 
 } // namespace shatranj

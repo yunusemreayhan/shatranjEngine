@@ -4,7 +4,19 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "ctest",
+            "label": "ctest release",
+            "type": "shell",
+            "command": "ctest -C ${CMAKE_BUILD_TYPE} -j 8",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "build release",
+            "options": {
+                "cwd": "${workspaceFolder}/build/release"
+            }
+        },
+        {
+            "label": "ctest debug",
             "type": "shell",
             "command": "ctest -C ${CMAKE_BUILD_TYPE} -j 8",
             "problemMatcher": [
@@ -22,7 +34,7 @@
             "dependsOn": "configure debug",
             "problemMatcher": [
                 "$gcc"
-            ]
+            ],
         },
         {
             "label": "build release",

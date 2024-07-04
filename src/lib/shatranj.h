@@ -2,6 +2,7 @@
 
 #include "board.h"
 #include "position.h"
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
@@ -22,9 +23,15 @@ class Shatranj
     bool PlaySeq(const std::vector<std::string> &seq, bool printboard = false);
     bool PlaySeq2(const std::vector<Movement> &seq);
     void Run();
-    std::optional<shatranj::Movement> PickMoveInBoard(int depth = 6);
-    bool PickAndPlay(int depth = 6);
-
+    std::optional<shatranj::Movement> PickMoveInBoard(int depth = 6, int *countofnodesvisited = nullptr,
+                                                      std::chrono::microseconds *duration = nullptr);
+    std::optional<shatranj::Movement> PickMoveForMateSequenceIfAny(int depth = 6, int *countofnodesvisited = nullptr,
+                                                                   std::chrono::microseconds *duration = nullptr);
+    bool PickAndPlay(int depth = 6, int *countofnodesvisited = nullptr, std::chrono::microseconds *duration = nullptr);
+    bool PickAndPlayWinningSequence(int depth = 6, int *countofnodesvisited = nullptr,
+                                    std::chrono::microseconds *duration = nullptr);
+    bool PickAndPlayMateSequence(int depth, int *countofnodesvisited = nullptr,
+                                 std::chrono::microseconds *duration = nullptr);
     std::shared_ptr<Board> &GetBoard()
     {
         return board_;
@@ -34,4 +41,4 @@ class Shatranj
     std::shared_ptr<Board> board_;
     constexpr static inline bool kDebug = kDebugShatranj;
 };
-} // namespace Shatranj
+} // namespace shatranj

@@ -18,6 +18,7 @@ namespace shatranj
 class Board;
 class Player;
 
+using PreComputeTableInternalContainer = std::vector<Position>;
 enum class ChessPieceEnum : std::uint8_t
 {
     kShah,
@@ -200,7 +201,9 @@ class PiecePrimitive // positionless piece
         return kEmptySteps;
     }
     static std::array<
-        std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+        std::array<std::array<PreComputeTableInternalContainer, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>,
+                   8>,
+        8>
         move_per_square_table;
 
     static void InitMovePerSquareTable()
@@ -218,9 +221,10 @@ class PiecePrimitive // positionless piece
         }
     }
 
-    static std::set<Position> &GetPreComputedMoveTable(ChessPieceEnum pieceType, const Position &frompos)
+    static PreComputeTableInternalContainer &GetPreComputedMoveTable(ChessPieceEnum pieceType, const Position &frompos)
     {
-        std::set<Position> &ret = move_per_square_table[frompos.Getx()][frompos.Gety()][static_cast<size_t>(pieceType)];
+        PreComputeTableInternalContainer &ret =
+            move_per_square_table[frompos.Getx()][frompos.Gety()][static_cast<size_t>(pieceType)];
 
         if (!ret.empty())
             return ret;
@@ -237,7 +241,7 @@ class PiecePrimitive // positionless piece
                     auto mstep = step;
                     newpos.Move(mstep.Times(i));
                     if (newpos.IsValid())
-                        ret.insert(newpos);
+                        ret.push_back(newpos);
                 }
             }
             else
@@ -245,7 +249,7 @@ class PiecePrimitive // positionless piece
                 Position newpos = frompos;
                 newpos.Move(step);
                 if (newpos.IsValid())
-                    ret.insert(newpos);
+                    ret.push_back(newpos);
             }
         }
 
@@ -270,7 +274,9 @@ class PiecePrimitive // positionless piece
     }
 
     static std::array<
-        std::array<std::array<std::set<Position>, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>, 8>, 8>
+        std::array<std::array<PreComputeTableInternalContainer, static_cast<size_t>(ChessPieceEnum::kCountpiecetypes)>,
+                   8>,
+        8>
         capture_per_square_table;
 
     static void InitCapturePerSquareTable()
@@ -287,9 +293,10 @@ class PiecePrimitive // positionless piece
             }
         }
     }
-    static std::set<Position> &GetPreComputedCaptureTable(ChessPieceEnum pieceType, const Position &frompos)
+    static PreComputeTableInternalContainer &GetPreComputedCaptureTable(ChessPieceEnum pieceType,
+                                                                        const Position &frompos)
     {
-        std::set<Position> &ret =
+        PreComputeTableInternalContainer &ret =
             capture_per_square_table[frompos.Getx()][frompos.Gety()][static_cast<size_t>(pieceType)];
 
         if (!ret.empty())
@@ -300,187 +307,174 @@ class PiecePrimitive // positionless piece
         for (const auto &step : tocalc)
         {
             Position newpos = frompos;
-            if (CanMultipleMove(pieceType))
-            {
-                for (int8_t i = 0; i < 8; i++)
-                {
-                    auto mstep = step;
-                    newpos.Move(mstep.Times(i));
-                    if (newpos.IsValid())
-                        ret.insert(newpos);
-                }
-            }
-            else
-            {
-                newpos.Move(step);
-                if (newpos.IsValid())
-                    ret.insert(newpos);
-            }
+            newpos.Move(step);
+            if (newpos.IsValid())
+                ret.push_back(newpos);
         }
 
         return ret;
     }
 
-        static bool CanMoveWithMem(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
-        {
-            auto check = GetPreComputedMoveTable(pieceType, frompos);
-            return check.find(topos) != check.end();
-        }
+    static bool CanMoveWithMem(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
+    {
+        auto check = GetPreComputedMoveTable(pieceType, frompos);
+        return std::find(check.begin(), check.end(), topos) != check.end();
+    }
 
-        static bool CanCaptureWithMem(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
-        {
-            auto check = GetPreComputedCaptureTable(pieceType, frompos);
-            return check.find(topos) != check.end();
-        }
+    static bool CanCaptureWithMem(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
+    {
+        auto check = GetPreComputedCaptureTable(pieceType, frompos);
+        return std::find(check.begin(), check.end(), topos) != check.end();
+    }
 
-        inline static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
+    inline static constexpr bool CanMultipleMove(ChessPieceEnum pieceType)
+    {
+        switch (pieceType)
         {
-            switch (pieceType)
-            {
-            case ChessPieceEnum::kPiyadeBlack:
-            case ChessPieceEnum::kPiyadeWhite:
-            case ChessPieceEnum::kVizier:
-            case ChessPieceEnum::kShah:
-            case ChessPieceEnum::kHorse:
-            case ChessPieceEnum::kFil:
-                return false;
-            case ChessPieceEnum::kRook:
-                return true;
-            case ChessPieceEnum::kNone:
-            case ChessPieceEnum::kCountpiecetypes:
-                throw std::runtime_error("this should not be called here CanMultipleMove");
-            }
-
+        case ChessPieceEnum::kPiyadeBlack:
+        case ChessPieceEnum::kPiyadeWhite:
+        case ChessPieceEnum::kVizier:
+        case ChessPieceEnum::kShah:
+        case ChessPieceEnum::kHorse:
+        case ChessPieceEnum::kFil:
             return false;
+        case ChessPieceEnum::kRook:
+            return true;
+        case ChessPieceEnum::kNone:
+        case ChessPieceEnum::kCountpiecetypes:
+            throw std::runtime_error("this should not be called here CanMultipleMove");
         }
 
-        inline static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
-        {
-            switch (pieceType)
-            {
-            case ChessPieceEnum::kPiyadeBlack:
-            case ChessPieceEnum::kPiyadeWhite:
-            case ChessPieceEnum::kVizier:
-            case ChessPieceEnum::kShah:
-            case ChessPieceEnum::kRook:
-                return false;
-            case ChessPieceEnum::kFil:
-            case ChessPieceEnum::kHorse:
-                return true;
-            case ChessPieceEnum::kNone:
-            case ChessPieceEnum::kCountpiecetypes:
-                throw std::runtime_error("this should not be called here CanJumpOverOthers");
-            }
+        return false;
+    }
 
+    inline static constexpr bool CanJumpOverOthers(ChessPieceEnum pieceType)
+    {
+        switch (pieceType)
+        {
+        case ChessPieceEnum::kPiyadeBlack:
+        case ChessPieceEnum::kPiyadeWhite:
+        case ChessPieceEnum::kVizier:
+        case ChessPieceEnum::kShah:
+        case ChessPieceEnum::kRook:
             return false;
+        case ChessPieceEnum::kFil:
+        case ChessPieceEnum::kHorse:
+            return true;
+        case ChessPieceEnum::kNone:
+        case ChessPieceEnum::kCountpiecetypes:
+            throw std::runtime_error("this should not be called here CanJumpOverOthers");
         }
 
-        inline constexpr bool IsPiyade() const
+        return false;
+    }
+
+    inline constexpr bool IsPiyade() const
+    {
+        return GetPieceType() == ChessPieceEnum::kPiyadeBlack || GetPieceType() == ChessPieceEnum::kPiyadeWhite;
+    }
+
+    inline constexpr bool IsVizier() const
+    {
+        return GetPieceType() == ChessPieceEnum::kVizier;
+    }
+
+    inline constexpr bool IsShah() const
+    {
+        return GetPieceType() == ChessPieceEnum::kShah;
+    }
+
+    inline constexpr bool IsHorse() const
+    {
+        return GetPieceType() == ChessPieceEnum::kHorse;
+    }
+
+    constexpr bool IsFil() const
+    {
+        return GetPieceType() == ChessPieceEnum::kFil;
+    }
+
+    inline constexpr bool IsRook() const
+    {
+        return GetPieceType() == ChessPieceEnum::kRook;
+    }
+
+    inline Color GetColor() const
+    {
+        return IsWhite() ? Color::kWhite : Color::kBlack;
+    }
+
+    inline static double GetCenterDistance(Position pos)
+    {
+        const static Position kCenter(4, 4);
+        auto res = kCenter.Diff(pos);
+        return res.OklideanDistance();
+    }
+
+    inline double GetVizierDistanceForPiyade(Position pos) const
+    {
+        if (GetColor() == Color::kBlack)
         {
-            return GetPieceType() == ChessPieceEnum::kPiyadeBlack || GetPieceType() == ChessPieceEnum::kPiyadeWhite;
+            return std::abs(0 - pos.Gety());
         }
 
-        inline constexpr bool IsVizier() const
+        return std::abs(7 - pos.Gety());
+    }
+
+    inline double GetPiecePoint() const
+    {
+        switch (GetPieceType())
         {
-            return GetPieceType() == ChessPieceEnum::kVizier;
+        case ChessPieceEnum::kPiyadeBlack:
+        case ChessPieceEnum::kPiyadeWhite:
+            return 1.0;
+        case ChessPieceEnum::kShah:
+            return 200.0;
+        case ChessPieceEnum::kVizier:
+        case ChessPieceEnum::kHorse:
+        case ChessPieceEnum::kFil:
+            return 3.0;
+        case ChessPieceEnum::kRook:
+            return 5.0;
+        case ChessPieceEnum::kNone:
+        case ChessPieceEnum::kCountpiecetypes:
+            throw std::runtime_error("this should not be called here GetPiecePoint");
         }
 
-        inline constexpr bool IsShah() const
-        {
-            return GetPieceType() == ChessPieceEnum::kShah;
-        }
+        return 0;
+    }
 
-        inline constexpr bool IsHorse() const
-        {
-            return GetPieceType() == ChessPieceEnum::kHorse;
-        }
+    bool IsWhite() const
+    {
+        return static_cast<bool>(data_ & 0b10000000);
+    }
 
-        constexpr bool IsFil() const
-        {
-            return GetPieceType() == ChessPieceEnum::kFil;
-        }
+    constexpr ChessPieceEnum GetPieceType() const
+    {
+        return static_cast<ChessPieceEnum>(data_ & 0b00111111);
+    }
 
-        inline constexpr bool IsRook() const
-        {
-            return GetPieceType() == ChessPieceEnum::kRook;
-        }
+    bool IsMoved() const
+    {
+        return static_cast<bool>(data_ & 0b01000000);
+    }
 
-        inline Color GetColor() const
-        {
-            return IsWhite() ? Color::kWhite : Color::kBlack;
-        }
+  protected:
+    void SetWhite(bool isWhite)
+    {
+        data_ = (data_ & 0b01111111) | (static_cast<uint8_t>(isWhite) << 7);
+    }
 
-        inline static double GetCenterDistance(Position pos)
-        {
-            const static Position kCenter(4, 4);
-            auto res = kCenter.Diff(pos);
-            return res.OklideanDistance();
-        }
+    void SetMoved(bool moved)
+    {
+        data_ = (data_ & 0b10111111) | (static_cast<uint8_t>(moved) << 6);
+    }
 
-        inline double GetVizierDistanceForPiyade(Position pos) const
-        {
-            if (GetColor() == Color::kBlack)
-            {
-                return std::abs(0 - pos.Gety());
-            }
-
-            return std::abs(7 - pos.Gety());
-        }
-
-        inline double GetPiecePoint() const
-        {
-            switch (GetPieceType())
-            {
-            case ChessPieceEnum::kPiyadeBlack:
-            case ChessPieceEnum::kPiyadeWhite:
-                return 1.0;
-            case ChessPieceEnum::kShah:
-                return 200.0;
-            case ChessPieceEnum::kVizier:
-            case ChessPieceEnum::kHorse:
-            case ChessPieceEnum::kFil:
-                return 3.0;
-            case ChessPieceEnum::kRook:
-                return 5.0;
-            case ChessPieceEnum::kNone:
-            case ChessPieceEnum::kCountpiecetypes:
-                throw std::runtime_error("this should not be called here GetPiecePoint");
-            }
-
-            return 0;
-        }
-
-        bool IsWhite() const
-        {
-            return static_cast<bool>(data_ & 0b10000000);
-        }
-
-        constexpr ChessPieceEnum GetPieceType() const
-        {
-            return static_cast<ChessPieceEnum>(data_ & 0b00111111);
-        }
-
-        bool IsMoved() const
-        {
-            return static_cast<bool>(data_ & 0b01000000);
-        }
-
-      protected:
-        void SetWhite(bool isWhite)
-        {
-            data_ = (data_ & 0b01111111) | (static_cast<uint8_t>(isWhite) << 7);
-        }
-
-        void SetMoved(bool moved)
-        {
-            data_ = (data_ & 0b10111111) | (static_cast<uint8_t>(moved) << 6);
-        }
-
-        void SetPieceType(ChessPieceEnum pieceType)
-        {
-            data_ = (data_ & 0b11000000) | static_cast<uint8_t>(pieceType);
-        }
-        uint8_t data_;
+    void SetPieceType(ChessPieceEnum pieceType)
+    {
+        data_ = (data_ & 0b11000000) | static_cast<uint8_t>(pieceType);
+    }
+    uint8_t data_;
 };
 
 class Piece : public PiecePrimitive

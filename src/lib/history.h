@@ -19,18 +19,21 @@ struct HistoryPoint
     std::unique_ptr<Piece> captured;
     bool promoted;
     Color color;
+    std::string fen;
 
     HistoryPoint(Position frompos, Position topos, ChessPieceEnum lastMovedPieceType,
-                 std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite);
+                 std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite,
+                 const std::string &fen = "");
 };
 
 struct MoveHistory
 {
     void AddMove(const Position &frompos, const Position &topos, ChessPieceEnum lastMovedPieceType,
-                 std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite)
+                 std::unique_ptr<Piece> captured = nullptr, bool promoted = false, Color color = Color::kWhite,
+                 const std::string &fen = "")
     {
-        auto toinsert =
-            std::make_unique<HistoryPoint>(frompos, topos, lastMovedPieceType, std::move(captured), promoted, color);
+        auto toinsert = std::make_unique<HistoryPoint>(frompos, topos, lastMovedPieceType, std::move(captured),
+                                                       promoted, color, fen);
         history_.emplace(std::move(toinsert));
     }
 

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <thread>
 
 #include "position.h"
 #include "shatranc_piece.h"

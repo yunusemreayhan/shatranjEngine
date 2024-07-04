@@ -60,7 +60,8 @@ class Step
         return {static_cast<int8_t>(std::floor(posx)), static_cast<int8_t>(std::floor(posy))};
     }
 
-    double OklideanDistance() const {
+    double OklideanDistance() const
+    {
         return std::sqrt(pow(x_, 2) + pow(y_, 2));
     }
 
@@ -157,6 +158,10 @@ struct Movement
     {
     }
 
+    Movement(const std::string &movement) : from(movement.substr(0, 2)), to(movement.substr(2, 2))
+    {
+    }
+
     std::string ToString() const
     {
         return from.ToString() + to.ToString();
@@ -165,6 +170,16 @@ struct Movement
     static Movement GetEmpty()
     {
         return Movement(Position(0, 0), Position(0, 0));
+    }
+
+    bool operator==(const Movement &other) const
+    {
+        return from == other.from && to == other.to;
+    }
+
+    bool operator<(const Movement &other) const
+    {
+        return from < other.from || (from == other.from && to < other.to);
     }
 };
 
