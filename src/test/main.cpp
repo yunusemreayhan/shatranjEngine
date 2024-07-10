@@ -3,11 +3,15 @@
 
 #include "position.h"
 #include "shatranc_piece.h"
+#include "stockfish/bitboard.h"
+
+using namespace Stockfish;
 
 int main(int argc, char **argv)
 {
     shatranj::Piece::InitCapturePerSquareTable();
     shatranj::Piece::InitMovePerSquareTable();
+    StockfishPrecomputationTables::init();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

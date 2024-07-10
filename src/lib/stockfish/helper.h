@@ -1,0 +1,164 @@
+#pragma once
+
+#include "types.h"
+using namespace Stockfish;
+
+const inline std::string_view square_to_string(Square sq) {
+    switch (sq)
+    {
+    case SQ_A1 :
+        return "a1";
+    case SQ_B1 :
+        return "b1";
+    case SQ_C1 :
+        return "c1";
+    case SQ_D1 :
+        return "d1";
+    case SQ_E1 :
+        return "e1";
+    case SQ_F1 :
+        return "f1";
+    case SQ_G1 :
+        return "g1";
+    case SQ_H1 :
+        return "h1";
+    case SQ_A2 :
+        return "a2";
+    case SQ_B2 :
+        return "b2";
+    case SQ_C2 :
+        return "c2";
+    case SQ_D2 :
+        return "d2";
+    case SQ_E2 :
+        return "e2";
+    case SQ_F2 :
+        return "f2";
+    case SQ_G2 :
+        return "g2";
+    case SQ_H2 :
+        return "h2";
+    case SQ_A3 :
+        return "a3";
+    case SQ_B3 :
+        return "b3";
+    case SQ_C3 :
+        return "c3";
+    case SQ_D3 :
+        return "d3";
+    case SQ_E3 :
+        return "e3";
+    case SQ_F3 :
+        return "f3";
+    case SQ_G3 :
+        return "g3";
+    case SQ_H3 :
+        return "h3";
+    case SQ_A4 :
+        return "a4";
+    case SQ_B4 :
+        return "b4";
+    case SQ_C4 :
+        return "c4";
+    case SQ_D4 :
+        return "d4";
+    case SQ_E4 :
+        return "e4";
+    case SQ_F4 :
+        return "f4";
+    case SQ_G4 :
+        return "g4";
+    case SQ_H4 :
+        return "h4";
+    case SQ_A5 :
+        return "a5";
+    case SQ_B5 :
+        return "b5";
+    case SQ_C5 :
+        return "c5";
+    case SQ_D5 :
+        return "d5";
+    case SQ_E5 :
+        return "e5";
+    case SQ_F5 :
+        return "f5";
+    case SQ_G5 :
+        return "g5";
+    case SQ_H5 :
+        return "h5";
+    case SQ_A6 :
+        return "a6";
+    case SQ_B6 :
+        return "b6";
+    case SQ_C6 :
+        return "c6";
+    case SQ_D6 :
+        return "d6";
+    case SQ_E6 :
+        return "e6";
+    case SQ_F6 :
+        return "f6";
+    case SQ_G6 :
+        return "g6";
+    case SQ_H6 :
+        return "h6";
+    case SQ_A7 :
+        return "a7";
+    case SQ_B7 :
+        return "b7";
+    case SQ_C7 :
+        return "c7";
+    case SQ_D7 :
+        return "d7";
+    case SQ_E7 :
+        return "e7";
+    case SQ_F7 :
+        return "f7";
+    case SQ_G7 :
+        return "g7";
+    case SQ_H7 :
+        return "h7";
+    case SQ_A8 :
+        return "a8";
+    case SQ_B8 :
+        return "b8";
+    case SQ_C8 :
+        return "c8";
+    case SQ_D8 :
+        return "d8";
+    case SQ_E8 :
+        return "e8";
+    case SQ_F8 :
+        return "f8";
+    case SQ_G8 :
+        return "g8";
+    case SQ_H8 :
+        return "h8";
+    case SQ_NONE :
+        return "none";
+    default :
+        return "unknown";
+    }
+
+    return "unknown";
+}
+
+const inline std::string_view piece_type_to_string(PieceType type) {
+    switch (type)
+    {
+    case PAWN :
+        return "pawn";
+    case KNIGHT :
+        return "knight";
+    case BISHOP :
+        return "bishop";
+    case ROOK :
+        return "rook";
+    case QUEEN :
+        return "queen";
+    case KING :
+        return "king";
+    default :
+        return "unknown";
+    }
+}
