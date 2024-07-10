@@ -14,14 +14,12 @@
 #include "types.h"
 #include "gtest/gtest.h"
 
-namespace
-{
+namespace {
 
-void DumpPossibleMoves(std::shared_ptr<shatranj::Board> &board, size_t expected_moves = 0)
-{
+void DumpPossibleMoves(std::shared_ptr<shatranj::Board>& board, size_t expected_moves = 0) {
     auto posmoves = board->GetPossibleMoves(board->GetCurrentTurn());
     std::cout << *(board) << std::endl;
-    for (const auto &move : posmoves)
+    for (const auto& move : posmoves)
     {
         std::cout << move.ToString() << " ";
     }
@@ -29,22 +27,22 @@ void DumpPossibleMoves(std::shared_ptr<shatranj::Board> &board, size_t expected_
     EXPECT_EQ(posmoves.size(), expected_moves);
 }
 
-void Compare(shatranj::Shatranj &game, const std::vector<shatranj::Movement> &first,
-             const std::vector<shatranj::Movement> &second)
-{
+void Compare(shatranj::Shatranj&                    game,
+             const std::vector<shatranj::Movement>& first,
+             const std::vector<shatranj::Movement>& second) {
     std::cout << "possible moves of last captured piece: ";
-    for (auto &move : first)
+    for (auto& move : first)
     {
         std::cout << move.ToString() << " ";
     }
     std::cout << std::endl;
     std::cout << "expected moves: ";
-    for (const auto &move : second)
+    for (const auto& move : second)
     {
         std::cout << move.ToString() << " ";
     }
     std::cout << std::endl;
-    for (const auto &move : first)
+    for (const auto& move : first)
     {
         auto found = std::find(second.begin(), second.end(), move.ToString()) != second.end();
         if (!found)
@@ -53,12 +51,13 @@ void Compare(shatranj::Shatranj &game, const std::vector<shatranj::Movement> &fi
         }
         EXPECT_TRUE(found);
     }
-    for (const auto &move : second)
+    for (const auto& move : second)
     {
-        auto found =
-            std::find_if(first.begin(), first.end(), [&move](const shatranj::Movement &movefromcaptured) -> bool {
-                return movefromcaptured == move;
-            }) != first.end();
+        auto found = std::find_if(first.begin(), first.end(),
+                                  [&move](const shatranj::Movement& movefromcaptured) -> bool {
+                                      return movefromcaptured == move;
+                                  })
+                  != first.end();
         EXPECT_TRUE(found);
         if (!found)
         {
@@ -68,30 +67,29 @@ void Compare(shatranj::Shatranj &game, const std::vector<shatranj::Movement> &fi
     }
 }
 
-void CheckPossibleMoves(shatranj::Shatranj &shatranj, std::string piece_coordinates,
-                        const std::vector<std::string> &expectedmoves)
-{
-    auto lastcapturedplace =
-        shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position(std::move(piece_coordinates)));
+void CheckPossibleMoves(shatranj::Shatranj&             shatranj,
+                        std::string                     piece_coordinates,
+                        const std::vector<std::string>& expectedmoves) {
+    auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPieceByVal(
+      shatranj::Position(std::move(piece_coordinates)));
     ASSERT_TRUE(lastcapturedplace.has_value());
     if (!lastcapturedplace.has_value())
     {
         return;
     }
-    auto lastcapturedpiece = *lastcapturedplace;
+    auto lastcapturedpiece                = *lastcapturedplace;
     auto possiblemovesoflastcapturedpiece = shatranj.GetBoard()->GetPossibleMoves(
-        lastcapturedpiece.GetPos(), lastcapturedpiece.GetPieceType(), lastcapturedpiece.GetColor());
+      lastcapturedpiece.GetPos(), lastcapturedpiece.GetPieceType(), lastcapturedpiece.GetColor());
 
     std::vector<shatranj::Movement> expected_moves_movementlist;
-    for (const auto &move : expectedmoves)
+    for (const auto& move : expectedmoves)
     {
         expected_moves_movementlist.push_back(shatranj::Movement(move));
     }
     Compare(shatranj, possiblemovesoflastcapturedpiece, expected_moves_movementlist);
 }
 
-TEST(SampleCaptureTest_Piyade, Positive)
-{
+TEST(SampleCaptureTest_Piyade, Positive) {
     {
         shatranj::Shatranj shatranj;
 
@@ -104,8 +102,8 @@ TEST(SampleCaptureTest_Piyade, Positive)
             {
                 std::stringstream tempstrcomb;
                 tempstrcomb << citr << intitr;
-                auto piece =
-                    shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position(std::string(tempstrcomb.str())));
+                auto piece = shatranj.GetBoard()->GetPieces()->GetPieceByVal(
+                  shatranj::Position(std::string(tempstrcomb.str())));
 
                 if (intitr == 8 || intitr == 1 || intitr == 2 || intitr == 7)
                 {
@@ -138,7 +136,8 @@ TEST(SampleCaptureTest_Piyade, Positive)
             shatranj::Shatranj shatranj;
 
             CheckPossibleMoves(shatranj, "a1", {});
-            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
+            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}),
+                      true);
             CheckPossibleMoves(shatranj, "b4", {"b4a3", "b4c3"});
             EXPECT_EQ(shatranj.PlaySeq({"b4a3"}), true);
         }
@@ -146,7 +145,8 @@ TEST(SampleCaptureTest_Piyade, Positive)
             // piyade can not capture in front check get possible moves all 3 possible, front empty
             shatranj::Shatranj shatranj;
 
-            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "e2e3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
+            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "e2e3", "b6b5", "c2c3", "b5b4", "d2d3"}),
+                      true);
             std::cout << *(shatranj.GetBoard()) << std::endl;
             CheckPossibleMoves(shatranj, "b4", {"b4a3", "b4c3", "b4b3"});
             EXPECT_EQ(shatranj.PlaySeq({"b4b3"}), true);
@@ -155,14 +155,16 @@ TEST(SampleCaptureTest_Piyade, Positive)
             // piyade can not capture in front
             shatranj::Shatranj shatranj;
 
-            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
+            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}),
+                      true);
             EXPECT_EQ(shatranj.PlaySeq({"b4c3"}), true);
         }
         {
             // piyade can not capture in front
             shatranj::Shatranj shatranj;
 
-            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}), true);
+            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "b2b3", "b6b5", "c2c3", "b5b4", "d2d3"}),
+                      true);
             EXPECT_EQ(shatranj.PlaySeq({"b4b3"}), false);
         }
     }
@@ -170,7 +172,9 @@ TEST(SampleCaptureTest_Piyade, Positive)
         // piyade can promote to vizier
         shatranj::Shatranj shatranj;
 
-        EXPECT_EQ(shatranj.PlaySeq({"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7"}), true);
+        EXPECT_EQ(shatranj.PlaySeq(
+                    {"b2b3", "g7g6", "b3b4", "g6g5", "b4b5", "g5g4", "b5b6", "g4g3", "b6c7"}),
+                  true);
         EXPECT_EQ(shatranj.PlaySeq({"g3h2"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"c7b8"}), true);
         const auto b8p = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position("b8"));
@@ -183,8 +187,7 @@ TEST(SampleCaptureTest_Piyade, Positive)
     }
 }
 
-TEST(SampleCaptureTest_Rook, Positive)
-{
+TEST(SampleCaptureTest_Rook, Positive) {
     {
         shatranj::Shatranj shatranj;
 
@@ -192,12 +195,14 @@ TEST(SampleCaptureTest_Rook, Positive)
         EXPECT_EQ(shatranj.PlaySeq({"a1a7", "d7d6"}, true), true);
         std::cout << *(shatranj.GetBoard()) << std::endl;
         EXPECT_EQ(shatranj.GetBoard()->GetCurrentPlayer().GetColor(), shatranj::Color::kWhite);
-        auto lastcapturedplace = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position("a7"));
+        auto lastcapturedplace =
+          shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position("a7"));
         EXPECT_EQ(lastcapturedplace.has_value(), true);
         auto lastcapturedpiece = *lastcapturedplace;
         EXPECT_EQ(lastcapturedpiece.GetSymbolOld() == "R", true);
         EXPECT_TRUE(lastcapturedpiece.GetColor() == shatranj::Color::kWhite);
-        CheckPossibleMoves(shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
+        CheckPossibleMoves(
+          shatranj, "a7", {"a7a8", "a7a6", "a7a5", "a7a4", "a7a3", "a7a2", "a7a1", "a7b7", "a7c7"});
     }
     {
         shatranj::Shatranj shatranj;
@@ -212,14 +217,14 @@ TEST(SampleCaptureTest_Rook, Positive)
     {
         shatranj::Shatranj shatranj;
 
-        EXPECT_NO_THROW(shatranj.GetBoard()->ApplyFEN("r1fvsf1r/pppppppp/h4h2/3H4/8/8/PPPPPPPP/R1FVSFHR w 0 3"));
+        EXPECT_NO_THROW(
+          shatranj.GetBoard()->ApplyFEN("r1fvsf1r/pppppppp/h4h2/3H4/8/8/PPPPPPPP/R1FVSFHR w 0 3"));
 
         CheckPossibleMoves(shatranj, "a2", {"a2a3"});
     }
 }
 
-TEST(SampleCaptureTest_Horse, Positive)
-{
+TEST(SampleCaptureTest_Horse, Positive) {
     {
         shatranj::Shatranj shatranj;
 
@@ -247,15 +252,13 @@ TEST(SampleCaptureTest_Horse, Positive)
     }
 }
 
-TEST(SampleCaptureTest_Fil, Positive)
-{
+TEST(SampleCaptureTest_Fil, Positive) {
     shatranj::Shatranj shatranj;
 
     CheckPossibleMoves(shatranj, "c1", {"c1a3", "c1e3"});
 }
 
-TEST(SampleCaptureTest_LeakTest, Positive)
-{
+TEST(SampleCaptureTest_LeakTest, Positive) {
     EXPECT_EQ(sizeof(shatranj::Piece), 2);
     EXPECT_EQ(sizeof(shatranj::Piyade), 2);
     EXPECT_EQ(sizeof(shatranj::Shah), 2);
@@ -265,55 +268,68 @@ TEST(SampleCaptureTest_LeakTest, Positive)
         for (int i = 0; i < 1000; i++)
         {
             shatranj::Shatranj shatranj;
-            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
-                                        "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+            EXPECT_EQ(
+              shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6",
+                                "e2e3", "e7e6", "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+              true);
+            EXPECT_EQ(
+              shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5",
+                                "e3e4", "e6e5", "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
+              true);
+            EXPECT_EQ(
+              shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}),
+              true);
+            EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5", "c8d8"}),
                       true);
-            EXPECT_EQ(shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4", "e6e5",
-                                        "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
-                      true);
-            EXPECT_EQ(shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
-            EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5", "c8d8"}), true);
-            EXPECT_EQ(shatranj.PlaySeq({"d5b5"}),
-                      false); // is check should return false and seq should fail, since rook is next to king
-            EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5", "g8f6", "b1c3",
-                                        "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
-                      true);
-            EXPECT_EQ(shatranj.PlaySeq({"c1c3"}),
-                      false); // is check should return false and seq should fail, since piyade is next to king
+            EXPECT_EQ(
+              shatranj.PlaySeq({"d5b5"}),
+              false);  // is check should return false and seq should fail, since rook is next to king
+            EXPECT_EQ(
+              shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5",
+                                "g8f6", "b1c3", "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
+              true);
+            EXPECT_EQ(
+              shatranj.PlaySeq({"c1c3"}),
+              false);  // is check should return false and seq should fail, since piyade is next to king
             EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
-                      false); // shah can not take the piyade because it is being protected by fill
+                      false);  // shah can not take the piyade because it is being protected by fill
             EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1"}), true);
         }
 }
 
-TEST(SampleCaptureTest_DrawTest, Positive)
-{
+TEST(SampleCaptureTest_DrawTest, Positive) {
 
     {
         shatranj::Shatranj shatranj;
 
-        EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
-                                    "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
-                  true);
-        EXPECT_EQ(shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4", "e6e5",
-                                    "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
-                  true);
-        EXPECT_EQ(shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
+        EXPECT_EQ(
+          shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3",
+                            "e7e6", "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+          true);
+        EXPECT_EQ(
+          shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4",
+                            "e6e5", "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
+          true);
+        EXPECT_EQ(
+          shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"c8d8"}), true);
-        EXPECT_EQ(shatranj.PlaySeq({"d5b5"}),
-                  false); // is check should return false and seq should fail, since rook is next to king
-        EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5", "g8f6", "b1c3",
-                                    "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
+        EXPECT_EQ(
+          shatranj.PlaySeq({"d5b5"}),
+          false);  // is check should return false and seq should fail, since rook is next to king
+        EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5",
+                                    "g8f6", "b1c3", "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
                   true);
-        EXPECT_EQ(shatranj.PlaySeq({"c1c3"}),
-                  false); // is check should return false and seq should fail, since piyade is next to king
+        EXPECT_EQ(
+          shatranj.PlaySeq({"c1c3"}),
+          false);  // is check should return false and seq should fail, since piyade is next to king
         EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
-                  false); // shah can not take the piyade because it is being protected by fill
-        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3", "c3d1",
-                                    "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "f1g1"},
-                                   true),
-                  true);
+                  false);  // shah can not take the piyade because it is being protected by fill
+        EXPECT_EQ(
+          shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3",
+                            "c3d1", "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "f1g1"},
+                           true),
+          true);
         EXPECT_EQ(shatranj.PlaySeq({"d8d7"}, true), false);
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
     }
@@ -321,28 +337,34 @@ TEST(SampleCaptureTest_DrawTest, Positive)
 
         shatranj::Shatranj shatranj;
 
-        EXPECT_EQ(shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3", "e7e6",
-                                    "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
-                  true);
-        EXPECT_EQ(shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4", "e6e5",
-                                    "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
-                  true);
-        EXPECT_EQ(shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
+        EXPECT_EQ(
+          shatranj.PlaySeq({"a2a3", "a7a6", "b2b3", "b7b6", "c2c3", "c7c6", "d2d3", "d7d6", "e2e3",
+                            "e7e6", "f2f3", "f7f6", "g2g3", "g7g6", "h2h3", "h7h6"}),
+          true);
+        EXPECT_EQ(
+          shatranj.PlaySeq({"a3a4", "a6a5", "b3b4", "b6b5", "c3c4", "c6c5", "d3d4", "d6d5", "e3e4",
+                            "e6e5", "f3f4", "f6f5", "g3g4", "g6g5", "h3h4", "h6h5"}),
+          true);
+        EXPECT_EQ(
+          shatranj.PlaySeq({"a4b5", "a5b4", "c4d5", "c5d4", "e4f5", "e5f4", "g4h5", "g5h4"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"a1a8", "h8h5", "a8b8", "h5f5", "b8c8", "f5d5"}), true);
         EXPECT_EQ(shatranj.PlaySeq({"c8d8"}), true);
-        EXPECT_EQ(shatranj.PlaySeq({"d5b5"}),
-                  false); // is check should return false and seq should fail, since rook is next to king
-        EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5", "g8f6", "b1c3",
-                                    "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
+        EXPECT_EQ(
+          shatranj.PlaySeq({"d5b5"}),
+          false);  // is check should return false and seq should fail, since rook is next to king
+        EXPECT_EQ(shatranj.PlaySeq({"e8d8", "h1h4", "d5b5", "f1d3", "f8d6", "h4f4", "d6f4", "d3b5",
+                                    "g8f6", "b1c3", "f6d5", "c3e2", "d4d3", "g1f3", "d3d2"}),
                   true);
-        EXPECT_EQ(shatranj.PlaySeq({"c1c3"}),
-                  false); // is check should return false and seq should fail, since piyade is next to king
+        EXPECT_EQ(
+          shatranj.PlaySeq({"c1c3"}),
+          false);  // is check should return false and seq should fail, since piyade is next to king
         EXPECT_EQ(shatranj.PlaySeq({"e1d2"}),
-                  false); // shah can not take the piyade because it is being protected by fill
-        EXPECT_EQ(shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3", "c3d1",
-                                    "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "e5d7"},
-                                   true),
-                  true);
+                  false);  // shah can not take the piyade because it is being protected by fill
+        EXPECT_EQ(
+          shatranj.PlaySeq({"e1f1", "d2c1", "e2c1", "d5c3", "c1d3", "c3b5", "d3b4", "b5c3", "b4d3",
+                            "c3d1", "d3f4", "d1f2", "f4h3", "f2h3", "f3e5", "h3g1", "e5d7"},
+                           true),
+          true);
         EXPECT_EQ(shatranj.PlaySeq({"d8d7"}, true), true);
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kDraw);
         EXPECT_EQ(shatranj.PlaySeq({"f1g1"}, true), false);
@@ -350,33 +372,35 @@ TEST(SampleCaptureTest_DrawTest, Positive)
     }
 }
 
-TEST(SampleCaptureTest_GenerateFEN, Negative)
-{
+TEST(SampleCaptureTest_GenerateFEN, Negative) {
     shatranj::Shatranj shatranj;
 
-    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w 0 1"));
+    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(),
+              std::string("rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w 0 1"));
     EXPECT_EQ(shatranj.PlaySeq({"e2e3"}), true);
-    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppppppp/8/8/8/4P3/PPPP1PPP/RHFVSFHR b 0 1"));
+    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(),
+              std::string("rhfvsfhr/pppppppp/8/8/8/4P3/PPPP1PPP/RHFVSFHR b 0 1"));
     EXPECT_EQ(shatranj.PlaySeq({"e7e6"}), true);
-    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(), std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
+    EXPECT_EQ(shatranj.GetBoard()->GenerateFEN(),
+              std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
 }
 
-TEST(SampleCaptureTest_ApplyFEN, Negative)
-{
+TEST(SampleCaptureTest_ApplyFEN, Negative) {
     {
         shatranj::Shatranj shatranj;
 
-        shatranj.GetBoard()->ApplyFEN(std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
+        shatranj.GetBoard()->ApplyFEN(
+          std::string("rhfvsfhr/pppp1ppp/4p3/8/8/4P3/PPPP1PPP/RHFVSFHR w 0 2"));
         auto e3opt = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position{"e3"});
         auto e6opt = shatranj.GetBoard()->GetPieces()->GetPieceByVal(shatranj::Position{"e6"});
         EXPECT_EQ(e3opt.has_value(), true);
         EXPECT_EQ(e6opt.has_value(), true);
         auto e3val = *e3opt;
         auto e6val = *e6opt;
-        EXPECT_TRUE(e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite ||
-                    e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
-        EXPECT_TRUE(e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite ||
-                    e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
+        EXPECT_TRUE(e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite
+                    || e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
+        EXPECT_TRUE(e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite
+                    || e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
         EXPECT_EQ(shatranj.GetBoard()->GetFullMoveNumber(), 2);
         EXPECT_EQ(shatranj.GetBoard()->GetHalfMoveClock(), 0);
     }
@@ -394,10 +418,10 @@ TEST(SampleCaptureTest_ApplyFEN, Negative)
         EXPECT_EQ(e6opt.has_value(), true);
         auto e3val = *e3opt;
         auto e6val = *e6opt;
-        EXPECT_TRUE(e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite ||
-                    e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
-        EXPECT_TRUE(e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite ||
-                    e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
+        EXPECT_TRUE(e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite
+                    || e3val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
+        EXPECT_TRUE(e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeWhite
+                    || e6val.GetPieceType() == shatranj::ChessPieceEnum::kPiyadeBlack);
         auto a8val = *a8opt;
         auto h1val = *h1opt;
         EXPECT_EQ(a8val.GetPieceType(), shatranj::ChessPieceEnum::kShah);
@@ -405,15 +429,16 @@ TEST(SampleCaptureTest_ApplyFEN, Negative)
     }
 }
 
-TEST(RevertTest, Positive)
-{
+TEST(RevertTest, Positive) {
 
     {
         shatranj::Shatranj shatranj;
 
         for (int i = 0; i < 10; i++)
         {
-            EXPECT_EQ(shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5", "a4b5", "f7f6", "a1a7", "d7d6"}), true);
+            EXPECT_EQ(
+              shatranj.PlaySeq({"a2a3", "b7b6", "a3a4", "b6b5", "a4b5", "f7f6", "a1a7", "d7d6"}),
+              true);
             std::cout << "before revert:" << std::endl << *(shatranj.GetBoard()) << std::endl;
             EXPECT_EQ(shatranj.GetBoard()->Revert(100), false);
             std::cout << "after revert:" << std::endl << *(shatranj.GetBoard()) << std::endl;
@@ -421,14 +446,13 @@ TEST(RevertTest, Positive)
     }
 }
 
-TEST(RevertTest2, Positive)
-{
+TEST(RevertTest2, Positive) {
     {
         shatranj::Shatranj shatranj;
         EXPECT_EQ(shatranj.PlaySeq({"b1c3", "b8a6", "c3d5", "g8f6", "g1h3"}), true);
         EXPECT_EQ(shatranj.GetBoard()->Revert(1), true);
-        auto oneplayandrevert = [&](const std::vector<shatranj::Movement> &moves) {
-            for (const auto &move : moves)
+        auto oneplayandrevert = [&](const std::vector<shatranj::Movement>& moves) {
+            for (const auto& move : moves)
             {
                 // std::cout << "checking " << move.first.ToString() << " " << move.second.ToString() << std::endl;
                 // std::cout << "============================before play:" << std::endl << *(shatranj.GetBoard()) <<
@@ -440,28 +464,31 @@ TEST(RevertTest2, Positive)
             }
         };
 
-        oneplayandrevert(shatranj.GetBoard()->GetPossibleMoves(shatranj.GetBoard()->GetCurrentTurn()));
+        oneplayandrevert(
+          shatranj.GetBoard()->GetPossibleMoves(shatranj.GetBoard()->GetCurrentTurn()));
         CheckPossibleMoves(shatranj, "a2", {"a2a3"});
     }
 }
 
-TEST(SampleGameEndTests, PosNeg)
-{
+TEST(SampleGameEndTests, PosNeg) {
     {
         shatranj::Shatranj shatranj;
-        shatranj.GetBoard()->ApplyFEN("1r1vr3/1p2sp2/p1p5/3pp2p/2f3p1/2H2P2/PPPf1PPP/1RFVSF1R w 1 43");
+        shatranj.GetBoard()->ApplyFEN(
+          "1r1vr3/1p2sp2/p1p5/3pp2p/2f3p1/2H2P2/PPPf1PPP/1RFVSF1R w 1 43");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 19);
     }
     {
         shatranj::Shatranj shatranj;
-        shatranj.GetBoard()->ApplyFEN("2rr2f1/2v1p1p1/p2p1p1p/1p2h3/2p1s1h1/2H5/PPPfPPPP/R1FVSFHR b 7 37");
+        shatranj.GetBoard()->ApplyFEN(
+          "2rr2f1/2v1p1p1/p2p1p1p/1p2h3/2p1s1h1/2H5/PPPfPPPP/R1FVSFHR b 7 37");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 3);
     }
     {
         shatranj::Shatranj shatranj;
-        shatranj.GetBoard()->ApplyFEN("2rvs2r/pp1p1pp1/3fp2p/2p1h2h/2f5/2H5/PPPP1PPP/1RFVSFHR w 0 21");
+        shatranj.GetBoard()->ApplyFEN(
+          "2rvs2r/pp1p1pp1/3fp2p/2p1h2h/2f5/2H5/PPPP1PPP/1RFVSFHR w 0 21");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 20);
     }
@@ -473,7 +500,8 @@ TEST(SampleGameEndTests, PosNeg)
     }
     {
         shatranj::Shatranj shatranj;
-        shatranj.GetBoard()->ApplyFEN("1h1vsf1r/r1ppp1p1/pp2fp1h/7p/8/1P1FPS1P/P1PP1PPR/RHFV2H1 b 1 9");
+        shatranj.GetBoard()->ApplyFEN(
+          "1h1vsf1r/r1ppp1p1/pp2fp1h/7p/8/1P1FPS1P/P1PP1PPR/RHFV2H1 b 1 9");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kNormal);
         DumpPossibleMoves(shatranj.GetBoard(), 22);
     }
@@ -509,33 +537,33 @@ TEST(SampleGameEndTests, PosNeg)
     }
 }
 
-TEST(SampleCaptureTest_MinMax, Expectations)
-{
+TEST(SampleCaptureTest_MinMax, Expectations) {
     {
-        int noofvisitednodes = 0;
-        std::chrono::microseconds duration = std::chrono::microseconds(0);
-        shatranj::Shatranj shatranj;
-        shatranj.GetBoard()->ApplyFEN("rh1vs1hr/p1ppp1pp/1p1H1p1f/8/2H5/7F/PPPPPPPP/R1FV1S1R b 12 8");
+        int                       noofvisitednodes = 0;
+        std::chrono::microseconds duration         = std::chrono::microseconds(0);
+        shatranj::Shatranj        shatranj;
+        shatranj.GetBoard()->ApplyFEN(
+          "rh1vs1hr/p1ppp1pp/1p1H1p1f/8/2H5/7F/PPPPPPPP/R1FV1S1R b 12 8");
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheck);
         DumpPossibleMoves(shatranj.GetBoard(), 3);
         auto picked_move = shatranj.PickMoveInBoard(4, &noofvisitednodes, &duration);
-        std::cout << "nodes visited per second : " << noofvisitednodes / (duration.count() / 10000) << std::endl;
+        std::cout << "nodes visited per second : " << noofvisitednodes / (duration.count() / 10000)
+                  << std::endl;
         EXPECT_NE(picked_move, std::nullopt);
         std::cout << "picked move : " << picked_move->ToString() << std::endl;
         EXPECT_EQ(picked_move->ToString() == "c7d6" || picked_move->ToString() == "e7d6", true);
     }
 }
 
-TEST(Shatranj_SampleQuestions, FindingCheckmate)
-{
+TEST(Shatranj_SampleQuestions, FindingCheckmate) {
     for (int i = 0; i < 1; i++)
     {
         shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("1r1r4/8/1h6/2p5/2P5/1HS5/R3R3/1s6 b 0 10");
         std::cout << *(shatranj.GetBoard()) << std::endl;
-        size_t counter = 0;
-        int noofnodes = 0;
-        std::chrono::microseconds duration = std::chrono::microseconds(0);
+        size_t                    counter   = 0;
+        int                       noofnodes = 0;
+        std::chrono::microseconds duration  = std::chrono::microseconds(0);
         shatranj::RunWithTiming("Looking for black checkmate", [&]() -> bool {
             while (shatranj.PickAndPlay(5, &noofnodes, &duration))
             {
@@ -554,40 +582,39 @@ TEST(Shatranj_SampleQuestions, FindingCheckmate)
     }
 }
 
-TEST(Shatranj_SampleQuestions, FindingCheckmate2)
-{
+TEST(Shatranj_SampleQuestions, FindingCheckmate2) {
     for (int i = 0; i < 1; i++)
     {
         shatranj::Shatranj shatranj;
         shatranj.GetBoard()->ApplyFEN("1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10");
-        int noofnodes = 0;
-        std::chrono::microseconds duration = std::chrono::microseconds(0);
+        int                       noofnodes = 0;
+        std::chrono::microseconds duration  = std::chrono::microseconds(0);
         // 1r4k1/8/5PP1/K1n5/6NR/7B/1r6/7R w - - 0 1
         std::cout << *(shatranj.GetBoard()) << std::endl;
-        size_t counter = 0;
-        auto wanted_winning_color = shatranj.GetBoard()->GetCurrentTurn();
-        auto ret = shatranj::RunWithTiming(
-            "Looking for black checkmate",
-            [&]() -> bool {
-                while (true)
-                {
-                    bool played = shatranj.GetBoard()->GetCurrentTurn() == wanted_winning_color
-                                      ? shatranj.PickAndPlayWinningSequence(11, &noofnodes)
-                                      : shatranj.PickAndPlay(3, &noofnodes);
-                    if (!played)
-                    {
-                        break;
-                    }
-                    std::cout << *(shatranj.GetBoard()) << std::endl;
-                    EXPECT_LE(counter++, 10);
-                    if (counter > 10)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            },
-            &duration);
+        size_t counter              = 0;
+        auto   wanted_winning_color = shatranj.GetBoard()->GetCurrentTurn();
+        auto   ret                  = shatranj::RunWithTiming(
+          "Looking for black checkmate",
+          [&]() -> bool {
+              while (true)
+              {
+                  bool played = shatranj.GetBoard()->GetCurrentTurn() == wanted_winning_color
+                                                   ? shatranj.PickAndPlayWinningSequence(11, &noofnodes)
+                                                   : shatranj.PickAndPlay(3, &noofnodes);
+                  if (!played)
+                  {
+                      break;
+                  }
+                  std::cout << *(shatranj.GetBoard()) << std::endl;
+                  EXPECT_LE(counter++, 10);
+                  if (counter > 10)
+                  {
+                      return false;
+                  }
+              }
+              return true;
+          },
+          &duration);
 
         EXPECT_EQ(ret, true);
         EXPECT_EQ(shatranj.GetBoard()->GetBoardState(), shatranj::GameState::kCheckmate);
@@ -595,26 +622,25 @@ TEST(Shatranj_SampleQuestions, FindingCheckmate2)
     }
 }
 
-TEST(ShatranjGetCheckingMoves, Positive)
-{
+TEST(ShatranjGetCheckingMoves, Positive) {
     shatranj::Shatranj shatranj;
     shatranj.GetBoard()->ApplyFEN("1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10");
     // 1r4k1/8/5PP1/K1n5/6NR/7B/1r6/7R w - - 0 1
-    auto movesOfCheck = shatranj.GetBoard()->GetPossibleCheckMoves(shatranj.GetBoard()->GetCurrentTurn());
+    auto movesOfCheck =
+      shatranj.GetBoard()->GetPossibleCheckMoves(shatranj.GetBoard()->GetCurrentTurn());
     std::vector<shatranj::Movement> expecteds = {{"h4h8"}, {"f6f7"}, {"g4h6"}};
     Compare(shatranj, movesOfCheck, expecteds);
 }
-TEST(SampleCaptureTest_SampleSelfPlay, Negative)
-{
-    int countofvisitednode = 0;
-    std::chrono::microseconds duration = std::chrono::microseconds(0);
-    shatranj::Shatranj shatranj;
+TEST(SampleCaptureTest_SampleSelfPlay, Negative) {
+    int                       countofvisitednode = 0;
+    std::chrono::microseconds duration           = std::chrono::microseconds(0);
+    shatranj::Shatranj        shatranj;
     std::cout << *(shatranj.GetBoard()) << std::endl;
     std::vector<shatranj::Movement> moves;
-    shatranj::DeferedCall callback([&]() {
+    shatranj::DeferedCall           callback([&]() {
         std::cout << "so far played moves:  " << std::endl << "\t\t\t";
         int count = 0;
-        for (const auto &move : moves)
+        for (const auto& move : moves)
         {
             std::cout << move.ToString() << " ";
             if (++count % 10 == 0)
@@ -626,10 +652,10 @@ TEST(SampleCaptureTest_SampleSelfPlay, Negative)
     });
     for (int i = 0; i < 100; i++)
     {
-        std::chrono::microseconds tempduration = std::chrono::microseconds(0);
+        std::chrono::microseconds         tempduration = std::chrono::microseconds(0);
         std::optional<shatranj::Movement> pickedmove =
-            i % 2 == 0 ? shatranj.PickMoveInBoard(2, &countofvisitednode, &tempduration)
-                       : shatranj.PickMoveInBoard(2, &countofvisitednode, &tempduration);
+          i % 2 == 0 ? shatranj.PickMoveInBoard(2, &countofvisitednode, &tempduration)
+                     : shatranj.PickMoveInBoard(2, &countofvisitednode, &tempduration);
         if (pickedmove)
         {
             std::cout << pickedmove->ToString() << std::endl;
@@ -657,10 +683,11 @@ TEST(SampleCaptureTest_SampleSelfPlay, Negative)
     }
     std::cout << *(shatranj.GetBoard()) << std::endl;
     if (duration.count() > 0)
-        std::cout << "nodes per second: " << 1000000 * static_cast<long>(countofvisitednode) / duration.count()
+        std::cout << "nodes per second: "
+                  << 1000000 * static_cast<long>(countofvisitednode) / duration.count()
                   << std::endl;
     else
         std::cout << "duration is 0" << std::endl;
 }
 
-} // namespace
+}  // namespace
