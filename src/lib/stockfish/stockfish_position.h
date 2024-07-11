@@ -96,6 +96,10 @@ class Position {
 
     Bitboard blockers_for_king(Color c) const;
 
+    Key key() const;
+    template<bool AfterMove>
+    Key adjust_key50(Key k) const;
+
     template<PieceType Pt>
     Square square(Color c) const;
 
@@ -111,6 +115,16 @@ class Position {
     int        gamePly;
     Color      sideToMove;
 };
+inline void Position::do_move(Move m, StateInfo& newSt) { do_move(m, newSt, gives_check(m)); }
+
+std::ostream& operator<<(std::ostream& os, const Position& pos);
+
+inline Key Position::key() const { return adjust_key50<false>(st->key); }
+template<bool AfterMove>
+inline Key Position::adjust_key50(Key k) const {
+    return st->rule50 < 14 - AfterMove ? k : k ^ make_key((st->rule50 - (14 - AfterMove)) / 8);
+}
+
 inline Color    Position::side_to_move() const { return sideToMove; }
 inline Bitboard Position::checkers() const { return st->checkersBB; }
 
@@ -163,6 +177,22 @@ inline Bitboard Position::pieces(Color c) const { return byColorBB[c]; }
 template<typename... PieceTypes>
 inline Bitboard Position::pieces(Color c, PieceTypes... pts) const {
     return pieces(c) & pieces(pts...);
+}
+
+template<PieceType Pt>
+inline int Position::count() const {
+    return count<Pt>(WHITE) + count<Pt>(BLACK);
+}
+
+template<PieceType Pt>
+inline int Position::count(Color c) const {
+    return pieceCount[make_piece(c, Pt)];
+}
+
+template<PieceType Pt>
+inline Square Position::square(Color c) const {
+    assert(count<Pt>(c) == 1);
+    return lsb(pieces(c, Pt));
 }
 
 inline Bitboard Position::attackers_to(Square s) const { return attackers_to(s, pieces()); }

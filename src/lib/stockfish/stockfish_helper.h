@@ -167,7 +167,7 @@ const inline std::string_view piece_type_to_string(PieceType type) {
     }
 }
 
-void dump_bitboard_as_one_zero(const std::string& title, const Bitboard& bb) {
+inline void dump_bitboard_as_one_zero(const std::string& title, const Bitboard& bb) {
     std::cout << title << std::endl;
 
     std::cout << bb << std::endl;
@@ -193,7 +193,7 @@ void dump_bitboard_as_one_zero(const std::string& title, const Bitboard& bb) {
 }
 
 
-Bitboard attacks_bb(PieceType pt, Square sq, Color color = WHITE, Bitboard occ = 0) {
+inline Bitboard attacks_bb(PieceType pt, Square sq, Color color = WHITE, Bitboard occ = 0) {
     switch (pt)
     {
     case PAWN :
@@ -212,7 +212,7 @@ Bitboard attacks_bb(PieceType pt, Square sq, Color color = WHITE, Bitboard occ =
     }
 }
 
-void dump_pseudo_attacks() {
+inline void dump_pseudo_attacks() {
 
     for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
     {

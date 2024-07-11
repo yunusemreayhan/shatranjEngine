@@ -5,6 +5,7 @@
 #include <ios>
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 using std::string;
 namespace Stockfish {
@@ -25,6 +26,46 @@ constexpr std::string_view PieceToCharShatranj(" PHFRVS  phfrvs");
 constexpr Piece Pieces[] = {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
                             B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING};
 }  // namespace
+
+
+std::string square(Square s) { return std::string{char('a' + file_of(s)), char('1' + rank_of(s))}; }
+
+// Returns an ASCII representation of the position
+std::ostream& operator<<(std::ostream& os, const Position& pos) {
+
+    os << "\n +---+---+---+---+---+---+---+---+\n";
+
+    for (Rank r = RANK_8; r >= RANK_1; --r)
+    {
+        for (File f = FILE_A; f <= FILE_H; ++f)
+            os << " | " << PieceToCharShatranj[pos.piece_on(make_square(f, r))];
+
+        os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
+    }
+
+    os << "   a   b   c   d   e   f   g   h\n"
+       << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase << std::setfill('0')
+       << std::setw(16) << pos.key() << std::setfill(' ') << std::dec << "\nCheckers: ";
+
+    for (Bitboard b = pos.checkers(); b;)
+        os << square(pop_lsb(b)) << " ";
+
+    /*if (int(Tablebases::MaxCardinality) >= popcount(pos.pieces()) && !pos.can_castle(ANY_CASTLING))
+    {
+        StateInfo st;
+        //ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
+
+        Position p;
+        p.set(pos.fen(), pos.is_chess960(), &st);
+        Tablebases::ProbeState s1, s2;
+        Tablebases::WDLScore   wdl = Tablebases::probe_wdl(p, &s1);
+        int                    dtz = Tablebases::probe_dtz(p, &s2);
+        os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
+           << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
+    }*/
+
+    return os;
+}
 
 // Makes a move, and saves all information necessary
 // to a StateInfo object. The move is assumed to be legal. Pseudo-legal
@@ -141,13 +182,13 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
     // Move the piece. The tricky Chess960 castling is handled earlier
     /*if (m.type_of() != CASTLING)
-    {
-        dp.piece[0] = pc;
-        dp.from[0]  = from;
-        dp.to[0]    = to;
+    {*/
+    dp.piece[0] = pc;
+    dp.from[0]  = from;
+    dp.to[0]    = to;
 
-        move_piece(from, to);
-    }*/
+    move_piece(from, to);
+    /*}*/
 
     // If the moving piece is a pawn do some special extra work
     if (type_of(pc) == PAWN)
@@ -294,24 +335,6 @@ void Position::undo_move(Move m) {
     assert(pos_is_ok());
 }
 
-
-template<PieceType Pt>
-inline int Position::count(Color c) const {
-    return pieceCount[make_piece(c, Pt)];
-}
-
-template<PieceType Pt>
-inline int Position::count() const {
-    return count<Pt>(WHITE) + count<Pt>(BLACK);
-}
-
-template<PieceType Pt>
-inline Square Position::square(Color c) const {
-    assert(count<Pt>(c) == 1);
-    return lsb(pieces(c, Pt));
-}
-
-inline void Position::do_move(Move m, StateInfo& newSt) { do_move(m, newSt, gives_check(m)); }
 
 // Performs some consistency checks for the position object
 // and raise an assert if something wrong is detected.

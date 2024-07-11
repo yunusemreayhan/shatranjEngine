@@ -21,7 +21,10 @@
 
 #include <algorithm>  // IWYU pragma: keep
 #include <cstddef>
+#include <ostream>
+#include <iostream>
 
+#include "stockfish_helper.h"
 #include "types.h"
 
 namespace Stockfish {
@@ -46,6 +49,16 @@ struct ExtMove: public Move {
     // with an ambiguity that yields to a compile error.
     operator float() const = delete;
 };
+
+inline std::ostream& operator<<(std::ostream& os, const ExtMove& move) {
+    os << square_to_string(move.from_sq()) << "-" << square_to_string(move.to_sq());
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Move& move) {
+    os << square_to_string(move.from_sq()) << "-" << square_to_string(move.to_sq());
+    return os;
+}
 
 inline bool operator<(const ExtMove& f, const ExtMove& s) { return f.value < s.value; }
 
