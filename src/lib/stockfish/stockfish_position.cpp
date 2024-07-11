@@ -1,4 +1,4 @@
-#include "position.h"
+#include "stockfish_position.h"
 #include "movegen.h"
 
 #include <cstring>
@@ -584,7 +584,6 @@ bool Position::pseudo_legal(const Move m) const {
     return true;
 }
 
-inline Color Position::side_to_move() const { return sideToMove; }
 
 // Initializes the position object with the given FEN string.
 // This function is not very robust - make sure that input FENs are correct,
@@ -665,7 +664,7 @@ Position& Position::set(const string& fenStr, /*bool isChess960, */ StateInfo* s
     // the game instead of KQkq and also X-FEN standard that, in case of Chess960,
     // if an inner rook is associated with the castling right, the castling tag is
     // replaced by the file letter of the involved rook, as for the Shredder-FEN.
-    while ((ss >> token) && !isspace(token))
+    /*while ((ss >> token) && !isspace(token))
     {
         Square rsq;
         Color  c    = islower(token) ? BLACK : WHITE;
@@ -688,7 +687,7 @@ Position& Position::set(const string& fenStr, /*bool isChess960, */ StateInfo* s
             continue;
 
         // set_castling_right(c, rsq);
-    }
+    }*/
 
     // 4. En passant square.
     // Ignore if square is invalid or not on side to move relative rank 6.
@@ -866,10 +865,10 @@ string Position::fen(bool shatranj) const {
         ss << (chess960 ? char('a' + file_of(castling_rook_square(BLACK_OOO))) : 'q');
 
     if (!can_castle(ANY_CASTLING))
-        ss << '-';
+        ss << '-';*/
 
-    ss << (ep_square() == SQ_NONE ? " - " : " " + UCIEngine::square(ep_square()) + " ")
-       << st->rule50 << " " << 1 + (gamePly - (sideToMove == BLACK)) / 2;*/
+    ss /*<< (ep_square() == SQ_NONE ? " - " : " " + UCIEngine::square(ep_square()) + " ")*/
+      << st->rule50 << " " << 1 + (gamePly - (sideToMove == BLACK)) / 2;
 
     return ss.str();
 }

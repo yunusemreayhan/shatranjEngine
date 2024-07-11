@@ -10,7 +10,11 @@
 #include "gtest/gtest.h"
 #include "bitboard.h"
 #include "stockfish_helper.h"
+#include "stockfish_position.h"
 namespace {
+
+constexpr auto StartFEN         = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 1";
+constexpr auto StartFENShatranj = "rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w 0 1";
 
 using namespace Stockfish;
 
@@ -42,6 +46,20 @@ TEST(Bitboard, RookAttackTableOccupation) {
     AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE, attacks_bb(KING, SQ_A1), 4629771061636939328);
     AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE, attacks_bb(KING, SQ_B2), 4629771061636938816);
     AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE, attacks_bb(KING, SQ_C2), 4629771061636937792);
+}
+
+TEST(Bitboard, ApplyFenToPosNormal) {
+    StateInfo st;
+    Position  pos;
+    auto&     p = pos.set(StartFEN, &st);
+    ASSERT_EQ(p.fen(), StartFEN);
+}
+
+TEST(Bitboard, ApplyFenToPosShatranj) {
+    StateInfo st;
+    Position  pos;
+    auto&     p = pos.set(StartFENShatranj, &st, true);
+    ASSERT_EQ(p.fen(true), StartFENShatranj);
 }
 
 /*

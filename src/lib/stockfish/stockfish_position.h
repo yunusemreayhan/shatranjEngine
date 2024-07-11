@@ -111,6 +111,7 @@ class Position {
     int        gamePly;
     Color      sideToMove;
 };
+inline Color    Position::side_to_move() const { return sideToMove; }
 inline Bitboard Position::checkers() const { return st->checkersBB; }
 
 inline Piece Position::piece_on(Square s) const {
