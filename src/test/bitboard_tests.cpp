@@ -7,51 +7,41 @@
 #include <sstream>
 #include <utility>
 
-#include "helper.h"
-#include "position.h"
-#include "shatranc_piece.h"
-#include "shatranj.h"
-#include "types.h"
 #include "gtest/gtest.h"
 #include "stockfish/bitboard.h"
-
+#include "stockfish/helper.h"
 namespace {
 
 using namespace Stockfish;
 
 TEST(Bitboard, AttackTableChecks) {
-    // StockfishPrecomputationTables::dump_pseudo_attacks();
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::QUEEN, SQ_G2), 10485920);
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::KING, SQ_G2), 14721248);
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::KNIGHT, SQ_G2), 2685403152);
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::BISHOP, SQ_G2), 268435456);
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::ROOK, SQ_G2),
-              4629771061636939584);
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::PAWN, SQ_G2, WHITE), 10485760);
-    EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(PieceType::PAWN, SQ_G2, BLACK), 160);
+    // dump_pseudo_attacks();
+    EXPECT_EQ(attacks_bb(PieceType::QUEEN, SQ_G2), 10485920);
+    EXPECT_EQ(attacks_bb(PieceType::KING, SQ_G2), 14721248);
+    EXPECT_EQ(attacks_bb(PieceType::KNIGHT, SQ_G2), 2685403152);
+    EXPECT_EQ(attacks_bb(PieceType::BISHOP, SQ_G2), 268435456);
+    EXPECT_EQ(attacks_bb(PieceType::ROOK, SQ_G2), 4629771061636939584);
+    EXPECT_EQ(attacks_bb(PieceType::PAWN, SQ_G2, WHITE), 10485760);
+    EXPECT_EQ(attacks_bb(PieceType::PAWN, SQ_G2, BLACK), 160);
 }
 
 void AttackTableCheck(
   PieceType pt, Square s2, Color color = WHITE, Bitboard occupied = 0, Bitboard expected = 0) {
-    if (StockfishPrecomputationTables::attacks_bb(pt, s2, color, occupied) != expected)
+    if (attacks_bb(pt, s2, color, occupied) != expected)
     {
-        StockfishPrecomputationTables::dump_bitboard_as_one_zero("occupied board : ", occupied);
-        StockfishPrecomputationTables::dump_bitboard_as_one_zero(
-          std::string(piece_type_to_string(pt)) + " attack table : ",
-          StockfishPrecomputationTables::attacks_bb(pt, SQ_G2, color, occupied));
-        EXPECT_EQ(StockfishPrecomputationTables::attacks_bb(pt, s2, color, occupied), expected);
+        dump_bitboard_as_one_zero("occupied board : ", occupied);
+        dump_bitboard_as_one_zero(std::string(piece_type_to_string(pt)) + " attack table : ",
+                                  attacks_bb(pt, SQ_G2, color, occupied));
+        EXPECT_EQ(attacks_bb(pt, s2, color, occupied), expected);
     }
 }
 
 TEST(Bitboard, RookAttackTableOccupation) {
 
-    // StockfishPrecomputationTables::dump_pseudo_attacks();
-    AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE,
-                     StockfishPrecomputationTables::attacks_bb(KING, SQ_A1), 4629771061636939328);
-    AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE,
-                     StockfishPrecomputationTables::attacks_bb(KING, SQ_B2), 4629771061636938816);
-    AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE,
-                     StockfishPrecomputationTables::attacks_bb(KING, SQ_C2), 4629771061636937792);
+    // dump_pseudo_attacks();
+    AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE, attacks_bb(KING, SQ_A1), 4629771061636939328);
+    AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE, attacks_bb(KING, SQ_B2), 4629771061636938816);
+    AttackTableCheck(PieceType::ROOK, SQ_G2, WHITE, attacks_bb(KING, SQ_C2), 4629771061636937792);
 }
 
 /*

@@ -1,6 +1,10 @@
 #pragma once
 
+#include <iostream>
+
 #include "types.h"
+#include "bitboard.h"
+
 using namespace Stockfish;
 
 const inline std::string_view square_to_string(Square sq) {
@@ -160,5 +164,80 @@ const inline std::string_view piece_type_to_string(PieceType type) {
         return "king";
     default :
         return "unknown";
+    }
+}
+
+void dump_bitboard_as_one_zero(const std::string& title, const Bitboard& bb) {
+    std::cout << title << std::endl;
+
+    std::cout << bb << std::endl;
+
+    // print column numbers
+    std::cout << "    ";
+    for (int x = 0; x < 8; x++)
+        std::cout << char(x + 'a') << " ";
+    std::cout << std::endl;
+    for (int y = 7; y >= 0; y--)
+    {
+        std::cout << " " << y + 1 << "  ";
+        for (int x = 0; x < 8; x++)
+        {
+            if (bb & (1ULL << (y * 8 + x)))
+                std::cout << 1 << " ";
+            else
+                std::cout << 0 << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+
+Bitboard attacks_bb(PieceType pt, Square sq, Color color = WHITE, Bitboard occ = 0) {
+    switch (pt)
+    {
+    case PAWN :
+        return PawnAttacks[color][sq];
+    case KNIGHT :
+    case BISHOP :
+    case QUEEN :
+    case KING :
+        return PseudoAttacks[pt][sq];
+    case ROOK :
+        return attacks_bb<ROOK>(sq, occ);
+    case PIECE_TYPE_NB :
+    case NO_PIECE_TYPE :
+    default :
+        return 0;
+    }
+}
+
+void dump_pseudo_attacks() {
+
+    for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
+    {
+        for (PieceType pt : {PieceType::PAWN, PieceType::ROOK, PieceType::BISHOP, PieceType::KNIGHT,
+                             PieceType::QUEEN, PieceType::KING})
+        {
+            if (pt != PieceType::PAWN)
+                dump_bitboard_as_one_zero("PseudoAttacks " + std::string(piece_type_to_string(pt))
+                                            + " " + std::string(square_to_string(s2)) + " "
+                                            + std::to_string(attacks_bb(pt, s2)),
+                                          attacks_bb(pt, s2));
+            else
+            {
+                dump_bitboard_as_one_zero("PseudoAttacks WHITE "
+                                            + std::string(piece_type_to_string(pt)) + " "
+                                            + std::string(square_to_string(s2)) + " "
+                                            + std::to_string(attacks_bb(pt, s2, WHITE)),
+                                          attacks_bb(pt, s2, WHITE));
+                dump_bitboard_as_one_zero("PseudoAttacks BLACK "
+                                            + std::string(piece_type_to_string(pt)) + " "
+                                            + std::string(square_to_string(s2)) + " "
+                                            + std::to_string(attacks_bb(pt, s2, BLACK)),
+                                          attacks_bb(pt, s2, BLACK));
+            }
+        }
+        std::cout << std::endl;
     }
 }

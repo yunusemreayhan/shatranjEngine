@@ -11,7 +11,7 @@ int main(int argc, char **argv)
 {
     shatranj::Piece::InitCapturePerSquareTable();
     shatranj::Piece::InitMovePerSquareTable();
-    StockfishPrecomputationTables::init();
+    Bitboards::init();
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

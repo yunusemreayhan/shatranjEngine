@@ -343,9 +343,9 @@ constexpr Key make_key(uint64_t seed) {
 
 enum MoveType {
     NORMAL,
-    PROMOTION  = 1 << 14,
+    PROMOTION = 1 << 14 /*,
     EN_PASSANT = 2 << 14,
-    CASTLING   = 3 << 14
+    CASTLING   = 3 << 14*/
 };
 
 // A move needs 16 bits to be stored
