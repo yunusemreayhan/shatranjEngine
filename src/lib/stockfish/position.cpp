@@ -2,7 +2,11 @@
 #include "movegen.h"
 
 #include <cstring>
+#include <ios>
+#include <iostream>
+#include <sstream>
 
+using std::string;
 namespace Stockfish {
 
 namespace Zobrist {
@@ -15,7 +19,8 @@ Key side, noPawns;
 
 namespace {
 
-constexpr std::string_view PieceToChar(" PNBRQK  pnbrqk");
+constexpr std::string_view PieceToCharNormal(" PNBRQK  pnbrqk");
+constexpr std::string_view PieceToCharShatranj(" PHFRVS  phfrvs");
 
 constexpr Piece Pieces[] = {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
                             B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING};
@@ -420,22 +425,6 @@ Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
          | (attacks_bb<KING>(s) & pieces(KING));
 }
 
-// Sets king attacks to detect if a move gives check
-void Position::set_check_info() const {
-
-    update_slider_blockers(WHITE);
-    update_slider_blockers(BLACK);
-
-    Square ksq = square<KING>(~sideToMove);
-
-    st->checkSquares[PAWN]   = pawn_attacks_bb(~sideToMove, ksq);
-    st->checkSquares[KNIGHT] = attacks_bb<KNIGHT>(ksq);
-    st->checkSquares[BISHOP] = attacks_bb<BISHOP>(ksq, pieces());
-    st->checkSquares[ROOK]   = attacks_bb<ROOK>(ksq, pieces());
-    st->checkSquares[QUEEN]  = st->checkSquares[BISHOP] | st->checkSquares[ROOK];
-    st->checkSquares[KING]   = 0;
-}
-
 // Calculates st->blockersForKing[c] and st->pinners[~c],
 // which store respectively the pieces preventing king of color c from being in check
 // and the slider pieces of color ~c pinning pieces of color c to the king.
@@ -594,5 +583,294 @@ bool Position::pseudo_legal(const Move m) const {
 
     return true;
 }
+
 inline Color Position::side_to_move() const { return sideToMove; }
+
+// Initializes the position object with the given FEN string.
+// This function is not very robust - make sure that input FENs are correct,
+// this is assumed to be the responsibility of the GUI.
+Position& Position::set(const string& fenStr, /*bool isChess960, */ StateInfo* si, bool shatranj) {
+    std::string_view PieceToChar = PieceToCharNormal;
+    if (shatranj)
+        PieceToChar = PieceToCharShatranj;
+    /*
+   A FEN string defines a particular position using only the ASCII character set.
+
+   A FEN string contains six fields separated by a space. The fields are:
+
+   1) Piece placement (from white's perspective). Each rank is described, starting
+      with rank 8 and ending with rank 1. Within each rank, the contents of each
+      square are described from file A through file H. Following the Standard
+      Algebraic Notation (SAN), each piece is identified by a single letter taken
+      from the standard English names. White pieces are designated using upper-case
+      letters ("PNBRQK") whilst Black uses lowercase ("pnbrqk"). Blank squares are
+      noted using digits 1 through 8 (the number of blank squares), and "/"
+      separates ranks.
+
+   2) Active color. "w" means white moves next, "b" means black.
+
+   3) Castling availability. If neither side can castle, this is "-". Otherwise,
+      this has one or more letters: "K" (White can castle kingside), "Q" (White
+      can castle queenside), "k" (Black can castle kingside), and/or "q" (Black
+      can castle queenside).
+
+   4) En passant target square (in algebraic notation). If there's no en passant
+      target square, this is "-". If a pawn has just made a 2-square move, this
+      is the position "behind" the pawn. Following X-FEN standard, this is recorded
+      only if there is a pawn in position to make an en passant capture, and if
+      there really is a pawn that might have advanced two squares.
+
+   5) Halfmove clock. This is the number of halfmoves since the last pawn advance
+      or capture. This is used to determine if a draw can be claimed under the
+      fifty-move rule.
+
+   6) Fullmove number. The number of the full move. It starts at 1, and is
+      incremented after Black's move.
+*/
+
+    unsigned char /*col, row,*/ token;
+    size_t                      idx;
+    Square                      sq = SQ_A8;
+    std::istringstream          ss(fenStr);
+
+    std::memset(this, 0, sizeof(Position));
+    std::memset(si, 0, sizeof(StateInfo));
+    st = si;
+
+    ss >> std::noskipws;
+
+    // 1. Piece placement
+    while ((ss >> token) && !isspace(token))
+    {
+        if (isdigit(token))
+            sq += (token - '0') * EAST;  // Advance the given number of files
+
+        else if (token == '/')
+            sq += 2 * SOUTH;
+
+        else if ((idx = PieceToChar.find(token)) != string::npos)
+        {
+            put_piece(Piece(idx), sq);
+            ++sq;
+        }
+    }
+
+    // 2. Active color
+    ss >> token;
+    sideToMove = (token == 'w' ? WHITE : BLACK);
+    ss >> token;
+
+    // 3. Castling availability. Compatible with 3 standards: Normal FEN standard,
+    // Shredder-FEN that uses the letters of the columns on which the rooks began
+    // the game instead of KQkq and also X-FEN standard that, in case of Chess960,
+    // if an inner rook is associated with the castling right, the castling tag is
+    // replaced by the file letter of the involved rook, as for the Shredder-FEN.
+    while ((ss >> token) && !isspace(token))
+    {
+        Square rsq;
+        Color  c    = islower(token) ? BLACK : WHITE;
+        Piece  rook = make_piece(c, ROOK);
+
+        token = char(toupper(token));
+
+        if (token == 'K')
+            for (rsq = relative_square(c, SQ_H1); piece_on(rsq) != rook; --rsq)
+            {}
+
+        else if (token == 'Q')
+            for (rsq = relative_square(c, SQ_A1); piece_on(rsq) != rook; ++rsq)
+            {}
+
+        else if (token >= 'A' && token <= 'H')
+            rsq = make_square(File(token - 'A'), relative_rank(c, RANK_1));
+
+        else
+            continue;
+
+        // set_castling_right(c, rsq);
+    }
+
+    // 4. En passant square.
+    // Ignore if square is invalid or not on side to move relative rank 6.
+    /*bool enpassant = false;
+
+    if (((ss >> col) && (col >= 'a' && col <= 'h'))
+        && ((ss >> row) && (row == (sideToMove == WHITE ? '6' : '3'))))
+    {
+        st->epSquare = make_square(File(col - 'a'), Rank(row - '1'));
+
+        // En passant square will be considered only if
+        // a) side to move have a pawn threatening epSquare
+        // b) there is an enemy pawn in front of epSquare
+        // c) there is no piece on epSquare or behind epSquare
+        enpassant = pawn_attacks_bb(~sideToMove, st->epSquare) & pieces(sideToMove, PAWN)
+                 && (pieces(~sideToMove, PAWN) & (st->epSquare + pawn_push(~sideToMove)))
+                 && !(pieces() & (st->epSquare | (st->epSquare + pawn_push(sideToMove))));
+    }
+
+    if (!enpassant)
+        st->epSquare = SQ_NONE;*/
+
+    // 5-6. Halfmove clock and fullmove number
+    ss >> std::skipws >> st->rule50 >> gamePly;
+
+    // Convert from fullmove starting from 1 to gamePly starting from 0,
+    // handle also common incorrect FEN with fullmove = 0.
+    gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
+
+    // chess960 = isChess960;
+    set_state();
+
+    assert(pos_is_ok());
+
+    return *this;
+}
+
+
+// Helper function used to set castling
+// rights given the corresponding color and the rook starting square.
+/*void Position::set_castling_right(Color c, Square rfrom) {
+
+    Square         kfrom = square<KING>(c);
+    CastlingRights cr    = c & (kfrom < rfrom ? KING_SIDE : QUEEN_SIDE);
+
+    st->castlingRights |= cr;
+    castlingRightsMask[kfrom] |= cr;
+    castlingRightsMask[rfrom] |= cr;
+    castlingRookSquare[cr] = rfrom;
+
+    Square kto = relative_square(c, cr & KING_SIDE ? SQ_G1 : SQ_C1);
+    Square rto = relative_square(c, cr & KING_SIDE ? SQ_F1 : SQ_D1);
+
+    castlingPath[cr] = (between_bb(rfrom, rto) | between_bb(kfrom, kto)) & ~(kfrom | rfrom);
+}*/
+
+
+// Sets king attacks to detect if a move gives check
+void Position::set_check_info() const {
+
+    update_slider_blockers(WHITE);
+    update_slider_blockers(BLACK);
+
+    Square ksq = square<KING>(~sideToMove);
+
+    st->checkSquares[PAWN]   = pawn_attacks_bb(~sideToMove, ksq);
+    st->checkSquares[KNIGHT] = attacks_bb<KNIGHT>(ksq);
+    st->checkSquares[BISHOP] = attacks_bb<BISHOP>(ksq, pieces());
+    st->checkSquares[ROOK]   = attacks_bb<ROOK>(ksq, pieces());
+    st->checkSquares[QUEEN]  = st->checkSquares[BISHOP] | st->checkSquares[ROOK];
+    st->checkSquares[KING]   = 0;
+}
+
+
+// Computes the hash keys of the position, and other
+// data that once computed is updated incrementally as moves are made.
+// The function is only used when a new position is set up
+void Position::set_state() const {
+
+    st->key = st->materialKey  = 0;
+    st->pawnKey                = Zobrist::noPawns;
+    st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
+    st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
+
+    set_check_info();
+
+    for (Bitboard b = pieces(); b;)
+    {
+        Square s  = pop_lsb(b);
+        Piece  pc = piece_on(s);
+        st->key ^= Zobrist::psq[pc][s];
+
+        if (type_of(pc) == PAWN)
+            st->pawnKey ^= Zobrist::psq[pc][s];
+
+        else if (type_of(pc) != KING)
+            st->nonPawnMaterial[color_of(pc)] += PieceValue[pc];
+    }
+
+    /*if (st->epSquare != SQ_NONE)
+        st->key ^= Zobrist::enpassant[file_of(st->epSquare)];*/
+
+    if (sideToMove == BLACK)
+        st->key ^= Zobrist::side;
+
+    /*st->key ^= Zobrist::castling[st->castlingRights];*/
+
+    for (Piece pc : Pieces)
+        for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
+            st->materialKey ^= Zobrist::psq[pc][cnt];
+}
+
+
+// Overload to initialize the position object with the given endgame code string
+// like "KBPKN". It's mainly a helper to get the material key out of an endgame code.
+Position& Position::set(const string& code, Color c, StateInfo* si, bool shatranj) {
+
+    assert(code[0] == 'K');
+
+    string sides[] = {code.substr(code.find('K', 1)),                                // Weak
+                      code.substr(0, std::min(code.find('v'), code.find('K', 1)))};  // Strong
+
+    assert(sides[0].length() > 0 && sides[0].length() < 8);
+    assert(sides[1].length() > 0 && sides[1].length() < 8);
+
+    std::transform(sides[c].begin(), sides[c].end(), sides[c].begin(), tolower);
+
+    string fenStr = "8/" + sides[0] + char(8 - sides[0].length() + '0') + "/8/8/8/8/" + sides[1]
+                  + char(8 - sides[1].length() + '0') + "/8 w - - 0 10";
+
+    return set(fenStr, /*false,*/ si, shatranj);
+}
+
+
+// Returns a FEN representation of the position. In case of
+// Chess960 the Shredder-FEN notation is used. This is mainly a debugging function.
+string Position::fen(bool shatranj) const {
+
+    std::string_view PieceToChar = PieceToCharNormal;
+    if (shatranj)
+        PieceToChar = PieceToCharShatranj;
+    int                emptyCnt;
+    std::ostringstream ss;
+
+    for (Rank r = RANK_8; r >= RANK_1; --r)
+    {
+        for (File f = FILE_A; f <= FILE_H; ++f)
+        {
+            for (emptyCnt = 0; f <= FILE_H && empty(make_square(f, r)); ++f)
+                ++emptyCnt;
+
+            if (emptyCnt)
+                ss << emptyCnt;
+
+            if (f <= FILE_H)
+                ss << PieceToChar[piece_on(make_square(f, r))];
+        }
+
+        if (r > RANK_1)
+            ss << '/';
+    }
+
+    ss << (sideToMove == WHITE ? " w " : " b ");
+
+    /*if (can_castle(WHITE_OO))
+        ss << (chess960 ? char('A' + file_of(castling_rook_square(WHITE_OO))) : 'K');
+
+    if (can_castle(WHITE_OOO))
+        ss << (chess960 ? char('A' + file_of(castling_rook_square(WHITE_OOO))) : 'Q');
+
+    if (can_castle(BLACK_OO))
+        ss << (chess960 ? char('a' + file_of(castling_rook_square(BLACK_OO))) : 'k');
+
+    if (can_castle(BLACK_OOO))
+        ss << (chess960 ? char('a' + file_of(castling_rook_square(BLACK_OOO))) : 'q');
+
+    if (!can_castle(ANY_CASTLING))
+        ss << '-';
+
+    ss << (ep_square() == SQ_NONE ? " - " : " " + UCIEngine::square(ep_square()) + " ")
+       << st->rule50 << " " << 1 + (gamePly - (sideToMove == BLACK)) / 2;*/
+
+    return ss.str();
+}
 }

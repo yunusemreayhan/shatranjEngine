@@ -11,14 +11,12 @@
 #include "shatranc_piece.h"
 #include "types.h"
 
-namespace shatranj
-{
-Shatranj::Shatranj() : board_(std::make_shared<Board>())
-{
+namespace shatranj {
+Shatranj::Shatranj() :
+    board_(std::make_shared<Board>()) {
     InitializeBoard();
 }
-void Shatranj::InitializeBoard()
-{
+void Shatranj::InitializeBoard() {
     board_->AddPiece(FromChar('R'), Position("a1"));
     board_->AddPiece(FromChar('H'), Position("b1"));
     board_->AddPiece(FromChar('F'), Position("c1"));
@@ -49,23 +47,20 @@ void Shatranj::InitializeBoard()
         board_->AddPiece(FromChar('p'), Position(ssinst.str()));
     }
 }
-std::optional<std::pair<std::string, std::string>> Shatranj::ParseInput(const std::string &input)
-{
+std::optional<std::pair<std::string, std::string>> Shatranj::ParseInput(const std::string& input) {
     if (input.size() == 4)
     {
         return std::make_pair(input.substr(0, 2), input.substr(2, 2));
     }
     return std::nullopt;
 }
-std::string Shatranj::GetInput()
-{
+std::string Shatranj::GetInput() {
     std::cout << "please enter your move: ";
     std::string input;
     std::getline(std::cin, input);
     return input;
 }
-bool Shatranj::Play(const std::string &input)
-{
+bool Shatranj::Play(const std::string& input) {
     if (kDebug)
         std::cout << "play: " << input << std::endl;
     if (input == "valids")
@@ -76,12 +71,12 @@ bool Shatranj::Play(const std::string &input)
     std::optional<std::pair<std::string, std::string>> parsed_input = ParseInput(input);
     if (parsed_input)
     {
-        const std::string &from_pos = parsed_input->first;
-        const std::string &to_pos = parsed_input->second;
+        const std::string& from_pos = parsed_input->first;
+        const std::string& to_pos   = parsed_input->second;
         if (from_pos.size() != 2 || to_pos.size() != 2)
         {
-            std::cerr << "Invalid input. Please enter a move in the format 'fromPos toPos'.\"" << input << "\""
-                      << std::endl;
+            std::cerr << "Invalid input. Please enter a move in the format 'fromPos toPos'.\""
+                      << input << "\"" << std::endl;
             return false;
         }
 
@@ -90,22 +85,20 @@ bool Shatranj::Play(const std::string &input)
     return false;
 }
 
-bool Shatranj::Play(const Movement &input)
-{
+bool Shatranj::Play(const Movement& input) {
     if (kDebug)
         std::cout << "play: " << input.ToString() << std::endl;
 
     return board_->Play(input);
 }
 
-void Shatranj::Run()
-{
+void Shatranj::Run() {
     const auto state = board_->GetBoardState();
     while (state == GameState::kNormal || state == GameState::kCheck)
     {
         std::cout << *board_ << std::endl;
         std::string input = GetInput();
-        auto res = Play(input);
+        auto        res   = Play(input);
         if (!res)
         {
             std::cout << "Invalid input. Please try again." << std::endl;
@@ -123,11 +116,10 @@ void Shatranj::Run()
     std::cout << *board_ << std::endl;
 }
 
-bool Shatranj::PlaySeq(const std::vector<std::string> &seq, bool printboard)
-{
-    int counter = 0;
-    bool succ = true;
-    for (const auto &seqitr : seq)
+bool Shatranj::PlaySeq(const std::vector<std::string>& seq, bool printboard) {
+    int  counter = 0;
+    bool succ    = true;
+    for (const auto& seqitr : seq)
     {
         if (Play(seqitr))
         {
@@ -146,15 +138,14 @@ bool Shatranj::PlaySeq(const std::vector<std::string> &seq, bool printboard)
     if (printboard)
         std::cout << *(this->GetBoard()) << std::endl;
     // TODO revert with counter
-    (void)counter;
+    (void) counter;
     return succ;
 }
 
-bool Shatranj::PlaySeq2(const std::vector<Movement> &seq)
-{
-    int counter = 0;
-    bool succ = true;
-    for (const auto &seqitr : seq)
+bool Shatranj::PlaySeq2(const std::vector<Movement>& seq) {
+    int  counter = 0;
+    bool succ    = true;
+    for (const auto& seqitr : seq)
     {
         if (Play(seqitr))
         {
@@ -173,37 +164,36 @@ bool Shatranj::PlaySeq2(const std::vector<Movement> &seq)
             std::cout << *(this->GetBoard()) << std::endl;
     }
     // TODO revert with counter
-    (void)counter;
+    (void) counter;
     return succ;
 }
 
-std::optional<shatranj::Movement> Shatranj::PickMoveInBoard(int depth, int *countofnodesvisited,
-                                                            std::chrono::microseconds *duration)
-{
+std::optional<shatranj::Movement> Shatranj::PickMoveInBoard(int  depth,
+                                                            int* countofnodesvisited,
+                                                            std::chrono::microseconds* duration) {
     std::variant<double, shatranj::Movement> pickedmove;
-    auto res = shatranj::RunWithTiming(
-        "minmax search ",
-        [&]() -> shatranj::GameState {
-            try
-            {
-                auto alpha = -std::numeric_limits<double>::max();
-                auto beta = std::numeric_limits<double>::max();
-                pickedmove = board_->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta, depth,
-                                                   board_->GetCurrentTurn(), true);
-            }
-            catch (...)
-            {
-                const auto state = board_->GetBoardState();
-                std::cout << "exception in search, state : " << static_cast<int>(state) << std::endl;
-                return state;
-            }
-            return shatranj::GameState::kNormal;
-        },
-        duration);
+    auto                                     res = shatranj::RunWithTiming(
+      "minmax search ",
+      [&]() -> shatranj::GameState {
+          try
+          {
+              auto alpha = -std::numeric_limits<double>::max();
+              auto beta  = std::numeric_limits<double>::max();
+              pickedmove = board_->MinimaxSearch(std::nullopt, countofnodesvisited, alpha, beta,
+                                                                                     depth, board_->GetCurrentTurn(), true);
+          } catch (...)
+          {
+              const auto state = board_->GetBoardState();
+              std::cout << "exception in search, state : " << static_cast<int>(state) << std::endl;
+              return state;
+          }
+          return shatranj::GameState::kNormal;
+      },
+      duration);
     std::cout << "nodes visited: " << *countofnodesvisited << std::endl;
     if (duration != nullptr && countofnodesvisited != nullptr)
-        std::cout << "individual call, nodes visited per second: " << 1000000 * *countofnodesvisited / duration->count()
-                  << std::endl;
+        std::cout << "individual call, nodes visited per second: "
+                  << 1000000 * *countofnodesvisited / duration->count() << std::endl;
     std::cout << *(board_) << std::endl;
     if (shatranj::GameState::kNormal == res)
     {
@@ -212,32 +202,31 @@ std::optional<shatranj::Movement> Shatranj::PickMoveInBoard(int depth, int *coun
     return std::nullopt;
 }
 
-std::optional<shatranj::Movement> Shatranj::PickMoveForMateSequenceIfAny(int depth, int *countofnodesvisited,
-                                                                         std::chrono::microseconds *duration)
-{
+std::optional<shatranj::Movement> Shatranj::PickMoveForMateSequenceIfAny(
+  int depth, int* countofnodesvisited, std::chrono::microseconds* duration) {
     std::pair<shatranj::Movement, bool> pickedmove = {Movement::GetEmpty(), false};
     shatranj::RunWithTiming(
-        "LookForCheckMateMoveDfs ",
-        [&]() -> bool {
-            try
-            {
-                std::vector<Movement> moves;
-                pickedmove =
-                    board_->LookForCheckMateMoveDfs(depth, board_->GetCurrentTurn(), countofnodesvisited, moves);
-            }
-            catch (...)
-            {
-                std::cout << "exception in search" << std::endl;
-                return false;
-            }
-            return true;
-        },
-        duration);
+      "LookForCheckMateMoveDfs ",
+      [&]() -> bool {
+          try
+          {
+              std::vector<Movement> moves;
+              pickedmove = board_->LookForCheckMateMoveDfs(depth, board_->GetCurrentTurn(),
+                                                           countofnodesvisited, moves);
+          } catch (...)
+          {
+              std::cout << "exception in search" << std::endl;
+              return false;
+          }
+          return true;
+      },
+      duration);
     std::cout << "nodes visited: " << *countofnodesvisited << std::endl;
     std::cout << *(board_) << std::endl;
     if (pickedmove.second)
     {
-        std::cout << "found a winning sequence in move " << pickedmove.first.ToString() << std::endl;
+        std::cout << "found a winning sequence in move " << pickedmove.first.ToString()
+                  << std::endl;
         return pickedmove.first;
     }
 
@@ -245,8 +234,9 @@ std::optional<shatranj::Movement> Shatranj::PickMoveForMateSequenceIfAny(int dep
     return std::nullopt;
 }
 
-bool Shatranj::PickAndPlay(int depth, int *countofnodesvisited, std::chrono::microseconds *duration)
-{
+bool Shatranj::PickAndPlay(int                        depth,
+                           int*                       countofnodesvisited,
+                           std::chrono::microseconds* duration) {
     auto move = PickMoveInBoard(depth, countofnodesvisited, duration);
     if (move)
     {
@@ -256,8 +246,9 @@ bool Shatranj::PickAndPlay(int depth, int *countofnodesvisited, std::chrono::mic
     return false;
 }
 
-bool Shatranj::PickAndPlayMateSequence(int depth, int *countofnodesvisited, std::chrono::microseconds *duration)
-{
+bool Shatranj::PickAndPlayMateSequence(int                        depth,
+                                       int*                       countofnodesvisited,
+                                       std::chrono::microseconds* duration) {
     auto move = PickMoveForMateSequenceIfAny(depth, countofnodesvisited, duration);
     if (move)
     {
@@ -267,8 +258,9 @@ bool Shatranj::PickAndPlayMateSequence(int depth, int *countofnodesvisited, std:
     return false;
 }
 
-bool Shatranj::PickAndPlayWinningSequence(int depth, int *countofnodesvisited, std::chrono::microseconds *duration)
-{
+bool Shatranj::PickAndPlayWinningSequence(int                        depth,
+                                          int*                       countofnodesvisited,
+                                          std::chrono::microseconds* duration) {
     auto move = PickMoveForMateSequenceIfAny(depth, countofnodesvisited, duration);
     if (move)
     {
@@ -278,4 +270,4 @@ bool Shatranj::PickAndPlayWinningSequence(int depth, int *countofnodesvisited, s
     return false;
 }
 
-} // namespace shatranj
+}  // namespace shatranj

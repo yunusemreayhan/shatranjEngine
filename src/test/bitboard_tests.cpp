@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "gtest/gtest.h"
-#include "stockfish/bitboard.h"
-#include "stockfish/helper.h"
+#include "bitboard.h"
+#include "stockfish_helper.h"
 namespace {
 
 using namespace Stockfish;

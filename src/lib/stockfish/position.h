@@ -48,6 +48,12 @@ using StateListPtr = std::unique_ptr<std::deque<StateInfo>>;
 // traversing the search tree.
 class Position {
    public:
+    // FEN string input/output
+    Position&
+    set(const std::string& fenStr, /*bool isChess960,*/ StateInfo* si, bool shatranj = false);
+    Position&   set(const std::string& code, Color c, StateInfo* si, bool shatranj = false);
+    std::string fen(bool shatranj = false) const;
+
     void do_move(Move m, StateInfo& newSt);
     void do_move(Move m, StateInfo& newSt, bool givesCheck);
     void undo_move(Move m);
@@ -78,6 +84,7 @@ class Position {
     template<PieceType Pt>
     int  count() const;
     bool pos_is_ok() const;
+    void set_state() const;
     void set_check_info() const;
     bool empty(Square s) const;
 

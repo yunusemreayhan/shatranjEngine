@@ -8,15 +8,13 @@
 #include <cassert>
 #include <optional>
 
-namespace shatranj
-{
+namespace shatranj {
 
-PieceGroup::PieceGroup()
-{
-    pieces_primitive_ = std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
+PieceGroup::PieceGroup() {
+    pieces_primitive_ =
+      std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
 }
-bool PieceGroup::AddPiece(const PiecePrimitive &piece, const Position &pos)
-{
+bool PieceGroup::AddPiece(const PiecePrimitive& piece, const Position& pos) {
     auto calccoord = Coord2to1(pos);
     if (pieces_primitive_[calccoord].GetPieceType() != ChessPieceEnum::kNone)
     {
@@ -28,19 +26,20 @@ bool PieceGroup::AddPiece(const PiecePrimitive &piece, const Position &pos)
     }
     if constexpr (kPieceGroupDebug)
     {
-        std::cout << "Adding " << pos.ToString() << " " << static_cast<uint>(calccoord) << std::endl;
+        std::cout << "Adding " << pos.ToString() << " " << static_cast<uint>(calccoord)
+                  << std::endl;
     }
     pieces_primitive_[calccoord] = piece;
     if (pieces_primitive_[calccoord].IsShah())
     {
         if (pieces_primitive_[calccoord].GetColor() == Color::kBlack)
         {
-            blackShah_ = &pieces_primitive_[calccoord];
+            blackShah_    = &pieces_primitive_[calccoord];
             blackShahPos_ = pos;
         }
         else
         {
-            whiteShah_ = &pieces_primitive_[calccoord];
+            whiteShah_    = &pieces_primitive_[calccoord];
             whiteShahPos_ = pos;
         }
     }
@@ -56,8 +55,7 @@ bool PieceGroup::AddPiece(const PiecePrimitive &piece, const Position &pos)
     return true;
 }
 
-void PieceGroup::RemovePiece(const Position &pos)
-{
+void PieceGroup::RemovePiece(const Position& pos) {
     if constexpr (kPieceGroupDebug)
     {
         std::cout << "Removing have " << pos.ToString() << std::endl;
@@ -74,9 +72,8 @@ void PieceGroup::RemovePiece(const Position &pos)
     counter_--;
 }
 
-void PieceGroup::RemovePieceNoCounterUpdate(const Position &pos)
-{
-    auto *target = &pieces_primitive_[Coord2to1(pos)];
+void PieceGroup::RemovePieceNoCounterUpdate(const Position& pos) {
+    auto* target = &pieces_primitive_[Coord2to1(pos)];
     if constexpr (kPieceGroupDebug)
     {
         std::cout << "Removing have " << pos.ToString() << std::endl;
@@ -84,10 +81,9 @@ void PieceGroup::RemovePieceNoCounterUpdate(const Position &pos)
     *target = PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false);
 }
 
-bool PieceGroup::MovePiece(const Position &frompos, const Position &topos)
-{
-    auto calccoord = Coord2to1(topos);
-    auto *target = &pieces_primitive_[calccoord];
+bool PieceGroup::MovePiece(const Position& frompos, const Position& topos) {
+    auto  calccoord = Coord2to1(topos);
+    auto* target    = &pieces_primitive_[calccoord];
 
     if (target->GetPieceType() == ChessPieceEnum::kShah)
     {
@@ -102,21 +98,20 @@ bool PieceGroup::MovePiece(const Position &frompos, const Position &topos)
     {
         if (target->GetColor() == Color::kBlack)
         {
-            blackShah_ = target;
+            blackShah_    = target;
             blackShahPos_ = topos;
         }
         else
         {
-            whiteShah_ = target;
+            whiteShah_    = target;
             whiteShahPos_ = topos;
         }
     }
     return true;
 }
 
-PiecePrimitive *PieceGroup::GetPiece(const Position &pos)
-{
-    PiecePrimitive *ret = &pieces_primitive_[Coord2to1(pos)];
+PiecePrimitive* PieceGroup::GetPiece(const Position& pos) {
+    PiecePrimitive* ret = &pieces_primitive_[Coord2to1(pos)];
     if (ret->GetPieceType() != ChessPieceEnum::kNone)
         return ret;
 
@@ -127,9 +122,8 @@ PiecePrimitive *PieceGroup::GetPiece(const Position &pos)
     return nullptr;
 }
 
-const PiecePrimitive *PieceGroup::GetPiece(const Position &pos) const
-{
-    const PiecePrimitive *ret = &pieces_primitive_[Coord2to1(pos)];
+const PiecePrimitive* PieceGroup::GetPiece(const Position& pos) const {
+    const PiecePrimitive* ret = &pieces_primitive_[Coord2to1(pos)];
     if (ret->GetPieceType() != ChessPieceEnum::kNone)
         return ret;
 
@@ -140,17 +134,15 @@ const PiecePrimitive *PieceGroup::GetPiece(const Position &pos) const
     return nullptr;
 }
 
-std::optional<Piece> PieceGroup::GetPieceByVal(const Position &pos)
-{
-    auto coord = Coord2to1(pos);
-    PiecePrimitive *ret = &pieces_primitive_[coord];
+std::optional<Piece> PieceGroup::GetPieceByVal(const Position& pos) {
+    auto            coord = Coord2to1(pos);
+    PiecePrimitive* ret   = &pieces_primitive_[coord];
     if (ret->GetPieceType() != ChessPieceEnum::kNone)
         return Get(coord);
     return std::nullopt;
 }
 
-std::vector<Piece> PieceGroup::GetSubPieces(Color color)
-{
+std::vector<Piece> PieceGroup::GetSubPieces(Color color) {
     std::vector<Piece> ret;
     for (auto pieceitr = pieces_primitive_.begin(); pieceitr != pieces_primitive_.end(); pieceitr++)
     {
@@ -162,59 +154,54 @@ std::vector<Piece> PieceGroup::GetSubPieces(Color color)
     return ret;
 }
 
-bool PieceGroup::IsAllInstanceOf(ChessPieceEnum chessPiece) const
-{
-    return std::all_of(pieces_primitive_.begin(), pieces_primitive_.end(),
-                       [chessPiece](const auto &piece) { return piece.GetPieceType() == chessPiece; });
+bool PieceGroup::IsAllInstanceOf(ChessPieceEnum chessPiece) const {
+    return std::all_of(
+      pieces_primitive_.begin(), pieces_primitive_.end(),
+      [chessPiece](const auto& piece) { return piece.GetPieceType() == chessPiece; });
 }
-std::optional<Piece> PieceGroup::Get(size_t index)
-{
-    auto &pieceatindex = pieces_primitive_[index];
+std::optional<Piece> PieceGroup::Get(size_t index) {
+    auto& pieceatindex = pieces_primitive_[index];
     if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone)
         return std::nullopt;
     return FromPiecePrimitive(pieces_primitive_.begin() + index);
 }
-std::optional<PiecePrimitive *> PieceGroup::GetBlackPtr(size_t index)
-{
-    auto &pieceatindex = pieces_primitive_[index];
-    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone || pieceatindex.GetColor() == Color::kWhite)
+std::optional<PiecePrimitive*> PieceGroup::GetBlackPtr(size_t index) {
+    auto& pieceatindex = pieces_primitive_[index];
+    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone
+        || pieceatindex.GetColor() == Color::kWhite)
         return std::nullopt;
     return &*(pieces_primitive_.begin() + index);
 }
-std::optional<PiecePrimitive *> PieceGroup::GetWhitePtr(size_t index)
-{
-    auto &pieceatindex = pieces_primitive_[index];
-    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone || pieceatindex.GetColor() == Color::kBlack)
+std::optional<PiecePrimitive*> PieceGroup::GetWhitePtr(size_t index) {
+    auto& pieceatindex = pieces_primitive_[index];
+    if (pieceatindex.GetPieceType() == ChessPieceEnum::kNone
+        || pieceatindex.GetColor() == Color::kBlack)
         return std::nullopt;
     return &*(pieces_primitive_.begin() + index);
 }
-PiecePrimitive *PieceGroup::GetPtr(const Position &pos, Color color)
-{
-    auto *target = &pieces_primitive_[Coord2to1(pos)];
+PiecePrimitive* PieceGroup::GetPtr(const Position& pos, Color color) {
+    auto* target = &pieces_primitive_[Coord2to1(pos)];
     if (target->GetPieceType() != ChessPieceEnum::kNone && target->GetColor() == color)
         return target;
     return nullptr;
 }
-void PieceGroup::Clear()
-{
-    pieces_primitive_ = std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
-    counter_ = 0;
+void PieceGroup::Clear() {
+    pieces_primitive_ =
+      std::vector<PiecePrimitive>(64, PiecePrimitive(ChessPieceEnum::kNone, Color::kWhite, false));
+    counter_     = 0;
     black_count_ = 0;
     white_count_ = 0;
 }
 
-Piece PieceGroup::FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primitr)
-{
+Piece PieceGroup::FromPiecePrimitive(std::vector<PiecePrimitive>::iterator primitr) {
     return Piece(*primitr, Position{Coord1to2(std::distance(pieces_primitive_.begin(), primitr))});
 }
 
-bool PieceGroup::HavePieceAtPosWithColor(const Position &pos, Color color)
-{
+bool PieceGroup::HavePieceAtPosWithColor(const Position& pos, Color color) {
     return static_cast<bool>(pieces_primitive_[Coord2to1(pos)].GetColor() == color);
 }
 
-std::string PieceGroup::ToStringAsBoard() const
-{
+std::string PieceGroup::ToStringAsBoard() const {
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
@@ -234,8 +221,8 @@ std::string PieceGroup::ToStringAsBoard() const
 
         for (int8_t xitr = 0; xitr < 8; xitr++)
         {
-            const auto &pos = Position(xitr, yitr);
-            const auto *piece = GetPiece(pos);
+            const auto& pos   = Position(xitr, yitr);
+            const auto* piece = GetPiece(pos);
             if (piece == nullptr)
             {
                 ret += '.';
@@ -270,4 +257,4 @@ std::string PieceGroup::ToStringAsBoard() const
 
     return ret;
 }
-} // namespace shatranj
+}  // namespace shatranj

@@ -26,21 +26,19 @@
 #include <thread>
 #include <utility>
 
-namespace shatranj
-{
+namespace shatranj {
 
-Board::Board()
-    : pieces_(std::make_shared<PieceGroup>()), players_{{"whiteplayer", Color::kWhite}, {"blackplayer", Color::kBlack}},
-      history_(std::make_unique<MoveHistory>()), currentTurn_(Color::kWhite)
-{
-}
+Board::Board() :
+    pieces_(std::make_shared<PieceGroup>()),
+    players_{{"whiteplayer", Color::kWhite}, {"blackplayer", Color::kBlack}},
+    history_(std::make_unique<MoveHistory>()),
+    currentTurn_(Color::kWhite) {}
 // would be in check if I move piece to pos
-bool Board::WouldBeInCheck(const Movement &controlling)
-{
+bool Board::WouldBeInCheck(const Movement& controlling) {
 
     Color temp_func_entry_color_was = currentTurn_;
-    auto temp_full_move_number = fullMoveNumber_;
-    auto res = PlayWithoutIsCheckControl(controlling);
+    auto  temp_full_move_number     = fullMoveNumber_;
+    auto  res                       = PlayWithoutIsCheckControl(controlling);
 
     if (!res)
     {
@@ -75,9 +73,8 @@ bool Board::WouldBeInCheck(const Movement &controlling)
     return ret_is_check;
 }
 
-bool Board::OpponnentCanCapturePos(const Position &pos)
-{
-    auto *current_analysing_piece = GetPieces()->GetPiece(pos);
+bool Board::OpponnentCanCapturePos(const Position& pos) {
+    auto* current_analysing_piece = GetPieces()->GetPiece(pos);
     if (current_analysing_piece == nullptr)
     {
         std::cout << *this << std::endl;
@@ -87,17 +84,17 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
         auto curpieceopt = OpponentColor(current_analysing_piece->GetColor()) == Color::kBlack
-                               ? GetPieces()->GetBlackPtr(i)
-                               : GetPieces()->GetWhitePtr(i);
+                           ? GetPieces()->GetBlackPtr(i)
+                           : GetPieces()->GetWhitePtr(i);
         if (!curpieceopt)
         {
             continue;
         }
 
-        auto *curpiece = *curpieceopt;
-        auto frompos = PieceGroup::Coord1to2(i);
-        auto canmove = Piece::CanMove(frompos, pos, curpiece->GetPieceType()) &&
-                       CollisionCheck(curpiece->GetPieceType(), frompos, pos);
+        auto* curpiece = *curpieceopt;
+        auto  frompos  = PieceGroup::Coord1to2(i);
+        auto  canmove  = Piece::CanMove(frompos, pos, curpiece->GetPieceType())
+                    && CollisionCheck(curpiece->GetPieceType(), frompos, pos);
         auto cancapture = Piece::CanPawnCapture(frompos, pos, curpiece->GetPieceType());
 
         if (canmove || cancapture)
@@ -109,8 +106,8 @@ bool Board::OpponnentCanCapturePos(const Position &pos)
     return false;
 }
 
-std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color)
-{
+std::vector<Movement>
+Board::GetPossibleMoves(Position frompos, ChessPieceEnum pieceType, Color color) {
     if (GetCurrentTurn() != color)
     {
         if constexpr (kGetPossibleDebug)
@@ -119,8 +116,8 @@ std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum p
         return {};
     }
     std::vector<Movement> possible_moves;
-    const auto &pos_moves = Piece::GetPreComputedMoveTable(pieceType, frompos);
-    for (const auto &topos : pos_moves)
+    const auto&           pos_moves = Piece::GetPreComputedMoveTable(pieceType, frompos);
+    for (const auto& topos : pos_moves)
     {
         Movement move_to_control(frompos, topos);
         if constexpr (kGetPossibleDebug)
@@ -128,7 +125,8 @@ std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum p
         if (frompos == topos)
         {
             if constexpr (kGetPossibleDebug)
-                std::cout << "skipping adding movement " << move_to_control.ToString() << " it is same" << std::endl;
+                std::cout << "skipping adding movement " << move_to_control.ToString()
+                          << " it is same" << std::endl;
             continue;
         }
         if (CollisionCheck(pieceType, frompos, topos))
@@ -137,26 +135,28 @@ std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum p
                 possible_moves.push_back(move_to_control);
             else if constexpr (kGetPossibleDebug)
             {
-                std::cout << "skipping adding movement " << move_to_control.ToString() << " would be in check"
-                          << std::endl;
+                std::cout << "skipping adding movement " << move_to_control.ToString()
+                          << " would be in check" << std::endl;
             }
         }
         else if constexpr (kGetPossibleDebug)
         {
-            std::cout << "skipping adding movement " << move_to_control.ToString() << " collision" << std::endl;
+            std::cout << "skipping adding movement " << move_to_control.ToString() << " collision"
+                      << std::endl;
         }
     }
 
     if (pieceType == ChessPieceEnum::kPiyadeBlack || pieceType == ChessPieceEnum::kPiyadeWhite)
     {
-        const auto &cap_moves = Piece::GetPreComputedCaptureTable(pieceType, frompos);
-        for (const auto &topos : cap_moves)
+        const auto& cap_moves = Piece::GetPreComputedCaptureTable(pieceType, frompos);
+        for (const auto& topos : cap_moves)
         {
             Movement tocheck(frompos, topos);
             if (frompos == topos)
             {
                 if constexpr (kGetPossibleDebug)
-                    std::cout << "skipping adding movement " << tocheck.ToString() << " it is same" << std::endl;
+                    std::cout << "skipping adding movement " << tocheck.ToString() << " it is same"
+                              << std::endl;
                 continue;
             }
             if (CanPawnCapture(pieceType, frompos, topos))
@@ -165,39 +165,41 @@ std::vector<Movement> Board::GetPossibleMoves(Position frompos, ChessPieceEnum p
                     possible_moves.push_back(tocheck);
                 else if constexpr (kGetPossibleDebug)
                 {
-                    std::cout << "skipping adding movement " << tocheck.ToString() << " would be in check" << std::endl;
+                    std::cout << "skipping adding movement " << tocheck.ToString()
+                              << " would be in check" << std::endl;
                 }
             }
             else if constexpr (kGetPossibleDebug)
             {
-                std::cout << "skipping adding movement " << tocheck.ToString() << " collision" << std::endl;
+                std::cout << "skipping adding movement " << tocheck.ToString() << " collision"
+                          << std::endl;
             }
         }
     }
     return possible_moves;
 }
 
-bool Board::CanGo(Position frompos, Position pos, ChessPieceEnum pieceType)
-{
+bool Board::CanGo(Position frompos, Position pos, ChessPieceEnum pieceType) {
     auto can_capture = Piece::CanPawnCapture(frompos, pos, pieceType);
-    auto can_move = Piece::CanMove(frompos, pos, pieceType) && CollisionCheck(pieceType, frompos, pos);
+    auto can_move =
+      Piece::CanMove(frompos, pos, pieceType) && CollisionCheck(pieceType, frompos, pos);
     return can_capture || can_move;
 }
 
-bool Board::CanPawnCapture(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
-{
-    return Piece::CanPawnCapture(frompos, topos, pieceType) &&
-           GetPieces()->GetPtr(topos, OpponentColor(currentTurn_)) != nullptr;
+bool Board::CanPawnCapture(ChessPieceEnum  pieceType,
+                           const Position& frompos,
+                           const Position& topos) {
+    return Piece::CanPawnCapture(frompos, topos, pieceType)
+        && GetPieces()->GetPtr(topos, OpponentColor(currentTurn_)) != nullptr;
 }
 
-bool Board::CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType)
-{
+bool Board::CanJumpOrPathClear(Position frompos, Position topos, ChessPieceEnum pieceType) {
     return Piece::CanJumpOverOthers(pieceType) || IsPathClear(frompos, topos);
 }
 
-bool Board::IsCheck(Color color)
-{
-    Position shahpos = color == Color::kBlack ? GetPieces()->GetBlackShahPos() : GetPieces()->GetWhiteShahPos();
+bool Board::IsCheck(Color color) {
+    Position shahpos =
+      color == Color::kBlack ? GetPieces()->GetBlackShahPos() : GetPieces()->GetWhiteShahPos();
 
     if (!shahpos.IsValid())
     {
@@ -208,8 +210,7 @@ bool Board::IsCheck(Color color)
     return OpponnentCanCapturePos(shahpos);
 }
 
-bool Board::IsPathClear(const Position &from, const Position &target)
-{
+bool Board::IsPathClear(const Position& from, const Position& target) {
     int step_x = 0;
     int step_y = 0;
     if (from.Getx() < target.Getx())
@@ -230,7 +231,7 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     }
     const int cur_x = from.Getx() + step_x;
     const int cur_y = from.Gety() + step_y;
-    Position cur(std::make_pair(cur_x, cur_y));
+    Position  cur(std::make_pair(cur_x, cur_y));
     while (cur != target)
     {
         if (GetPieces()->GetPiece(cur) != nullptr)
@@ -242,35 +243,35 @@ bool Board::IsPathClear(const Position &from, const Position &target)
     return true;
 }
 
-bool Board::MovePiece(Position frompos, Position topos)
-{
-    auto *piece = GetPieces()->GetPiece(frompos);
+bool Board::MovePiece(Position frompos, Position topos) {
+    auto* piece = GetPieces()->GetPiece(frompos);
     if (currentTurn_ != piece->GetColor())
     {
         std::cerr << "its turn of " << currentTurn_ << " not " << piece->GetColor() << std::endl;
         return false;
     }
 
-    const bool can_move =
-        Piece::CanMove(frompos, topos, piece->GetPieceType()) && CollisionCheck(piece->GetPieceType(), frompos, topos);
+    const bool can_move = Piece::CanMove(frompos, topos, piece->GetPieceType())
+                       && CollisionCheck(piece->GetPieceType(), frompos, topos);
 
     const bool can_capture = Piece::CanPawnCapture(frompos, topos, piece->GetPieceType());
 
     if (!can_move && !can_capture)
     {
-        std::cout << "invalid move " << frompos.ToString() << " to " << topos.ToString() << std::endl;
+        std::cout << "invalid move " << frompos.ToString() << " to " << topos.ToString()
+                  << std::endl;
         return false;
     }
 
     std::unique_ptr<Piece> captured_piece_uptr = nullptr;
-    auto captured_piece = GetPieces()->GetPieceByVal(topos);
+    auto                   captured_piece      = GetPieces()->GetPieceByVal(topos);
     if (captured_piece)
     {
         if (captured_piece->GetPieceType() == ChessPieceEnum::kShah)
         {
             std::cout << *this << std::endl;
             throw std::runtime_error(
-                "Cannot remove shah from the board, opponent should not be able to capture shah in any case.");
+              "Cannot remove shah from the board, opponent should not be able to capture shah in any case.");
             return false;
         }
         captured_piece_uptr = std::make_unique<Piece>(*captured_piece);
@@ -291,15 +292,14 @@ bool Board::MovePiece(Position frompos, Position topos)
             promoted = true;
         }
     }
-    GetHistory().AddMove(frompos, topos, piece->GetPieceType(), std::move(captured_piece_uptr), promoted,
-                         piece->GetColor(), GenerateFEN(false));
+    GetHistory().AddMove(frompos, topos, piece->GetPieceType(), std::move(captured_piece_uptr),
+                         promoted, piece->GetColor(), GenerateFEN(false));
     MoveSuccesful(*piece, frompos, topos);
 
     return true;
 }
 
-bool Board::Revert(int move_count)
-{
+bool Board::Revert(int move_count) {
     if constexpr (kDebug)
     {
         std::cout << "Reverting " << move_count << " moves" << std::endl;
@@ -318,24 +318,26 @@ bool Board::Revert(int move_count)
             }
             return false;
         }
-        const std::unique_ptr<HistoryPoint> &last_move = GetHistory().GetLastMove();
+        const std::unique_ptr<HistoryPoint>& last_move = GetHistory().GetLastMove();
 
         if constexpr (kDebug)
         {
-            std::cout << "Reverting from " << last_move->to.ToString() << " to " << last_move->from.ToString()
-                      << std::endl;
+            std::cout << "Reverting from " << last_move->to.ToString() << " to "
+                      << last_move->from.ToString() << std::endl;
         }
 
         GetPieces()->MovePiece(last_move->to, last_move->from);
-        auto *piece = GetPieces()->GetPiece(last_move->from);
+        auto* piece = GetPieces()->GetPiece(last_move->from);
         if (nullptr == piece)
         {
             if constexpr (kDebug)
             {
                 std::cout << *this << std::endl;
             }
-            std::cout << "Piece not found, illogical board state at " << last_move->to.ToString() << std::endl;
-            throw std::runtime_error("Piece not found, illogical board state at " + last_move->to.ToString());
+            std::cout << "Piece not found, illogical board state at " << last_move->to.ToString()
+                      << std::endl;
+            throw std::runtime_error("Piece not found, illogical board state at "
+                                     + last_move->to.ToString());
         }
         if (last_move->promoted)
         {
@@ -357,8 +359,8 @@ bool Board::Revert(int move_count)
 
         if constexpr (kDebug)
         {
-            std::cout << "Revert done from " << last_move->to.ToString() << " to " << last_move->from.ToString()
-                      << std::endl;
+            std::cout << "Revert done from " << last_move->to.ToString() << " to "
+                      << last_move->from.ToString() << std::endl;
         }
         move_count--;
         if constexpr (kDebug)
@@ -370,8 +372,9 @@ bool Board::Revert(int move_count)
     return true;
 }
 
-void Board::MoveSuccesful(const PiecePrimitive &piece, const Position & /*fromPos*/, const Position & /*toPos*/)
-{
+void Board::MoveSuccesful(const PiecePrimitive& piece,
+                          const Position& /*fromPos*/,
+                          const Position& /*toPos*/) {
     // TODO(yunus) :  not sure if needed but last move textual iformation could be saved later
     if (piece.IsPiyade())
     {
@@ -389,33 +392,25 @@ void Board::MoveSuccesful(const PiecePrimitive &piece, const Position & /*fromPo
     SwitchTurn();
 }
 
-void Board::SwitchTurn()
-{
+void Board::SwitchTurn() {
     currentTurn_ = Color::kWhite == currentTurn_ ? Color::kBlack : Color::kWhite;
 }
 
-Piece Board::PromotePiyade(Piece &piyade)
-{
-    return Vizier(piyade.GetPos(), piyade.GetColor());
-}
-Piece Board::DemotePromoted(Piece &promoted)
-{
+Piece Board::PromotePiyade(Piece& piyade) { return Vizier(piyade.GetPos(), piyade.GetColor()); }
+Piece Board::DemotePromoted(Piece& promoted) {
     return Piyade(promoted.GetPos(), promoted.GetColor());
 }
 
-PiecePrimitive Board::PromotePiyade(PiecePrimitive &piyade)
-{
+PiecePrimitive Board::PromotePiyade(PiecePrimitive& piyade) {
     return PiecePrimitive(ChessPieceEnum::kVizier, piyade.GetColor(), piyade.IsMoved());
 }
-PiecePrimitive Board::DemotePromoted(PiecePrimitive &promoted)
-{
+PiecePrimitive Board::DemotePromoted(PiecePrimitive& promoted) {
     return PiecePrimitive(promoted.GetColor() == Color::kWhite ? ChessPieceEnum::kPiyadeWhite
                                                                : ChessPieceEnum::kPiyadeBlack,
                           promoted.GetColor(), promoted.IsMoved());
 }
 
-GameState Board::GetBoardState()
-{
+GameState Board::GetBoardState() {
     GameState ret = GameState::kNormal;
 
     size_t current_turn_pieces_count;
@@ -424,12 +419,12 @@ GameState Board::GetBoardState()
     if (currentTurn_ == Color::kWhite)
     {
         current_turn_pieces_count = GetPieces()->GetWhiteCount();
-        opponent_pieces_count = GetPieces()->GetBlackCount();
+        opponent_pieces_count     = GetPieces()->GetBlackCount();
     }
     else
     {
         current_turn_pieces_count = GetPieces()->GetBlackCount();
-        opponent_pieces_count = GetPieces()->GetWhiteCount();
+        opponent_pieces_count     = GetPieces()->GetWhiteCount();
     }
 
     if (current_turn_pieces_count == 1 && opponent_pieces_count > 2)
@@ -443,16 +438,18 @@ GameState Board::GetBoardState()
     else if (current_turn_pieces_count == 1 && opponent_pieces_count == 2)
     {
         auto current_turn_pieces = GetPieces()->GetSubPieces(currentTurn_);
-        auto opponent_pieces = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
+        auto opponent_pieces     = GetPieces()->GetSubPieces(OpponentColor(currentTurn_));
         if (current_turn_pieces.size() != 1 && opponent_pieces.size() != 2)
         {
-            std::cerr << "Error in GetBoardState() probably mismatch with white/black counters" << std::endl;
+            std::cerr << "Error in GetBoardState() probably mismatch with white/black counters"
+                      << std::endl;
             exit(1);
         }
 
         if (CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[0].GetPos(),
-                  current_turn_pieces[0].GetPieceType()) ||
-            CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[1].GetPos(), current_turn_pieces[0].GetPieceType()))
+                  current_turn_pieces[0].GetPieceType())
+            || CanGo(current_turn_pieces[0].GetPos(), opponent_pieces[1].GetPos(),
+                     current_turn_pieces[0].GetPieceType()))
         {
             ret = GameState::kDraw;
         }
@@ -463,7 +460,7 @@ GameState Board::GetBoardState()
     }
     else
     {
-        const auto &moves = GetPossibleMoves(currentTurn_);
+        const auto& moves = GetPossibleMoves(currentTurn_);
 
         if (moves.empty())
         {
@@ -487,51 +484,50 @@ GameState Board::GetBoardState()
     return ret;
 }
 
-std::optional<Player> Board::Winner()
-{
+std::optional<Player> Board::Winner() {
     switch (GetBoardState())
     {
-    case GameState::kCheckmate:
-    case GameState::kStalemate:
+    case GameState::kCheckmate :
+    case GameState::kStalemate :
         return Opponent(currentTurn_);
-    default:
+    default :
         return std::nullopt;
     }
     return std::nullopt;
 }
 
-Player Board::Opponent(const Color &color)
-{
+Player Board::Opponent(const Color& color) {
     return color == players_[1].GetColor() ? players_[0] : players_[1];
 }
 
 // todo playing without is check control is dangerous function when shah is playing
 //      and when board remains in check after this move
-bool Board::PlayWithoutIsCheckControl(const Movement &input)
-{
+bool Board::PlayWithoutIsCheckControl(const Movement& input) {
     if (!input.from.IsValid() || !input.to.IsValid())
     {
-        std::cout << "Invalid input. Please enter a move in the format 'fromPos toPos'." << std::endl;
+        std::cout << "Invalid input. Please enter a move in the format 'fromPos toPos'."
+                  << std::endl;
         return false;
     }
 
-    auto *piece = pieces_->GetPiece(input.from);
+    auto* piece = pieces_->GetPiece(input.from);
     if (nullptr == piece)
     {
         if (piece->GetColor() != currentTurn_)
         {
-            std::cerr << "Invalid input. Moving piece is not yours. at " << input.from.ToString() << std::endl;
+            std::cerr << "Invalid input. Moving piece is not yours. at " << input.from.ToString()
+                      << std::endl;
             return false;
         }
-        std::cerr << "Invalid input. Moving piece does not exist. at " << input.from.ToString() << std::endl;
+        std::cerr << "Invalid input. Moving piece does not exist. at " << input.from.ToString()
+                  << std::endl;
         return false;
     }
 
     return MovePiece(input.from, input.to);
 }
 
-bool Board::Play(const Movement &movement)
-{
+bool Board::Play(const Movement& movement) {
     auto curstate = GetBoardState();
     if (curstate != GameState::kNormal && curstate != GameState::kCheck)
         return false;
@@ -543,12 +539,13 @@ bool Board::Play(const Movement &movement)
     return false;
 }
 
-std::string Board::BoardToString()
-{
+std::string Board::BoardToString() {
     std::string ret = GetPieces()->ToStringAsBoard();
 
-    ret += "  current turn : " + GetCurrentPlayer().GetName() + " color " +
-           std::string(currentTurn_ == Color::kWhite ? "White which is uppercase" : "Black which is lowercase") + '\n';
+    ret += "  current turn : " + GetCurrentPlayer().GetName() + " color "
+         + std::string(currentTurn_ == Color::kWhite ? "White which is uppercase"
+                                                     : "Black which is lowercase")
+         + '\n';
     ret += "  current move count : " + std::to_string(fullMoveNumber_) + '\n';
     ret += "  half move count : " + std::to_string(halfMoveClock_) + '\n';
     ret += "  board FEN : " + GenerateFEN() + '\n';
@@ -556,9 +553,8 @@ std::string Board::BoardToString()
     return ret;
 }
 
-const Player &Board::GetPlayer(Color color) const
-{
-    for (const auto &player : players_)
+const Player& Board::GetPlayer(Color color) const {
+    for (const auto& player : players_)
     {
         if (player.GetColor() == color)
         {
@@ -568,8 +564,7 @@ const Player &Board::GetPlayer(Color color) const
     return players_[0];
 }
 
-bool Board::AddPiece(const PiecePrimitive &piece, const Position &pos)
-{
+bool Board::AddPiece(const PiecePrimitive& piece, const Position& pos) {
     auto res = pieces_->AddPiece(piece, pos);
     if (!res)
     {
@@ -581,8 +576,7 @@ bool Board::AddPiece(const PiecePrimitive &piece, const Position &pos)
     return res;
 }
 
-void Board::RemovePiece(const Position &pos)
-{
+void Board::RemovePiece(const Position& pos) {
     if constexpr (kDebug)
     {
         std::cout << "Removing " << pos.ToString() << std::endl;
@@ -597,11 +591,10 @@ void Board::RemovePiece(const Position &pos)
     }
 }
 
-void Board::PrintValidMoves()
-{
-    const auto &moves = GetPossibleMoves(currentTurn_);
+void Board::PrintValidMoves() {
+    const auto& moves = GetPossibleMoves(currentTurn_);
 
-    for (const auto &move : moves)
+    for (const auto& move : moves)
     {
         std::cout << move.ToString() << " ";
     }
@@ -609,13 +602,9 @@ void Board::PrintValidMoves()
     std::cout << std::endl;
 }
 
-MoveHistory &Board::GetHistory() const
-{
-    return *history_;
-}
+MoveHistory& Board::GetHistory() const { return *history_; }
 
-std::string Board::GenerateFEN(bool includeCounters) const
-{
+std::string Board::GenerateFEN(bool includeCounters) const {
     std::string ret;
     for (int8_t yitr = 7; yitr >= 0; yitr--)
     {
@@ -623,8 +612,8 @@ std::string Board::GenerateFEN(bool includeCounters) const
         for (int8_t xitr = 0; xitr < 8; xitr++)
         {
 
-            const auto &pos = Position(xitr, yitr);
-            const auto *piece = GetPieces()->GetPiece(pos);
+            const auto& pos   = Position(xitr, yitr);
+            const auto* piece = GetPieces()->GetPiece(pos);
             if (piece == nullptr)
             {
                 spaces++;
@@ -668,29 +657,28 @@ std::string Board::GenerateFEN(bool includeCounters) const
     return ret;
 }
 
-void Board::ApplyFEN(const std::string &fen)
-{
+void Board::ApplyFEN(const std::string& fen) {
     // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 1
-    const auto &fen_pieces = SplitStringByChar(fen, ' ');
+    const auto& fen_pieces = SplitStringByChar(fen, ' ');
 
-    if (fen_pieces.size() != 4) // TODO normally this is 6, but shatranj has 4
+    if (fen_pieces.size() != 4)  // TODO normally this is 6, but shatranj has 4
     {
         throw std::runtime_error("Invalid FEN");
     }
 
-    const auto &piece_lines = SplitStringByChar(fen_pieces[0], '/');
+    const auto& piece_lines = SplitStringByChar(fen_pieces[0], '/');
     if (piece_lines.size() != 8)
     {
         throw std::runtime_error("Invalid FEN");
     }
-    currentTurn_ = fen_pieces[1] == "w" ? Color::kWhite : Color::kBlack;
-    halfMoveClock_ = std::stoi(fen_pieces[2]);
+    currentTurn_    = fen_pieces[1] == "w" ? Color::kWhite : Color::kBlack;
+    halfMoveClock_  = std::stoi(fen_pieces[2]);
     fullMoveNumber_ = std::stoi(fen_pieces[3]);
     pieces_->Clear();
     for (uint8_t row = 0; row < 8; row++)
     {
         uint8_t col = 7;
-        for (const char &piece : piece_lines[row])
+        for (const char& piece : piece_lines[row])
         {
             if (isdigit(piece) != 0)
             {
@@ -700,7 +688,8 @@ void Board::ApplyFEN(const std::string &fen)
             {
                 if constexpr (kDebug)
                 {
-                    std::cout << "Adding " << piece << " at row:" << row << " col:" << col << std::endl;
+                    std::cout << "Adding " << piece << " at row:" << row << " col:" << col
+                              << std::endl;
                 }
                 AddPiece(FromChar(piece), Position(std::make_pair(7 - col, 7 - row)));
             }
@@ -711,10 +700,11 @@ void Board::ApplyFEN(const std::string &fen)
         std::cout << *this << std::endl;
 }
 
-bool Board::CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, const Position &topos)
-{
-    const auto *frompospiece = GetPieces()->GetPiece(frompos);
-    const auto *piece = GetPieces()->GetPiece(topos);
+bool Board::CollisionCheck(ChessPieceEnum  pieceType,
+                           const Position& frompos,
+                           const Position& topos) {
+    const auto* frompospiece = GetPieces()->GetPiece(frompos);
+    const auto* piece        = GetPieces()->GetPiece(topos);
     if (piece != nullptr)
     {
         if (pieceType != ChessPieceEnum::kPiyadeWhite && pieceType != ChessPieceEnum::kPiyadeBlack)
@@ -724,7 +714,8 @@ bool Board::CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, co
                 return false;
             }
         }
-        else if (pieceType == ChessPieceEnum::kPiyadeWhite || pieceType == ChessPieceEnum::kPiyadeBlack)
+        else if (pieceType == ChessPieceEnum::kPiyadeWhite
+                 || pieceType == ChessPieceEnum::kPiyadeBlack)
         {
             // piyade can not move over another piece
             return false;
@@ -734,14 +725,13 @@ bool Board::CollisionCheck(ChessPieceEnum pieceType, const Position &frompos, co
     return CanJumpOrPathClear(frompos, topos, pieceType);
 }
 
-double Board::EvaluateBoard(Color color)
-{
+double Board::EvaluateBoard(Color color) {
     double score = 0;
 
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        const auto &pos = PieceGroup::Coord1to2(i);
-        auto *piece = GetPieces()->GetPiece(pos);
+        const auto& pos   = PieceGroup::Coord1to2(i);
+        auto*       piece = GetPieces()->GetPiece(pos);
         if (nullptr == piece)
         {
             continue;
@@ -781,19 +771,17 @@ double Board::EvaluateBoard(Color color)
     return score;
 }
 
-void Shuffle(std::vector<Movement> &movements)
-{
-    std::random_device rnd;  // Seed the random number generator (once per program execution)
-    std::mt19937 gen(rnd()); // Use Mersenne Twister engine
+void Shuffle(std::vector<Movement>& movements) {
+    std::random_device rnd;         // Seed the random number generator (once per program execution)
+    std::mt19937       gen(rnd());  // Use Mersenne Twister engine
 
     std::shuffle(movements.begin(), movements.end(), gen);
 }
 
-const std::vector<Movement> Board::GetPossibleCheckMoves(Color color)
-{
-    auto allpossiblemoves = GetPossibleMoves(color);
+const std::vector<Movement> Board::GetPossibleCheckMoves(Color color) {
+    auto                  allpossiblemoves = GetPossibleMoves(color);
     std::vector<Movement> ret;
-    for (const auto &move : allpossiblemoves)
+    for (const auto& move : allpossiblemoves)
     {
         if (IsCheckAfterMove(move))
         {
@@ -804,12 +792,11 @@ const std::vector<Movement> Board::GetPossibleCheckMoves(Color color)
     return ret;
 }
 
-bool Board::IsCheckAfterMove(const Movement &Movement)
-{
+bool Board::IsCheckAfterMove(const Movement& Movement) {
     bool isplayed = false;
 
     const auto temp_current_full_move_number = GetFullMoveNumber();
-    const auto temp_current_turn = GetCurrentTurn();
+    const auto temp_current_turn             = GetCurrentTurn();
 
     DeferedCall callback([&]() {
         if (isplayed)
@@ -827,10 +814,9 @@ bool Board::IsCheckAfterMove(const Movement &Movement)
     return IsCheck(GetCurrentTurn());
 }
 
-void Dumpmovementvect(const std::string &name, const std::vector<Movement> &moves)
-{
+void Dumpmovementvect(const std::string& name, const std::vector<Movement>& moves) {
     std::cout << name << " ";
-    for (const auto &move : moves)
+    for (const auto& move : moves)
     {
         std::cout << move.ToString() << " ";
     }
@@ -838,8 +824,7 @@ void Dumpmovementvect(const std::string &name, const std::vector<Movement> &move
     std::cout << std::endl;
 }
 
-void Clearwindow(const size_t sizetoclear)
-{
+void Clearwindow(const size_t sizetoclear) {
 
     for (size_t i = 0; i < sizetoclear; i++)
     {
@@ -857,10 +842,12 @@ void Clearwindow(const size_t sizetoclear)
     }
 }
 
-std::pair<Movement, bool> Board::LookForCheckMateMoveDfs(int depth, Color colorForCheckMate, int *totalnodes,
-                                                         std::vector<Movement> &moves_so_far,
-                                                         std::optional<const Movement> current_playing_move)
-{
+std::pair<Movement, bool>
+Board::LookForCheckMateMoveDfs(int                           depth,
+                               Color                         colorForCheckMate,
+                               int*                          totalnodes,
+                               std::vector<Movement>&        moves_so_far,
+                               std::optional<const Movement> current_playing_move) {
     bool is_played = false;
     if (current_playing_move)
     {
@@ -905,9 +892,10 @@ std::pair<Movement, bool> Board::LookForCheckMateMoveDfs(int depth, Color colorF
         }
         auto movements_for_check_mate = GetPossibleCheckMoves(colorForCheckMate);
         // Dumpmovementvect("checkmate moves for win search side color", depth, movements_for_check_mate);
-        for (const auto &move : movements_for_check_mate)
+        for (const auto& move : movements_for_check_mate)
         {
-            auto ret = LookForCheckMateMoveDfs(depth - 1, colorForCheckMate, totalnodes, moves_so_far, move);
+            auto ret =
+              LookForCheckMateMoveDfs(depth - 1, colorForCheckMate, totalnodes, moves_so_far, move);
             if (ret.second)
             {
                 return {move, true};
@@ -917,11 +905,12 @@ std::pair<Movement, bool> Board::LookForCheckMateMoveDfs(int depth, Color colorF
     else
     {
         auto opponent_all_possible_moves = GetPossibleMoves(currentTurn_);
-        bool escaped = false;
+        bool escaped                     = false;
 
-        for (const auto &move : opponent_all_possible_moves)
+        for (const auto& move : opponent_all_possible_moves)
         {
-            auto ret = LookForCheckMateMoveDfs(depth - 1, colorForCheckMate, totalnodes, moves_so_far, move);
+            auto ret =
+              LookForCheckMateMoveDfs(depth - 1, colorForCheckMate, totalnodes, moves_so_far, move);
             if (!ret.second)
             {
                 escaped = true;
@@ -942,24 +931,25 @@ std::pair<Movement, bool> Board::LookForCheckMateMoveDfs(int depth, Color colorF
     return {Movement::GetEmpty(), false};
 }
 
-const std::vector<Movement> Board::GetPossibleMoves(Color color)
-{
+const std::vector<Movement> Board::GetPossibleMoves(Color color) {
     std::vector<Movement> ret;
     if constexpr (kPieceGroupDebug)
         std::cout << "Getting possible moves for " << color << std::endl;
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto pos = PieceGroup::Coord1to2(i);
-        auto *piece_primitive = GetPieces()->GetPiece(pos);
+        auto  pos             = PieceGroup::Coord1to2(i);
+        auto* piece_primitive = GetPieces()->GetPiece(pos);
         if (piece_primitive == nullptr)
             continue;
         if constexpr (kGetPossibleDebug)
-            std::cout << "Checking " << pos.ToString() << " " << piece_primitive->GetName() << std::endl;
+            std::cout << "Checking " << pos.ToString() << " " << piece_primitive->GetName()
+                      << std::endl;
         if (piece_primitive->GetColor() != color)
         {
             continue;
         }
-        auto insertable = GetPossibleMoves(pos, piece_primitive->GetPieceType(), piece_primitive->GetColor());
+        auto insertable =
+          GetPossibleMoves(pos, piece_primitive->GetPieceType(), piece_primitive->GetColor());
         for (auto it = insertable.begin(); it != insertable.end(); it++)
         {
             if (it->from == it->to)
@@ -978,8 +968,7 @@ const std::vector<Movement> Board::GetPossibleMoves(Color color)
     return ret;
 }
 
-const std::vector<Movement> Board::GetPossibleMovesCalcOpponentToo(Color color)
-{
+const std::vector<Movement> Board::GetPossibleMovesCalcOpponentToo(Color color) {
     std::vector<Movement> ret;
     if constexpr (kPieceGroupDebug)
         std::cout << "Getting possible moves for " << color << std::endl;
@@ -997,15 +986,16 @@ const std::vector<Movement> Board::GetPossibleMovesCalcOpponentToo(Color color)
     });
     for (size_t i = 0; i < PieceGroup::kSquareCount; i++)
     {
-        auto pos = PieceGroup::Coord1to2(i);
-        auto *piece_primitive = GetPieces()->GetPiece(pos);
+        auto  pos             = PieceGroup::Coord1to2(i);
+        auto* piece_primitive = GetPieces()->GetPiece(pos);
         if (piece_primitive == nullptr)
             continue;
         if (piece_primitive->GetColor() != color)
         {
             continue;
         }
-        auto insertable = GetPossibleMoves(pos, piece_primitive->GetPieceType(), piece_primitive->GetColor());
+        auto insertable =
+          GetPossibleMoves(pos, piece_primitive->GetPieceType(), piece_primitive->GetColor());
         for (auto it = insertable.begin(); it != insertable.end(); it++)
         {
             if (it->from == it->to)
@@ -1020,24 +1010,28 @@ const std::vector<Movement> Board::GetPossibleMovesCalcOpponentToo(Color color)
     Shuffle(ret);
 
     if constexpr (kGetPossibleDebug)
-        std::cout << "Using calculated possible opponent moves with size " << ret.size() << std::endl;
+        std::cout << "Using calculated possible opponent moves with size " << ret.size()
+                  << std::endl;
     return ret;
 }
-std::variant<double, Movement> Board::PickOrEvaluate(const std::optional<Movement> &playing_move, int *nodesvisited,
-                                                     double &alpha, double &beta, int depth, Color maximizingColor,
-                                                     bool randomize)
-{
+std::variant<double, Movement> Board::PickOrEvaluate(const std::optional<Movement>& playing_move,
+                                                     int*                           nodesvisited,
+                                                     double&                        alpha,
+                                                     double&                        beta,
+                                                     int                            depth,
+                                                     Color                          maximizingColor,
+                                                     bool                           randomize) {
     bool is_maximizing = maximizingColor == currentTurn_;
 
-    bool toplevel = !playing_move.has_value();
-    const auto &moves = GetPossibleMoves(currentTurn_);
+    bool        toplevel = !playing_move.has_value();
+    const auto& moves    = GetPossibleMoves(currentTurn_);
     if (moves.size() == 0 && toplevel)
     {
         std::cout << *this << std::endl;
         std::cout << GenerateFEN() << std::endl;
-        std::cout << "No possible moves game over, " << OpponentColor(currentTurn_) << " won! current depth " << depth
-                  << " " << (*playing_move).ToString() << "  toplevel " << toplevel << " moves.size() " << moves.size()
-                  << std::endl;
+        std::cout << "No possible moves game over, " << OpponentColor(currentTurn_)
+                  << " won! current depth " << depth << " " << (*playing_move).ToString()
+                  << "  toplevel " << toplevel << " moves.size() " << moves.size() << std::endl;
 
         throw std::runtime_error("No possible moves, game over");
     }
@@ -1046,18 +1040,20 @@ std::variant<double, Movement> Board::PickOrEvaluate(const std::optional<Movemen
         auto res = EvaluateBoard(maximizingColor);
         return res;
     }
-    auto temp_eval = is_maximizing ? -std::numeric_limits<double>::max() : std::numeric_limits<double>::max();
+    auto temp_eval =
+      is_maximizing ? -std::numeric_limits<double>::max() : std::numeric_limits<double>::max();
     auto pickedmove = moves[0];
 
-    for (const auto &possible_move : moves)
+    for (const auto& possible_move : moves)
     {
-        auto eval = MinimaxSearch(possible_move, nodesvisited, alpha, beta, depth - 1, maximizingColor, randomize);
+        auto eval = MinimaxSearch(possible_move, nodesvisited, alpha, beta, depth - 1,
+                                  maximizingColor, randomize);
         if (is_maximizing)
         {
             if (temp_eval < std::get<double>(eval))
             {
                 pickedmove = possible_move;
-                temp_eval = std::get<double>(eval);
+                temp_eval  = std::get<double>(eval);
             }
             alpha = std::max(alpha, std::get<double>(eval));
             if (beta <= alpha)
@@ -1071,7 +1067,7 @@ std::variant<double, Movement> Board::PickOrEvaluate(const std::optional<Movemen
             if (temp_eval > std::get<double>(eval))
             {
                 pickedmove = possible_move;
-                temp_eval = std::get<double>(eval);
+                temp_eval  = std::get<double>(eval);
             }
             beta = std::min(beta, std::get<double>(eval));
             if (beta <= alpha)
@@ -1085,11 +1081,14 @@ std::variant<double, Movement> Board::PickOrEvaluate(const std::optional<Movemen
     return Movement(pickedmove);
 }
 
-std::variant<double, Movement> Board::MinimaxSearch(const std::optional<Movement> &playing_move, int *nodesvisited,
-                                                    double alpha, double beta, int depth, Color maximizingColor,
-                                                    bool randomize)
-{
-    bool played_something = false;
+std::variant<double, Movement> Board::MinimaxSearch(const std::optional<Movement>& playing_move,
+                                                    int*                           nodesvisited,
+                                                    double                         alpha,
+                                                    double                         beta,
+                                                    int                            depth,
+                                                    Color                          maximizingColor,
+                                                    bool                           randomize) {
+    bool  played_something        = false;
     Color temp_current_side_color = currentTurn_;
     if (playing_move)
     {
@@ -1097,8 +1096,8 @@ std::variant<double, Movement> Board::MinimaxSearch(const std::optional<Movement
         if (!played_something)
         {
             std::cout << *this << std::endl;
-            std::cout << "Invalid move " << playing_move->ToString() << "  boardstatefen " << GenerateFEN()
-                      << std::endl;
+            std::cout << "Invalid move " << playing_move->ToString() << "  boardstatefen "
+                      << GenerateFEN() << std::endl;
             throw std::runtime_error("Invalid move " + playing_move->ToString());
         }
         if (nodesvisited != nullptr)
@@ -1121,7 +1120,8 @@ std::variant<double, Movement> Board::MinimaxSearch(const std::optional<Movement
         return res;
     }
 
-    return PickOrEvaluate(playing_move, nodesvisited, alpha, beta, depth, maximizingColor, randomize);
+    return PickOrEvaluate(playing_move, nodesvisited, alpha, beta, depth, maximizingColor,
+                          randomize);
 }
 
-} // namespace shatranj
+}  // namespace shatranj

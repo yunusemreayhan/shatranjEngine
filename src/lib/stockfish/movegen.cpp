@@ -50,12 +50,12 @@ ExtMove* make_promotions(ExtMove* moveList, [[maybe_unused]] Square to) {
 template<Color Us, GenType Type>
 ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
 
-    constexpr Color     Them     = ~Us;
-    constexpr Bitboard  TRank7BB = (Us == WHITE ? Rank7BB : Rank2BB);
-    constexpr Bitboard  TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
-    constexpr Direction Up       = pawn_push(Us);
-    constexpr Direction UpRight  = (Us == WHITE ? NORTH_EAST : SOUTH_WEST);
-    constexpr Direction UpLeft   = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
+    constexpr Color    Them     = ~Us;
+    constexpr Bitboard TRank7BB = (Us == WHITE ? Rank7BB : Rank2BB);
+    //constexpr Bitboard  TRank3BB = (Us == WHITE ? Rank3BB : Rank6BB);
+    constexpr Direction Up      = pawn_push(Us);
+    constexpr Direction UpRight = (Us == WHITE ? NORTH_EAST : SOUTH_WEST);
+    constexpr Direction UpLeft  = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
 
     const Bitboard emptySquares = ~pos.pieces();
     const Bitboard enemies      = Type == EVASIONS ? pos.checkers() : pos.pieces(Them);
@@ -67,12 +67,12 @@ ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard ta
     if constexpr (Type != CAPTURES)
     {
         Bitboard b1 = shift<Up>(pawnsNotOn7) & emptySquares;
-        Bitboard b2 = shift<Up>(b1 & TRank3BB) & emptySquares;
+        //Bitboard b2 = shift<Up>(b1 & TRank3BB) & emptySquares;
 
         if constexpr (Type == EVASIONS)  // Consider only blocking squares
         {
             b1 &= target;
-            b2 &= target;
+            //b2 &= target;
         }
 
         if constexpr (Type == QUIET_CHECKS)
@@ -83,7 +83,7 @@ ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard ta
             Square   ksq              = pos.square<KING>(Them);
             Bitboard dcCandidatePawns = pos.blockers_for_king(Them) & ~file_bb(ksq);
             b1 &= pawn_attacks_bb(Them, ksq) | shift<Up>(dcCandidatePawns);
-            b2 &= pawn_attacks_bb(Them, ksq) | shift<Up + Up>(dcCandidatePawns);
+            //b2 &= pawn_attacks_bb(Them, ksq) | shift<Up + Up>(dcCandidatePawns);
         }
 
         while (b1)
@@ -92,11 +92,11 @@ ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard ta
             *moveList++ = Move(to - Up, to);
         }
 
-        while (b2)
+        /*while (b2)
         {
             Square to   = pop_lsb(b2);
             *moveList++ = Move(to - Up - Up, to);
-        }
+        }*/
     }
 
     // Promotions and underpromotions

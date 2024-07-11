@@ -1,6 +1,7 @@
 
-file(GLOB HEADERS "*.h")
-file(GLOB SOURCES "*.cpp")
+file(GLOB SHATRANJ_SIMPLE_HEADERS "shatranj_simple/*.h")
+file(GLOB SHATRANJ_SIMPLE_SOURCES "shatranj_simple/*.cpp")
 file(GLOB STOCKFISH_SOURCES "stockfish/*.cpp")
+file(GLOB STOCKFISH_HEADERS "stockfish/*.h")
 
-add_library(dummy_chess_engine STATIC ${HEADERS} ${SOURCES} ${STOCKFISH_SOURCES})
+add_library(dummy_chess_engine STATIC ${SHATRANJ_SIMPLE_HEADERS} ${SHATRANJ_SIMPLE_SOURCES} ${STOCKFISH_SOURCES} ${STOCKFISH_HEADERS})

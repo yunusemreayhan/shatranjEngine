@@ -3,12 +3,11 @@
 
 #include "position.h"
 #include "shatranc_piece.h"
-#include "stockfish/bitboard.h"
+#include "bitboard.h"
 
 using namespace Stockfish;
 
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
     shatranj::Piece::InitCapturePerSquareTable();
     shatranj::Piece::InitMovePerSquareTable();
     Bitboards::init();
