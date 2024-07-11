@@ -81,6 +81,11 @@ class Position {
     void set_check_info() const;
     bool empty(Square s) const;
 
+    Bitboard checkers() const;
+    bool     legal(Move m) const;
+    bool     pseudo_legal(const Move m) const;
+
+    Color side_to_move() const;
 
     Bitboard blockers_for_king(Color c) const;
 
@@ -99,6 +104,7 @@ class Position {
     int        gamePly;
     Color      sideToMove;
 };
+inline Bitboard Position::checkers() const { return st->checkersBB; }
 
 inline Piece Position::piece_on(Square s) const {
     assert(is_ok(s));

@@ -1,4 +1,6 @@
 #include "position.h"
+#include "movegen.h"
+
 #include <cstring>
 
 namespace Stockfish {
@@ -464,4 +466,133 @@ void Position::update_slider_blockers(Color c) const {
     }
 }
 inline bool Position::empty(Square s) const { return piece_on(s) == NO_PIECE; }
+
+
+// Tests whether a pseudo-legal move is legal
+bool Position::legal(Move m) const {
+
+    assert(m.is_ok());
+
+    Color  us   = sideToMove;
+    Square from = m.from_sq();
+    Square to   = m.to_sq();
+
+    assert(color_of(moved_piece(m)) == us);
+    assert(piece_on(square<KING>(us)) == make_piece(us, KING));
+
+    // En passant captures are a tricky special case. Because they are rather
+    // uncommon, we do it simply by testing whether the king is attacked after
+    // the move is made.
+    /*if (m.type_of() == EN_PASSANT)
+    {
+        Square   ksq      = square<KING>(us);
+        Square   capsq    = to - pawn_push(us);
+        Bitboard occupied = (pieces() ^ from ^ capsq) | to;
+
+        assert(to == ep_square());
+        assert(moved_piece(m) == make_piece(us, PAWN));
+        assert(piece_on(capsq) == make_piece(~us, PAWN));
+        assert(piece_on(to) == NO_PIECE);
+
+        return !(attacks_bb<ROOK>(ksq, occupied) & pieces(~us, QUEEN, ROOK))
+            && !(attacks_bb<BISHOP>(ksq, occupied) & pieces(~us, QUEEN, BISHOP));
+    }*/
+
+    // Castling moves generation does not check if the castling path is clear of
+    // enemy attacks, it is delayed at a later time: now!
+    /*if (m.type_of() == CASTLING)
+    {
+        // After castling, the rook and king final positions are the same in
+        // Chess960 as they would be in standard chess.
+        to             = relative_square(us, to > from ? SQ_G1 : SQ_C1);
+        Direction step = to > from ? WEST : EAST;
+
+        for (Square s = to; s != from; s += step)
+            if (attackers_to(s) & pieces(~us))
+                return false;
+
+        // In case of Chess960, verify if the Rook blocks some checks.
+        // For instance an enemy queen in SQ_A1 when castling rook is in SQ_B1.
+        return !chess960 || !(blockers_for_king(us) & m.to_sq());
+    }*/
+
+    // If the moving piece is a king, check whether the destination square is
+    // attacked by the opponent.
+    if (type_of(piece_on(from)) == KING)
+        return !(attackers_to(to, pieces() ^ from) & pieces(~us));
+
+    // A non-king move is legal if and only if it is not pinned or it
+    // is moving along the ray towards or away from the king.
+    return !(blockers_for_king(us) & from) || aligned(from, to, square<KING>(us));
+}
+
+
+// Takes a random move and tests whether the move is
+// pseudo-legal. It is used to validate moves from TT that can be corrupted
+// due to SMP concurrent access or hash position key aliasing.
+bool Position::pseudo_legal(const Move m) const {
+
+    Color  us   = sideToMove;
+    Square from = m.from_sq();
+    Square to   = m.to_sq();
+    Piece  pc   = moved_piece(m);
+
+    // Use a slower but simpler function for uncommon cases
+    // yet we skip the legality check of MoveList<LEGAL>().
+    if (m.type_of() != NORMAL)
+        return checkers() ? MoveList<EVASIONS>(*this).contains(m)
+                          : MoveList<NON_EVASIONS>(*this).contains(m);
+
+    // Is not a promotion, so the promotion piece must be empty
+    assert(m.promotion_type() - KNIGHT == NO_PIECE_TYPE);
+
+    // If the 'from' square is not occupied by a piece belonging to the side to
+    // move, the move is obviously not legal.
+    if (pc == NO_PIECE || color_of(pc) != us)
+        return false;
+
+    // The destination square cannot be occupied by a friendly piece
+    if (pieces(us) & to)
+        return false;
+
+    // Handle the special case of a pawn move
+    if (type_of(pc) == PAWN)
+    {
+        // We have already handled promotion moves, so destination cannot be on the 8th/1st rank
+        if ((Rank8BB | Rank1BB) & to)
+            return false;
+
+        if (!(pawn_attacks_bb(us, from) & pieces(~us) & to)  // Not a capture
+            && !((from + pawn_push(us) == to) && empty(to))  // Not a single push
+            && !((from + 2 * pawn_push(us) == to)            // Not a double push
+                 && (relative_rank(us, from) == RANK_2) && empty(to) && empty(to - pawn_push(us))))
+            return false;
+    }
+    else if (!(attacks_bb(type_of(pc), from, pieces()) & to))
+        return false;
+
+    // Evasions generator already takes care to avoid some kind of illegal moves
+    // and legal() relies on this. We therefore have to take care that the same
+    // kind of moves are filtered out here.
+    if (checkers())
+    {
+        if (type_of(pc) != KING)
+        {
+            // Double check? In this case, a king move is required
+            if (more_than_one(checkers()))
+                return false;
+
+            // Our move must be a blocking interposition or a capture of the checking piece
+            if (!(between_bb(square<KING>(us), lsb(checkers())) & to))
+                return false;
+        }
+        // In case of king moves under check we have to remove the king so as to catch
+        // invalid moves like b1a1 when opposite queen is on c1.
+        else if (attackers_to(to, pieces() ^ from) & pieces(~us))
+            return false;
+    }
+
+    return true;
+}
+inline Color Position::side_to_move() const { return sideToMove; }
 }
