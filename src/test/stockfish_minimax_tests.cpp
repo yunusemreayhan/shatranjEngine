@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <deque>
 #include <limits.h>
 #include <memory>
 #include <optional>
@@ -22,11 +23,13 @@ constexpr auto StartFENShatranj = "rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w
 using namespace Stockfish;
 
 TEST(StockfishMinimax, MinimaxTest) {
-    StateInfo st;
-    Position  pos;
-    pos.set(StartFENShatranj, &st, true);
+    Position                               pos;
+    std::unique_ptr<std::deque<StateInfo>> states =
+      std::unique_ptr<std::deque<StateInfo>>(new std::deque<StateInfo>(1));
 
-    auto res = Stockfish::minimax(pos, 5);
+    pos.set(StartFENShatranj, &states->back(), true);
+
+    auto res = Stockfish::minimax(pos, states, 5);
 
     for (auto m : res)
     {
@@ -34,4 +37,55 @@ TEST(StockfishMinimax, MinimaxTest) {
     }
 }
 
+Move PickBestMove(std::list<std::pair<Move, double>> moves) {
+    Move   ret  = moves.front().first;
+    double best = std::numeric_limits<double>::min();
+
+    for (auto m : moves)
+    {
+        if (m.second > best)
+        {
+            best = m.second;
+            ret  = m.first;
+        }
+    }
+
+    return ret;
+}
+
+TEST(StockfishMinimax, DummyGamePlay) {
+    Position                               pos;
+    std::unique_ptr<std::deque<StateInfo>> states =
+      std::unique_ptr<std::deque<StateInfo>>(new std::deque<StateInfo>(1));
+
+    pos.set(StartFENShatranj, &states->back(), true);
+
+    std::vector<Move> played;
+    for (int i = 0; i < 100; i++)
+    {
+        std::cout << pos << std::endl;
+        auto res = Stockfish::minimax(pos, states, 5);
+        for (auto m : res)
+        {
+            std::cout << "move: " << m.first << " score: " << m.second << std::endl;
+        }
+
+        Move picked = PickBestMove(res);
+
+        std::cout << "move: " << picked << std::endl;
+
+        played.push_back(picked);
+        states->emplace_back();
+        pos.do_move(picked, states->back());
+        std::cout << pos << std::endl;
+    }
+
+    std::cout << "played: ";
+    for (auto m : played)
+    {
+        std::cout << " " << m;
+    }
+
+    std::cout << std::endl;
+}
 }

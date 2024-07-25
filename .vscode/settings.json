@@ -17,5 +17,6 @@
     },
     "accessibility.signals.format": {
         "sound": "always"
-    }
+    },
+    "makefile.compileCommandsPath": "/home/yunus/repos/TamerKaratekinChessProject/build/debug/"
 }

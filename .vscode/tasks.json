@@ -30,7 +30,7 @@
         {
             "label": "build debug",
             "type": "shell",
-            "command": "cmake --build ./build/debug --target all",
+            "command": "mkdir -p build/debug && cmake --build ./build/debug --target all",
             "dependsOn": "configure debug",
             "problemMatcher": [
                 "$gcc"
@@ -39,7 +39,7 @@
         {
             "label": "build release",
             "type": "shell",
-            "command": "mkdir -p build/debug && cmake --build ./build/release --target all",
+            "command": "mkdir -p build/release && cmake --build ./build/release --target all",
             "dependsOn": "configure release",
             "problemMatcher": [
                 "$gcc"
@@ -48,14 +48,12 @@
         {
             "label": "configure debug",
             "type": "shell",
-            "command": "cmake -S . -B ./build/debug -DCMAKE_BUILD_TYPE=Debug",
-            "dependsOn": "configure"
+            "command": "mkdir -p build/debug && cmake -S . -B ./build/debug -DCMAKE_BUILD_TYPE=Debug"
         },
         {
             "label": "configure release",
             "type": "shell",
-            "command": "mkdir -p build/release && cmake -S . -B ./build/release -DCMAKE_BUILD_TYPE=Release",
-            "dependsOn": "configure"
+            "command": "mkdir -p build/release && cmake -S . -B ./build/release -DCMAKE_BUILD_TYPE=Release"
         },
         {
             "type": "cmake",

@@ -1,4 +1,5 @@
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file(GLOB SHATRANJ_SIMPLE_HEADERS "shatranj_simple/*.h")
 file(GLOB SHATRANJ_SIMPLE_SOURCES "shatranj_simple/*.cpp")
 file(GLOB STOCKFISH_SOURCES "stockfish/*.cpp" "stockfish/custom/*.cpp")
