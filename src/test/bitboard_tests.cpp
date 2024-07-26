@@ -123,6 +123,46 @@ TEST(Bitboard, StandartBoardOneSimpleMove) {
                   Move(SQ_F1, SQ_D3), Move(SQ_F1, SQ_H3), Move(SQ_A1, SQ_A2)};
     CheckMoves(pos, expected2);
 }
+
+TEST(Bitboard, CheckBlockingPieceMovePreventedCheck) {
+    StateInfo st;
+    Position  pos;
+    /*
+                +---+---+---+---+---+---+---+---+
+                | r | h | f |   | s |   | r |   | 8
+                +---+---+---+---+---+---+---+---+
+                |   |   | v |   |   |   |   | p | 7
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   | P |   |   | R | 6
+                +---+---+---+---+---+---+---+---+
+                |   | P |   |   |   | H |   |   | 5
+                +---+---+---+---+---+---+---+---+
+                | p | h |   |   |   |   |   |   | 4
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   |   |   |   |   | 3
+                +---+---+---+---+---+---+---+---+
+                |   |   |   |   | S |   |   |   | 2
+                +---+---+---+---+---+---+---+---+
+                | R | H | F | V |   |   |   |   | 1
+                +---+---+---+---+---+---+---+---+
+                  a   b   c   d   e   f   g   h
+    */
+    const std::string fen = "rnb1kr2/2q4p/4P2R/1P3N2/pn6/8/8/RNBQ1K2 w 8 31";
+    pos.set(fen, &st, false);
+    auto movelist = Stockfish::MoveList<LEGAL>(pos);
+    dump_bitboard_as_one_zero("", attacks_bb(PieceType::ROOK, SQ_E1));
+    std::cout << "Possible moves:" << std::endl;
+    int i = 0;
+    for (auto move : movelist)
+    {
+        std::cout << " " << move;
+        if (i++ % 8 == 7)
+            std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    std::cout << pos << std::endl;
+    assert(std::find(movelist.begin(), movelist.end(), Move(SQ_F5, SQ_E3)) == movelist.end());
+}
 /*
     TODO checks:
     * write a test for adapted position class

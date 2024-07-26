@@ -1,5 +1,6 @@
 #include "stockfish_position.h"
 #include "movegen.h"
+#include "stockfish_helper.h"
 
 #include <cstring>
 #include <ios>
@@ -109,6 +110,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
            || color_of(captured)
                 == (/*m.type_of() != CASTLING ?*/ them
                     /*:  us*/));
+    if (type_of(captured) == KING)
+    {
+        std::cout << "King move! : " << m << "\n";
+        std::cout << *this << std::endl;
+    }
     assert(type_of(captured) != KING);
 
     /*if (m.type_of() == CASTLING)
@@ -459,9 +465,9 @@ void Position::update_slider_blockers(Color c) const {
     st->pinners[~c]        = 0;
 
     // Snipers are sliders that attack 's' when a piece and other snipers are removed
-    Bitboard snipers = ((attacks_bb<ROOK>(ksq) & pieces(QUEEN, ROOK))
-                        | (attacks_bb<BISHOP>(ksq) & pieces(QUEEN, BISHOP)))
-                     & pieces(~c);
+    Bitboard snipers = (attacks_bb<ROOK>(ksq) & pieces(ROOK))
+                     & pieces(~c);  // in old shatranj we only have rooks as snipers
+    // bishop and queen moves like a horse
     Bitboard occupancy = pieces() ^ snipers;
 
     while (snipers)

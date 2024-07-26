@@ -3,9 +3,17 @@
 #include <vector>
 
 namespace Stockfish {
+
+struct Stack {
+    Move move;
+    // std::string movestr;
+};
+
 int minimax(Position&                               position,
+            Stack*                                  stack,
             std::unique_ptr<std::deque<StateInfo>>& states,
             const int                               depth,
+            const int                               ndepth,
             int                                     alpha,
             int                                     beta,
             Color                                   max_color,
@@ -14,6 +22,9 @@ int minimax(Position&                               position,
 
     StateInfo st;
     states->emplace_back();
+    auto& ms = stack[ndepth];
+    ms.move  = move;
+    // ms.movestr = MoveToStr(move);
     position.do_move(move, st);
     visited++;
 
@@ -30,10 +41,10 @@ int minimax(Position&                               position,
         auto best = min_val;
         for (auto& move : movelist)
         {
-            auto value =
-              minimax(position, states, depth - 1, alpha, beta, max_color, move, visited);
-            best  = std::max(best, value);
-            alpha = std::max(alpha, best);
+            auto value = minimax(position, stack, states, depth - 1, ndepth + 1, alpha, beta,
+                                 max_color, move, visited);
+            best       = std::max(best, value);
+            alpha      = std::max(alpha, best);
             if (beta <= alpha)
             {
                 break;
@@ -46,10 +57,10 @@ int minimax(Position&                               position,
         auto best = max_val;
         for (auto& move : MoveList<GenType::LEGAL>(position))
         {
-            auto value =
-              minimax(position, states, depth - 1, alpha, beta, max_color, move, visited);
-            best = std::min(best, value);
-            beta = std::min(beta, best);
+            auto value = minimax(position, stack, states, depth - 1, ndepth + 1, alpha, beta,
+                                 max_color, move, visited);
+            best       = std::min(best, value);
+            beta       = std::min(beta, best);
             if (beta <= alpha)
             {
                 break;
@@ -61,13 +72,14 @@ int minimax(Position&                               position,
 
 std::list<std::pair<Move, int>>
 minimax(Position& position, std::unique_ptr<std::deque<StateInfo>>& states, const int depth) {
-    long long visited = 0;
+    Stack     stack[1000] = {};
+    long long visited     = 0;
 
     std::list<std::pair<Move, int>> result;
     for (auto& move : MoveList<GenType::LEGAL>(position))
     {
-        auto res = minimax(position, states, depth, min_val, max_val, position.side_to_move(), move,
-                           visited);
+        auto res = minimax(position, stack, states, depth, 0, min_val, max_val,
+                           position.side_to_move(), move, visited);
 
         result.push_back({move, res});
     }
