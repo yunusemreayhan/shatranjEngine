@@ -37,9 +37,9 @@ TEST(StockfishMinimax, MinimaxTest) {
     }
 }
 
-Move PickBestMove(std::list<std::pair<Move, double>> moves) {
+Move PickBestMove(std::list<std::pair<Move, int>> moves) {
     Move   ret  = moves.front().first;
-    double best = std::numeric_limits<double>::min();
+    int    best = std::numeric_limits<int>::min();
 
     for (auto m : moves)
     {

@@ -14,9 +14,9 @@
 
 namespace Stockfish {
 
-constexpr double min_val = std::numeric_limits<double>::min();
-constexpr double max_val = std::numeric_limits<double>::max();
+constexpr int min_val = std::numeric_limits<int>::min();
+constexpr int max_val = std::numeric_limits<int>::max();
 
-std::list<std::pair<Move, double>>
+std::list<std::pair<Move, int>>
 minimax(Position& position, std::unique_ptr<std::deque<StateInfo>>& states, const int depth);
 }

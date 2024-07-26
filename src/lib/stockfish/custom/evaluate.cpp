@@ -3,8 +3,8 @@
 
 namespace Stockfish {
 
-double evaluate(Stockfish::Position pos, Color currentColor, Color maximColor, size_t movecount) {
-    double ret = pos.count<PAWN>(maximColor) * PawnValue;
+int evaluate(Stockfish::Position pos, Color currentColor, Color maximColor, size_t movecount) {
+    int ret = pos.count<PAWN>(maximColor) * PawnValue;
     ret += pos.count<QUEEN>(maximColor) * QueenValue;
     ret += pos.count<KNIGHT>(maximColor) * KnightValue;
     ret += pos.count<BISHOP>(maximColor) * BishopValue;
@@ -20,16 +20,15 @@ double evaluate(Stockfish::Position pos, Color currentColor, Color maximColor, s
     {
         ret += movecount * 0.1;
         if (movecount == 0)
-            ret = std::numeric_limits<double>::min();
+            ret = std::numeric_limits<int>::min();
     }
     else
     {
         ret -= movecount * 0.1;
         if (movecount == 0)
-            ret = std::numeric_limits<double>::max();
+            ret = std::numeric_limits<int>::max();
     }
 
     return ret;
 }
-
 }
