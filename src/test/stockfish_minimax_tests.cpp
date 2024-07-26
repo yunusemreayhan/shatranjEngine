@@ -14,6 +14,7 @@
 #include "stockfish_position.h"
 #include "movegen.h"
 #include "minimax.h"
+#include "tt.h"
 
 namespace {
 
@@ -21,6 +22,7 @@ constexpr auto StartFEN         = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w
 constexpr auto StartFENShatranj = "rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w 0 1";
 
 using namespace Stockfish;
+TranspositionTable tt;
 
 TEST(StockfishMinimax, MinimaxTest) {
     Position                               pos;
@@ -28,8 +30,9 @@ TEST(StockfishMinimax, MinimaxTest) {
       std::unique_ptr<std::deque<StateInfo>>(new std::deque<StateInfo>(1));
 
     pos.set(StartFENShatranj, &states->back(), true);
+    tt.resize(2048);
 
-    auto res = Stockfish::minimax(pos, states, 5);
+    auto res = Stockfish::minimax(tt, pos, states, 5);
 
     for (auto m : res)
     {
@@ -38,8 +41,8 @@ TEST(StockfishMinimax, MinimaxTest) {
 }
 
 Move PickBestMove(std::list<std::pair<Move, int>> moves) {
-    Move   ret  = moves.front().first;
-    int    best = std::numeric_limits<int>::min();
+    Move ret  = moves.front().first;
+    int  best = std::numeric_limits<int>::min();
 
     for (auto m : moves)
     {
@@ -64,7 +67,7 @@ TEST(StockfishMinimax, DummyGamePlay) {
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::minimax(pos, states, 3);
+        auto res = Stockfish::minimax(tt, pos, states, 3);
         for (auto m : res)
         {
             std::cout << "move: " << m.first << " score: " << m.second << std::endl;

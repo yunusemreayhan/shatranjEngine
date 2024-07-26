@@ -48,6 +48,7 @@ using StateListPtr = std::unique_ptr<std::deque<StateInfo>>;
 // traversing the search tree.
 class Position {
    public:
+    static void init();
     // FEN string input/output
     Position&
     set(const std::string& fenStr, /*bool isChess960,*/ StateInfo* si, bool shatranj = false);

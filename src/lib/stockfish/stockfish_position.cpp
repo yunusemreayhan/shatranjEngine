@@ -1,6 +1,7 @@
 #include "stockfish_position.h"
 #include "movegen.h"
 #include "stockfish_helper.h"
+#include "misc.h"
 
 #include <cstring>
 #include <ios>
@@ -19,6 +20,7 @@ Key psq[PIECE_NB][SQUARE_NB];
 Key side, noPawns;
 }
 
+
 namespace {
 
 constexpr std::string_view PieceToCharNormal(" PNBRQK  pnbrqk");
@@ -28,6 +30,56 @@ constexpr Piece Pieces[] = {W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
                             B_PAWN, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING};
 }  // namespace
 
+// First and second hash functions for indexing the cuckoo tables
+inline int H1(Key h) { return h & 0x1fff; }
+inline int H2(Key h) { return (h >> 16) & 0x1fff; }
+
+// Cuckoo tables with Zobrist hashes of valid reversible moves, and the moves themselves
+std::array<Key, 8192>  cuckoo;
+std::array<Move, 8192> cuckooMove;
+
+// Initializes at startup the various arrays used to compute hash keys
+void Position::init() {
+
+    PRNG rng(1070372);
+
+    for (Piece pc : Pieces)
+        for (Square s = SQ_A1; s <= SQ_H8; ++s)
+            Zobrist::psq[pc][s] = rng.rand<Key>();
+
+    /* for (File f = FILE_A; f <= FILE_H; ++f)
+        Zobrist::enpassant[f] = rng.rand<Key>();
+
+    for (int cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr)
+        Zobrist::castling[cr] = rng.rand<Key>(); */
+
+    Zobrist::side    = rng.rand<Key>();
+    Zobrist::noPawns = rng.rand<Key>();
+
+    // Prepare the cuckoo tables
+    cuckoo.fill(0);
+    cuckooMove.fill(Move::none());
+    [[maybe_unused]] int count = 0;
+    for (Piece pc : Pieces)
+        for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
+            for (Square s2 = Square(s1 + 1); s2 <= SQ_H8; ++s2)
+                if ((type_of(pc) != PAWN) && (attacks_bb(type_of(pc), s1, 0) & s2))
+                {
+                    Move move = Move(s1, s2);
+                    Key  key  = Zobrist::psq[pc][s1] ^ Zobrist::psq[pc][s2] ^ Zobrist::side;
+                    int  i    = H1(key);
+                    while (true)
+                    {
+                        std::swap(cuckoo[i], key);
+                        std::swap(cuckooMove[i], move);
+                        if (move == Move::none())  // Arrived at empty slot?
+                            break;
+                        i = (i == H1(key)) ? H2(key) : H1(key);  // Push victim to alternative slot
+                    }
+                    count++;
+                }
+    //assert(count == 3668);
+}
 
 std::string square(Square s) { return std::string{char('a' + file_of(s)), char('1' + rank_of(s))}; }
 
@@ -66,6 +118,45 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
     }*/
 
     return os;
+}
+
+
+// Computes the hash keys of the position, and other
+// data that once computed is updated incrementally as moves are made.
+// The function is only used when a new position is set up
+void Position::set_state() const {
+
+    st->key = st->materialKey  = 0;
+    st->pawnKey                = Zobrist::noPawns;
+    st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
+    st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
+
+    set_check_info();
+
+    for (Bitboard b = pieces(); b;)
+    {
+        Square s  = pop_lsb(b);
+        Piece  pc = piece_on(s);
+        st->key ^= Zobrist::psq[pc][s];
+
+        if (type_of(pc) == PAWN)
+            st->pawnKey ^= Zobrist::psq[pc][s];
+
+        else if (type_of(pc) != KING)
+            st->nonPawnMaterial[color_of(pc)] += PieceValue[pc];
+    }
+
+    /*if (st->epSquare != SQ_NONE)
+        st->key ^= Zobrist::enpassant[file_of(st->epSquare)];*/
+
+    if (sideToMove == BLACK)
+        st->key ^= Zobrist::side;
+
+    /*st->key ^= Zobrist::castling[st->castlingRights];*/
+
+    for (Piece pc : Pieces)
+        for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
+            st->materialKey ^= Zobrist::psq[pc][cnt];
 }
 
 // Makes a move, and saves all information necessary
@@ -788,45 +879,6 @@ void Position::set_check_info() const {
     st->checkSquares[ROOK]   = attacks_bb<ROOK>(ksq, pieces());
     st->checkSquares[QUEEN]  = st->checkSquares[BISHOP] | st->checkSquares[ROOK];
     st->checkSquares[KING]   = 0;
-}
-
-
-// Computes the hash keys of the position, and other
-// data that once computed is updated incrementally as moves are made.
-// The function is only used when a new position is set up
-void Position::set_state() const {
-
-    st->key = st->materialKey  = 0;
-    st->pawnKey                = Zobrist::noPawns;
-    st->nonPawnMaterial[WHITE] = st->nonPawnMaterial[BLACK] = VALUE_ZERO;
-    st->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
-
-    set_check_info();
-
-    for (Bitboard b = pieces(); b;)
-    {
-        Square s  = pop_lsb(b);
-        Piece  pc = piece_on(s);
-        st->key ^= Zobrist::psq[pc][s];
-
-        if (type_of(pc) == PAWN)
-            st->pawnKey ^= Zobrist::psq[pc][s];
-
-        else if (type_of(pc) != KING)
-            st->nonPawnMaterial[color_of(pc)] += PieceValue[pc];
-    }
-
-    /*if (st->epSquare != SQ_NONE)
-        st->key ^= Zobrist::enpassant[file_of(st->epSquare)];*/
-
-    if (sideToMove == BLACK)
-        st->key ^= Zobrist::side;
-
-    /*st->key ^= Zobrist::castling[st->castlingRights];*/
-
-    for (Piece pc : Pieces)
-        for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
-            st->materialKey ^= Zobrist::psq[pc][cnt];
 }
 
 

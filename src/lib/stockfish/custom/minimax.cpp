@@ -1,6 +1,5 @@
 #include "minimax.h"
 
-#include <vector>
 
 namespace Stockfish {
 
@@ -11,6 +10,7 @@ struct Stack {
 
 int minimax(Position&                               position,
             Stack*                                  stack,
+            TranspositionTable&                     tt,
             std::unique_ptr<std::deque<StateInfo>>& states,
             const int                               depth,
             const int                               ndepth,
@@ -20,6 +20,11 @@ int minimax(Position&                               position,
             Move                                    move,
             long long&                              visited) {
 
+    auto [ttHit, ttData, ttWriter] = tt.probe(position.key());
+    if (ttHit)
+    {
+        return ttData.eval;
+    }
     StateInfo st;
     states->emplace_back();
     auto& ms = stack[ndepth];
@@ -33,7 +38,10 @@ int minimax(Position&                               position,
     auto movelist = MoveList<GenType::LEGAL>(position);
     if (depth == 0 || movelist.size() == 0)
     {
-        return evaluate(position, position.side_to_move(), max_color, movelist.size());
+        auto eval = evaluate(position, position.side_to_move(), max_color, movelist.size());
+        ttWriter.write(position.key(), eval, false, BOUND_EXACT, depth, move, VALUE_NONE,
+                       tt.generation());
+        return eval;
     }
 
     if (position.side_to_move() == max_color)
@@ -41,7 +49,7 @@ int minimax(Position&                               position,
         auto best = min_val;
         for (auto& move : movelist)
         {
-            auto value = minimax(position, stack, states, depth - 1, ndepth + 1, alpha, beta,
+            auto value = minimax(position, stack, tt, states, depth - 1, ndepth + 1, alpha, beta,
                                  max_color, move, visited);
             best       = std::max(best, value);
             alpha      = std::max(alpha, best);
@@ -57,7 +65,7 @@ int minimax(Position&                               position,
         auto best = max_val;
         for (auto& move : MoveList<GenType::LEGAL>(position))
         {
-            auto value = minimax(position, stack, states, depth - 1, ndepth + 1, alpha, beta,
+            auto value = minimax(position, stack, tt, states, depth - 1, ndepth + 1, alpha, beta,
                                  max_color, move, visited);
             best       = std::min(best, value);
             beta       = std::min(beta, best);
@@ -70,22 +78,24 @@ int minimax(Position&                               position,
     }
 }
 
-std::list<std::pair<Move, int>>
-minimax(Position& position, std::unique_ptr<std::deque<StateInfo>>& states, const int depth) {
+std::list<std::pair<Move, int>> minimax(TranspositionTable&                     tt,
+                                        Position&                               position,
+                                        std::unique_ptr<std::deque<StateInfo>>& states,
+                                        const int                               depth) {
+    tt.new_search();
     Stack     stack[1000] = {};
     long long visited     = 0;
 
     std::list<std::pair<Move, int>> result;
     for (auto& move : MoveList<GenType::LEGAL>(position))
     {
-        auto res = minimax(position, stack, states, depth, 0, min_val, max_val,
+        auto res = minimax(position, stack, tt, states, depth, 0, min_val, max_val,
                            position.side_to_move(), move, visited);
 
         result.push_back({move, res});
     }
 
     std::cout << "total visited node count " << visited << std::endl;
-
     return result;
 }
 }
