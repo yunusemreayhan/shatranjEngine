@@ -2,6 +2,7 @@
 #include "movegen.h"
 #include "stockfish_helper.h"
 #include "misc.h"
+#include "types.h"
 
 #include <cstring>
 #include <ios>
@@ -539,9 +540,8 @@ Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
 
     return (pawn_attacks_bb(BLACK, s) & pieces(WHITE, PAWN))
          | (pawn_attacks_bb(WHITE, s) & pieces(BLACK, PAWN))
-         | (attacks_bb<KNIGHT>(s) & pieces(KNIGHT))
-         | (attacks_bb<ROOK>(s, occupied) & pieces(ROOK, QUEEN))
-         | (attacks_bb<BISHOP>(s, occupied) & pieces(BISHOP, QUEEN))
+         | (attacks_bb<KNIGHT>(s) & pieces(KNIGHT)) | (attacks_bb<ROOK>(s, occupied) & pieces(ROOK))
+         | (attacks_bb<BISHOP>(s) & pieces(BISHOP)) | (attacks_bb<QUEEN>(s) & pieces(QUEEN))
          | (attacks_bb<KING>(s) & pieces(KING));
 }
 
@@ -877,7 +877,7 @@ void Position::set_check_info() const {
     st->checkSquares[KNIGHT] = attacks_bb<KNIGHT>(ksq);
     st->checkSquares[BISHOP] = attacks_bb<BISHOP>(ksq, pieces());
     st->checkSquares[ROOK]   = attacks_bb<ROOK>(ksq, pieces());
-    st->checkSquares[QUEEN]  = st->checkSquares[BISHOP] | st->checkSquares[ROOK];
+    st->checkSquares[QUEEN]  = attacks_bb<QUEEN>(ksq, pieces());
     st->checkSquares[KING]   = 0;
 }
 

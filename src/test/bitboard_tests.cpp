@@ -163,6 +163,24 @@ TEST(Bitboard, CheckBlockingPieceMovePreventedCheck) {
     std::cout << pos << std::endl;
     assert(std::find(movelist.begin(), movelist.end(), Move(SQ_F5, SQ_E3)) == movelist.end());
 }
+
+TEST(Bitboard, CheckIfKeysAreProducedCorrectly) {
+
+    StateInfo st;
+    Position  pos;
+    pos.set(StartFENShatranj, &st, true);
+    auto      initialKey = pos.key();
+    StateInfo st2;
+    StateInfo st3;
+    pos.do_move(Move(SQ_B1, SQ_C3), st2);
+    pos.do_move(Move(SQ_B8, SQ_C6), st3);
+    StateInfo st4;
+    StateInfo st5;
+    pos.do_move(Move(SQ_C3, SQ_B1), st4);
+    pos.do_move(Move(SQ_C6, SQ_B8), st5);
+    auto afterKey = pos.key();
+    assert(initialKey == afterKey);
+}
 /*
     TODO checks:
     * write a test for adapted position class

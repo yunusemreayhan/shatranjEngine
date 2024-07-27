@@ -18,8 +18,6 @@ namespace Stockfish {
 constexpr int min_val = std::numeric_limits<int>::min();
 constexpr int max_val = std::numeric_limits<int>::max();
 
-std::list<std::pair<Move, int>> minimax(TranspositionTable&                     tt,
-                                        Position&                               position,
-                                        std::unique_ptr<std::deque<StateInfo>>& states,
-                                        const int                               depth);
+std::list<std::pair<Move, int>>
+minimax(TranspositionTable& tt, Position& position, const int depth);
 }

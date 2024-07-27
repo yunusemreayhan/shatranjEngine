@@ -30,9 +30,9 @@ TEST(StockfishMinimax, MinimaxTest) {
       std::unique_ptr<std::deque<StateInfo>>(new std::deque<StateInfo>(1));
 
     pos.set(StartFENShatranj, &states->back(), true);
-    tt.resize(2048);
+    tt.resize(4096);
 
-    auto res = Stockfish::minimax(tt, pos, states, 5);
+    auto res = Stockfish::minimax(tt, pos, 5);
 
     for (auto m : res)
     {
@@ -57,17 +57,17 @@ Move PickBestMove(std::list<std::pair<Move, int>> moves) {
 }
 
 TEST(StockfishMinimax, DummyGamePlay) {
-    Position                               pos;
-    std::unique_ptr<std::deque<StateInfo>> states =
-      std::unique_ptr<std::deque<StateInfo>>(new std::deque<StateInfo>(1));
+    Position  pos;
+    StateInfo st;
 
-    pos.set(StartFENShatranj, &states->back(), true);
+    pos.set(StartFENShatranj, &st, true);
 
     std::vector<Move> played;
+    StateInfo         sts[100];
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::minimax(tt, pos, states, 3);
+        auto res = Stockfish::minimax(tt, pos, 5);
         for (auto m : res)
         {
             std::cout << "move: " << m.first << " score: " << m.second << std::endl;
@@ -78,8 +78,42 @@ TEST(StockfishMinimax, DummyGamePlay) {
         std::cout << "move: " << picked << std::endl;
 
         played.push_back(picked);
-        states->emplace_back();
-        pos.do_move(picked, states->back());
+        pos.do_move(picked, sts[i]);
+        std::cout << pos << std::endl;
+    }
+
+    std::cout << "played: ";
+    for (auto m : played)
+    {
+        std::cout << " " << m;
+    }
+
+    std::cout << std::endl;
+}
+
+TEST(StockfishMinimax, DummyGamePlay2) {
+    Position  pos;
+    StateInfo st;
+
+    pos.set(StartFENShatranj, &st, true);
+
+    std::vector<Move> played;
+    StateInfo         sts[100] = {};
+    for (int i = 0; i < 100; i++)
+    {
+        std::cout << pos << std::endl;
+        auto res = Stockfish::minimax(tt, pos, 3);
+        for (auto m : res)
+        {
+            std::cout << "move: " << m.first << " score: " << m.second << std::endl;
+        }
+
+        Move picked = PickBestMove(res);
+
+        std::cout << "move: " << picked << std::endl;
+
+        played.push_back(picked);
+        pos.do_move(picked, sts[i]);
         std::cout << pos << std::endl;
     }
 
