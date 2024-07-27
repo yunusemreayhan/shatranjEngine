@@ -24,7 +24,8 @@
                 "CMAKE_CXX_COMPILER": "/usr/bin/g++-12",
                 "CMAKE_BUILD_TYPE": "Release"
             }
-        },{
+        },
+        {
             "name": "debug",
             "displayName": "debug",
             "description": "Using compilers: C = /usr/bin/gcc-12, CXX = /usr/bin/g++-12",
@@ -35,6 +36,31 @@
                 "CMAKE_CXX_COMPILER": "/usr/bin/g++-12",
                 "CMAKE_BUILD_TYPE": "Debug"
             }
+        },
+        {
+            "name": "windows_x86_x64_release",
+            "displayName": "windows_x86_x64_release",
+            "description": "Using compilers for Visual Studio 17 2022 (x86_x64 architecture)",
+            "generator": "Visual Studio 17 2022",
+            "toolset": {
+                "value": "v143",
+                "strategy": "external"
+            },
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}",
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "CMAKE_POLICY_DEFAULT_CMP0091": "NEW"
+            },
+            "toolchainFile": "${workspaceFolder}/build/generators/conan_toolchain.cmake"
         }
+    ],
+    "include": [
+        "build\\generators\\CMakePresets.json"
     ]
 }

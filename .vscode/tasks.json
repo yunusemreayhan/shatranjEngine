@@ -56,12 +56,53 @@
             "command": "mkdir -p build/release && cmake -S . -B ./build/release -DCMAKE_BUILD_TYPE=Release"
         },
         {
-            "type": "cmake",
-            "label": "CMake: test",
-            "command": "test",
-            "preset": "${command:cmake.activeTestPresetName}",
-            "problemMatcher": [],
-            "detail": "CMake template test task"
+            "type": "shell",
+            "label": "build cmake windows release",
+            "command": "cmake --build .  --config Release",
+            "detail": "CMake template test task",
+            "dependsOn": "configure cmake windows release",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "type": "shell",
+            "label": "configure cmake windows release",
+            "command": "cmake ../ -G 'Visual Studio 17 2022' -A x64 -T v143 -DCMAKE_TOOLCHAIN_FILE='generators/conan_toolchain.cmake'  -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_BUILD_TYPE=Release",
+            "detail": "CMake template test task",
+            "dependsOn": "conan run file run",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "conan run file run",
+            "command": "${workspaceFolder}/build/generators/conanrun.bat",
+            "dependsOn": "conan build file run",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "conan build file run",
+            "command": "${workspaceFolder}/build/generators/conanbuild.bat",
+            "dependsOn": "conan install",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "conan install",
+            "command": "conan install . --build=missing",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }

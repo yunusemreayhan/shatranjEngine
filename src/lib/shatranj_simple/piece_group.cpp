@@ -26,7 +26,7 @@ bool PieceGroup::AddPiece(const PiecePrimitive& piece, const Position& pos) {
     }
     if constexpr (kPieceGroupDebug)
     {
-        std::cout << "Adding " << pos.ToString() << " " << static_cast<uint>(calccoord)
+        std::cout << "Adding " << pos.ToString() << " " << static_cast<uint8_t>(calccoord)
                   << std::endl;
     }
     pieces_primitive_[calccoord] = piece;

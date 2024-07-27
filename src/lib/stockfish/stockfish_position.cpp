@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <array>
 
 using std::string;
 namespace Stockfish {
