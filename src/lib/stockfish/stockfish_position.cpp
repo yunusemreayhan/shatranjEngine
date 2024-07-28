@@ -729,7 +729,7 @@ bool Position::see_ge(Move m, int threshold) const {
                 break;
             occupied ^= least_significant_square_bb(bb);
 
-            attackers |= attacks_bb<BISHOP>(to, occupied) & pieces(BISHOP, QUEEN);
+            attackers |= attacks_bb<BISHOP>(to, occupied) & pieces(BISHOP);
         }
 
         else if ((bb = stmAttackers & pieces(ROOK)))
@@ -738,7 +738,7 @@ bool Position::see_ge(Move m, int threshold) const {
                 break;
             occupied ^= least_significant_square_bb(bb);
 
-            attackers |= attacks_bb<ROOK>(to, occupied) & pieces(ROOK, QUEEN);
+            attackers |= attacks_bb<ROOK>(to, occupied) & pieces(ROOK);
         }
 
         else if ((bb = stmAttackers & pieces(QUEEN)))
@@ -747,8 +747,7 @@ bool Position::see_ge(Move m, int threshold) const {
                 break;
             occupied ^= least_significant_square_bb(bb);
 
-            attackers |= (attacks_bb<BISHOP>(to, occupied) & pieces(BISHOP, QUEEN))
-                       | (attacks_bb<ROOK>(to, occupied) & pieces(ROOK, QUEEN));
+            attackers |= (attacks_bb<QUEEN>(to, occupied) & pieces(QUEEN));
         }
 
         else  // KING
