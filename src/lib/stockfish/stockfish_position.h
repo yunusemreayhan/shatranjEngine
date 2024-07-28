@@ -59,6 +59,9 @@ class Position {
     void do_move(Move m, StateInfo& newSt, bool givesCheck);
     void undo_move(Move m);
 
+    // Static Exchange Evaluation
+    bool see_ge(Move m, int threshold = 0) const;
+
     Piece piece_on(Square s) const;
     void  remove_piece(Square s);
     void  move_piece(Square from, Square to);
@@ -69,6 +72,8 @@ class Position {
     Bitboard attackers_to(Square s) const;
     Bitboard attackers_to(Square s, Bitboard occupied) const;
     void     update_slider_blockers(Color c) const;
+    template<PieceType Pt>
+    Bitboard attacks_by(Color c) const;
 
     // Position representation
     Bitboard pieces(PieceType pt = ALL_PIECES) const;
@@ -77,9 +82,13 @@ class Position {
     Bitboard pieces(Color c) const;
     template<typename... PieceTypes>
     Bitboard pieces(Color c, PieceTypes... pts) const;
+    bool     capture(Move m) const;
+    bool     capture_stage(Move m) const;
 
     Piece    moved_piece(Move m) const;
     Bitboard check_squares(PieceType pt) const;
+    Bitboard pinners(Color c) const;
+
     template<PieceType Pt>
     int count(Color c) const;
     template<PieceType Pt>
@@ -98,6 +107,10 @@ class Position {
     Bitboard blockers_for_king(Color c) const;
 
     Key key() const;
+    Key key_after(Move m) const;
+    Key material_key() const;
+    Key pawn_key() const;
+
     template<bool AfterMove>
     Key adjust_key50(Key k) const;
 
@@ -116,11 +129,30 @@ class Position {
     int        gamePly;
     Color      sideToMove;
 };
+
+inline bool Position::capture(Move m) const {
+    assert(m.is_ok());
+    return (!empty(m.to_sq()) /* && m.type_of() != CASTLING */) /* || m.type_of() == EN_PASSANT */;
+}
+
+// Returns true if a move is generated from the capture stage, having also
+// queen promotions covered, i.e. consistency with the capture stage move generation
+// is needed to avoid the generation of duplicate moves.
+inline bool Position::capture_stage(Move m) const {
+    assert(m.is_ok());
+    return capture(m) || m.promotion_type() == QUEEN;
+}
+
 inline void Position::do_move(Move m, StateInfo& newSt) { do_move(m, newSt, gives_check(m)); }
 
 std::ostream& operator<<(std::ostream& os, const Position& pos);
 
 inline Key Position::key() const { return adjust_key50<false>(st->key); }
+
+inline Key Position::pawn_key() const { return st->pawnKey; }
+
+inline Key Position::material_key() const { return st->materialKey; }
+
 template<bool AfterMove>
 inline Key Position::adjust_key50(Key k) const {
     return st->rule50 < 14 - AfterMove ? k : k ^ make_key((st->rule50 - (14 - AfterMove)) / 8);
@@ -198,7 +230,25 @@ inline Square Position::square(Color c) const {
 
 inline Bitboard Position::attackers_to(Square s) const { return attackers_to(s, pieces()); }
 
+template<PieceType Pt>
+inline Bitboard Position::attacks_by(Color c) const {
+
+    if constexpr (Pt == PAWN)
+        return c == WHITE ? pawn_attacks_bb<WHITE>(pieces(WHITE, PAWN))
+                          : pawn_attacks_bb<BLACK>(pieces(BLACK, PAWN));
+    else
+    {
+        Bitboard threats   = 0;
+        Bitboard attackers = pieces(c, Pt);
+        while (attackers)
+            threats |= attacks_bb<Pt>(pop_lsb(attackers), pieces());
+        return threats;
+    }
+}
+
 inline Bitboard Position::check_squares(PieceType pt) const { return st->checkSquares[pt]; }
 
 inline Bitboard Position::blockers_for_king(Color c) const { return st->blockersForKing[c]; }
+
+inline Bitboard Position::pinners(Color c) const { return st->pinners[c]; }
 }

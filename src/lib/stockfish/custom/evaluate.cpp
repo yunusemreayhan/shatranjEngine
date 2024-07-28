@@ -20,13 +20,13 @@ int evaluate(Stockfish::Position pos, Color currentColor, Color maximColor, size
     {
         ret += movecount * 0.1;
         if (movecount == 0)
-            ret = std::numeric_limits<int>::min();
+            ret = VALUE_INFINITE;
     }
     else
     {
         ret -= movecount * 0.1;
         if (movecount == 0)
-            ret = std::numeric_limits<int>::max();
+            ret = -VALUE_INFINITE;
     }
 
     return ret;

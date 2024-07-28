@@ -67,7 +67,7 @@ TEST(StockfishMinimax, DummyGamePlay) {
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::minimax(tt, pos, 5);
+        auto res = Stockfish::minimax(tt, pos, 2);
         for (auto m : res)
         {
             std::cout << "move: " << m.first << " score: " << m.second << std::endl;
@@ -102,7 +102,7 @@ TEST(StockfishMinimax, DummyGamePlay2) {
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::minimax(tt, pos, 3);
+        auto res = Stockfish::minimax(tt, pos, 2);
         for (auto m : res)
         {
             std::cout << "move: " << m.first << " score: " << m.second << std::endl;
