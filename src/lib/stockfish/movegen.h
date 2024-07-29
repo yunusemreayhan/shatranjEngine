@@ -73,10 +73,24 @@ struct MoveList {
 
     explicit MoveList(const Position& pos) :
         last(generate<T>(pos, moveList)) {}
-    const ExtMove* begin() const { return moveList; }
-    const ExtMove* end() const { return last; }
+    ExtMove*       begin() { return moveList; }
+    ExtMove*       end() { return last; }
     size_t         size() const { return last - moveList; }
-    bool           contains(Move move) const { return std::find(begin(), end(), move) != end(); }
+    bool           contains(Move move) { return std::find(begin(), end(), move) != end(); }
+
+   private:
+    ExtMove moveList[MAX_MOVES], *last;
+};
+
+template<GenType T>
+struct OrderedMoveList: public MoveList<T> {
+
+    explicit OrderedMoveList(const Position& pos) :
+        last(generate<T>(pos, moveList)) {}
+    ExtMove* begin() { return moveList; }
+    ExtMove* end() { return last; }
+    size_t   size() const { return last - moveList; }
+    bool     contains(Move move) { return std::find(begin(), end(), move) != end(); }
 
    private:
     ExtMove moveList[MAX_MOVES], *last;

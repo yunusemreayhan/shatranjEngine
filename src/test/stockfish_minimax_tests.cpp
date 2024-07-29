@@ -24,36 +24,49 @@ constexpr auto StartFENShatranj = "rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w
 using namespace Stockfish;
 TranspositionTable tt;
 
-TEST(StockfishMinimax, MinimaxTest) {
-    Position                               pos;
-    std::unique_ptr<std::deque<StateInfo>> states =
-      std::unique_ptr<std::deque<StateInfo>>(new std::deque<StateInfo>(1));
-
-    pos.set(StartFENShatranj, &states->back(), true);
-    tt.resize(4096);
-
-    auto res = Stockfish::minimax(tt, pos, 5);
-
+template<GenType t>
+void dumpMoveList(const std::string& title, Position& pos) {
+    if (t == Stockfish::EVASIONS && pos.checkers() == 0)
+        return;
+    auto res = MoveList<t>(pos);
+    std::cout << title << " size: " << res.size() << std::endl;
     for (auto m : res)
     {
-        std::cout << "move: " << m.first << " score: " << m.second << std::endl;
+        std::cout << m << " ";
     }
+    std::cout << std::endl;
 }
 
-Move PickBestMove(std::list<std::pair<Move, int>> moves) {
-    Move ret  = moves.front().first;
-    int  best = std::numeric_limits<int>::min();
+void dumpPositions(Position& pos) {
+    std::cout << pos << std::endl;
+    dumpMoveList<Stockfish::CAPTURES>("Captures", pos);
+    dumpMoveList<Stockfish::QUIETS>("Quites", pos);
+    dumpMoveList<Stockfish::QUIET_CHECKS>("QuiteChecks", pos);
+    dumpMoveList<Stockfish::EVASIONS>("Evasions", pos);
+    dumpMoveList<Stockfish::NON_EVASIONS>("NonEvasions", pos);
+    dumpMoveList<Stockfish::LEGAL>("LEGAL", pos);
+}
 
-    for (auto m : moves)
+TEST(StockfishMinimax, MinimaxTest) {
+    Position                               pos;
+    StateInfo                              st;
+
+    pos.set("rnbqkb1r/4n2p/5pp1/1p6/pPp1PP2/P2P2PP/8/RNBQKBNR w 0 1", &st, false);
+    tt.resize(4096);
+
+    StateInfo states[1000];
+    for (int i = 0; i < 5; i++)
     {
-        if (m.second > best)
-        {
-            best = m.second;
-            ret  = m.first;
-        }
-    }
+        auto res = Stockfish::minimax(tt, pos, 3);
 
-    return ret;
+        for (auto m : res)
+        {
+            std::cout << "move: " << m << " score: " << m.value << std::endl;
+        }
+
+        pos.do_move(*res.begin(), states[i]);
+        dumpPositions(pos);
+    }
 }
 
 TEST(StockfishMinimax, DummyGamePlay) {
@@ -68,12 +81,12 @@ TEST(StockfishMinimax, DummyGamePlay) {
     {
         std::cout << pos << std::endl;
         auto res = Stockfish::minimax(tt, pos, 2);
+
+        auto picked = *res.begin();
         for (auto m : res)
         {
-            std::cout << "move: " << m.first << " score: " << m.second << std::endl;
+            std::cout << "move: " << m << " score: " << m.value << std::endl;
         }
-
-        Move picked = PickBestMove(res);
 
         std::cout << "move: " << picked << std::endl;
 
@@ -102,19 +115,17 @@ TEST(StockfishMinimax, DummyGamePlay2) {
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::minimax(tt, pos, 2);
+        auto res = Stockfish::iterative_deepening(tt, pos, 7);
         for (auto m : res)
         {
-            std::cout << "move: " << m.first << " score: " << m.second << std::endl;
+            std::cout << "move: " << m << " score: " << m.value << std::endl;
         }
 
-        Move picked = PickBestMove(res);
+        std::cout << "move: " << *(res.begin()) << std::endl;
 
-        std::cout << "move: " << picked << std::endl;
-
-        played.push_back(picked);
-        pos.do_move(picked, sts[i]);
-        std::cout << pos << std::endl;
+        played.push_back(*(res.begin()));
+        pos.do_move(*(res.begin()), sts[i]);
+        dumpPositions(pos);
     }
 
     std::cout << "played: ";

@@ -967,6 +967,29 @@ const std::vector<Movement> Board::GetPossibleMoves(Color color) {
 
     return ret;
 }
+long long Board::perft(int depth) {
+    if (depth == 0)
+    {
+        return 0;
+    }
+    long long ret = 0;
+    for (auto move : GetPossibleMoves(currentTurn_))
+    {
+        Play(move);
+        ret += perft(depth - 1);
+        Revert(1);
+        ret++;
+    }
+    return ret;
+}
+
+std::tuple<long long, long long> Board::perft_time(int depth) {
+    auto start = std::chrono::high_resolution_clock::now();
+    auto ret   = perft(depth);
+    auto end   = std::chrono::high_resolution_clock::now();
+    return std::make_tuple(
+      ret, std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+}
 
 const std::vector<Movement> Board::GetPossibleMovesCalcOpponentToo(Color color) {
     std::vector<Movement> ret;

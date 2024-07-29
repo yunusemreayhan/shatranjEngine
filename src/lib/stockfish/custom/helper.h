@@ -3,6 +3,17 @@
 #include <cstddef>
 #include <map>
 #include <queue>
+#include <chrono>
+#include <ratio>
+
+template<typename ftype>
+long long timeit_us(ftype func) {
+    auto start = std::chrono::steady_clock::now();
+    func();
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+}
+
 template<typename TRollbackFunc>
 struct RollbackerRAII {
 

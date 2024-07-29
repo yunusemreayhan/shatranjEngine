@@ -102,6 +102,9 @@ class Board {
                                  std::optional<const Movement> playing_move = std::nullopt);
     bool IsCheckAfterMove(const Movement& Movement);
 
+    long long                        perft(int depth);
+    std::tuple<long long, long long> perft_time(int depth);
+
    private:
     std::shared_ptr<PieceGroup>  pieces_;
     std::vector<Player>          players_;

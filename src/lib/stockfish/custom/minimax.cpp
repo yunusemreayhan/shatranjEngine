@@ -1,10 +1,13 @@
 #include "minimax.h"
+#include <limits>
 
+#include "../movepick.h"
 
 namespace Stockfish {
 
 struct Stack {
     Move move;
+    int  ply;
     // std::string movestr;
 };
 
@@ -18,43 +21,44 @@ int minimax(Position&           position,
             Color               max_color,
             Move                move,
             long long&          visited,
-            long long&          tablehit) {
+            long long&          prunned) {
 
-    auto [ttHit, ttData, ttWriter] = tt.probe(position.key());
-    if (ttHit)
-    {
-        tablehit++;
-        return ttData.eval;
-    }
     StateInfo st;
-    auto&     ms = stack[ndepth];
-    ms.move      = move;
+    auto&     ss = stack[ndepth];
+    ss.move      = move;
     // ms.movestr = MoveToStr(move);
     position.do_move(move, st);
     visited++;
 
+    if (position.st->previous != nullptr && position.st->previous->previous != nullptr
+        && position.st->previous->previous->key == position.st->key)
+    {
+        return VALUE_DRAW;
+    }
     RollbackerRAII toRollback([&]() { position.undo_move(move); });
 
     auto movelist = MoveList<GenType::LEGAL>(position);
     if (depth == 0 || movelist.size() == 0)
     {
-        auto eval = evaluate(position, position.side_to_move(), max_color, movelist.size());
-        ttWriter.write(position.key(), eval, false, BOUND_EXACT, depth, move, eval,
-                       tt.generation());
+        auto eval = evaluate(position, max_color, movelist.size());
         return eval;
     }
 
     if (position.side_to_move() == max_color)
     {
         auto best = min_val;
+        int  localVisitedNodeCount = 0;
         for (auto& move : movelist)
         {
+            if (localVisitedNodeCount > 10 && ndepth > 4)
+                break;
             auto value = minimax(position, stack, tt, depth - 1, ndepth + 1, alpha, beta, max_color,
-                                 move, visited, tablehit);
+                                 move, visited, prunned);
             best       = std::max(best, value);
             alpha      = std::max(alpha, best);
             if (beta <= alpha)
             {
+                prunned++;
                 break;
             }
         }
@@ -63,14 +67,18 @@ int minimax(Position&           position,
     else
     {
         auto best = max_val;
-        for (auto& move : MoveList<GenType::LEGAL>(position))
+        int  localVisitedNodeCount = 0;
+        for (auto& move : movelist)
         {
+            if (localVisitedNodeCount > 10 && ndepth > 4)
+                break;
             auto value = minimax(position, stack, tt, depth - 1, ndepth + 1, alpha, beta, max_color,
-                                 move, visited, tablehit);
+                                 move, visited, prunned);
             best       = std::min(best, value);
             beta       = std::min(beta, best);
             if (beta <= alpha)
             {
+                prunned++;
                 break;
             }
         }
@@ -78,24 +86,62 @@ int minimax(Position&           position,
     }
 }
 
-std::list<std::pair<Move, int>>
-minimax(TranspositionTable& tt, Position& position, const int depth) {
+// Sort moves in descending order up to and including
+// a given limit. The order of moves smaller than the limit is left unspecified.
+void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+
+    for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
+        if (p->value >= limit)
+        {
+            ExtMove tmp = *p, *q;
+            *p          = *++sortedEnd;
+            for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+                *q = *(q - 1);
+            *q = tmp;
+        }
+}
+
+MoveList<LEGAL> minimax(TranspositionTable& tt, Position& position, const int depth) {
     tt.new_search();
     Stack     stack[1000] = {};
     long long visited     = 0;
-    long long tablehit    = 0;
+    long long prunned     = 0;
 
-    std::list<std::pair<Move, int>> result;
-    for (auto& move : MoveList<GenType::LEGAL>(position))
+    auto ret = MoveList<GenType::LEGAL>(position);
+
+    for (auto& move : ret)
     {
-        auto res = minimax(position, stack, tt, depth, 0, min_val, max_val, position.side_to_move(),
-                           move, visited, tablehit);
-
-        result.push_back({move, res});
+        move.value = minimax(position, stack, tt, depth, 0, min_val, max_val,
+                             position.side_to_move(), move, visited, prunned);
     }
 
-    std::cout << "total visited node count " << visited << std::endl;
-    std::cout << "table hit count " << tablehit << std::endl;
-    return result;
+    std::cout << "depth:" << depth << "  total visited node count " << visited << std::endl;
+    std::cout << "depth:" << depth << "  prunned count " << prunned << std::endl;
+    partial_insertion_sort(ret.begin(), ret.end(), std::numeric_limits<int>::min());
+    return ret;
+}
+
+MoveList<LEGAL> iterative_deepening(TranspositionTable& tt, Position& position, const int depth) {
+    tt.new_search();
+    Stack stack[1000] = {};
+
+    auto rootMoveList = MoveList<GenType::LEGAL>(position);
+    for (int d = 1; d <= depth; d = d + 1)
+    {
+        long long visited = 0;
+        long long prunned = 0;
+        for (auto& move : rootMoveList)
+        {
+            move.value = minimax(position, stack, tt, d, 0, min_val, max_val,
+                                 position.side_to_move(), move, visited, prunned);
+        }
+        partial_insertion_sort(rootMoveList.begin(), rootMoveList.end(),
+                               std::numeric_limits<int>::min());
+
+        std::cout << "depth:" << d << "  total visited node count " << visited << std::endl;
+        std::cout << "depth:" << d << "  prunned count " << prunned << std::endl;
+    }
+
+    return rootMoveList;
 }
 }

@@ -9,9 +9,12 @@
 
 #include "gtest/gtest.h"
 #include "bitboard.h"
+#include "helper.h"
+#include "shatranj.h"
 #include "stockfish_helper.h"
 #include "stockfish_position.h"
 #include "movegen.h"
+#include "../custom/helper.h"
 namespace {
 
 constexpr auto StartFEN         = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w 0 1";
@@ -122,6 +125,51 @@ TEST(Bitboard, StandartBoardOneSimpleMove) {
                   Move(SQ_B1, SQ_C3), Move(SQ_G1, SQ_F3), Move(SQ_G1, SQ_H3), Move(SQ_C1, SQ_E3),
                   Move(SQ_F1, SQ_D3), Move(SQ_F1, SQ_H3), Move(SQ_A1, SQ_A2)};
     CheckMoves(pos, expected2);
+}
+
+void recursiveCheck(Position&                                          pos,
+                    shatranj::Shatranj&                                spos,
+                    std::optional<std::pair<shatranj::Movement, Move>> move,
+                    size_t                                             depth) {
+    if (depth == 0)
+        return;
+
+    StateInfo st;
+
+    if (move)
+    {
+        pos.do_move(move->second, st);
+        spos.Play(move->first);
+    }
+    RollbackerRAII rollback([&]() {
+        if (move)
+        {
+            pos.undo_move(move->second);
+            spos.GetBoard()->Revert(1);
+        }
+    });
+
+    auto movesFromOldCode = spos.GetBoard()->GetPossibleMoves(spos.GetBoard()->GetCurrentTurn());
+    std::vector<Move> expected;
+    for (auto m : movesFromOldCode)
+    {
+        expected.push_back(ShatranjMoveToBitboardMove(m));
+    }
+
+    CheckMoves(pos, expected);
+
+    for (auto m : movesFromOldCode)
+    {
+        recursiveCheck(pos, spos, std::make_pair(m, ShatranjMoveToBitboardMove(m)), depth - 1);
+    }
+}
+
+TEST(Bitboard, CompareMovesWithRegularShatranjCode) {
+    StateInfo st;
+    Position  pos;
+    pos.set(StartFENShatranj, &st, true);
+    shatranj::Shatranj spos;
+    recursiveCheck(pos, spos, std::nullopt, 4);
 }
 
 TEST(Bitboard, CheckBlockingPieceMovePreventedCheck) {

@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cctype>
 #include <iostream>
 
 #include "types.h"
 #include "bitboard.h"
+#include "../shatranj_simple/shatranj.h"
 
 using namespace Stockfish;
 
@@ -145,6 +147,36 @@ const inline std::string_view square_to_string(Square sq) {
     }
 
     return "unknown";
+}
+
+inline Square string_to_square(std::string_view str) {
+    if (str.size() != 2)
+        return SQ_NONE;
+
+    if (str[0] < 'a' || str[0] > 'h' || str[1] < '1' || str[1] > '8')
+        return SQ_NONE;
+
+    char lowerfirst = tolower(str[0]);
+    return static_cast<Square>(static_cast<int>(SQ_A1) + (lowerfirst - 'a') + (str[1] - '1') * 8);
+}
+
+inline Square coord_to_square(uint8_t x, uint8_t y) {
+    if (x > 7 || y > 7)
+        return SQ_NONE;
+
+    return static_cast<Square>(static_cast<int>(SQ_A1) + x + y * 8);
+}
+
+inline Move strToMove(std::string_view str) {
+    if (str.size() != 4)
+        return Move::none();
+
+    return Move(string_to_square(str.substr(0, 2)), string_to_square(str.substr(2, 2)));
+}
+
+inline Move ShatranjMoveToBitboardMove(shatranj::Movement movement) {
+    return Move(coord_to_square(movement.from.Getx(), movement.from.Gety()),
+                coord_to_square(movement.to.Getx(), movement.to.Gety()));
 }
 
 const inline std::string_view piece_type_to_string(PieceType type) {

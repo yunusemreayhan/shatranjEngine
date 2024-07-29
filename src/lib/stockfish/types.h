@@ -160,9 +160,9 @@ constexpr Value VALUE_TB_LOSS_IN_MAX_PLY = -VALUE_TB_WIN_IN_MAX_PLY;
 // identify the material on the board.
 constexpr Value PawnValue   = 208;
 constexpr Value KnightValue = 781;
-constexpr Value BishopValue = 781;  // 825;
+constexpr Value BishopValue = 680;  // 825;
 constexpr Value RookValue   = 1276;
-constexpr Value QueenValue  = 730;  // 2538;
+constexpr Value QueenValue  = 416;  // 2538;
 
 
 // clang-format off

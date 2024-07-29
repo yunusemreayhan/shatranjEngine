@@ -102,6 +102,7 @@ class Position {
     bool     legal(Move m) const;
     bool     pseudo_legal(const Move m) const;
 
+    bool  has_game_cycle(int ply) const;
     Color side_to_move() const;
 
     Bitboard blockers_for_king(Color c) const;
@@ -129,6 +130,7 @@ class Position {
     int        gamePly;
     Color      sideToMove;
 };
+inline bool Position::empty(Square s) const { return piece_on(s) == NO_PIECE; }
 
 inline bool Position::capture(Move m) const {
     assert(m.is_ok());
