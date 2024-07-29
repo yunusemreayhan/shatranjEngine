@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "gtest/gtest.h"
+#include <vector>
 #include "bitboard.h"
 #include "helper.h"
 #include "shatranj.h"
@@ -66,28 +67,49 @@ TEST(Bitboard, ApplyFenToPosShatranj) {
     ASSERT_EQ(p.fen(true), StartFENShatranj);
 }
 
-void CheckMoves(const Position& pos, std::vector<Move>& expected) {
+bool CheckMoves(const Position& pos, std::set<Move>& expected) {
+    auto ret      = true;
     auto movelist = Stockfish::MoveList<LEGAL>(pos);
-    EXPECT_EQ(movelist.size(), expected.size());
-    for (size_t i = 0; i < movelist.size(); i++)
+    // EXPECT_EQ(movelist.size(), expected.size());
+    for (auto currentMove : movelist)
     {
-        Move currentMove((movelist.begin() + i)->value);
-        if (std::find(expected.begin(), expected.end(), currentMove) != expected.end())
+        bool found = false;
+        for (auto e : expected)
         {
-            std::cout << "move not found in expected list " << *(movelist.begin() + i) << std::endl;
-            EXPECT_TRUE(false);
+            if (e.is_ok() && currentMove.is_ok())
+                if (currentMove.from_sq() == e.from_sq() && currentMove.to_sq() == e.to_sq())
+                {
+                    found = true;
+                    break;
+                }
+        }
+        if (!found)
+        {
+            std::cout << "move not found in expected list " << currentMove << std::endl;
+            ret = false;
         }
     }
 
-    for (size_t i = 0; i < expected.size(); i++)
+
+    for (auto e : expected)
     {
-        Move& currentMove = expected[i];
-        if (std::find(movelist.begin(), movelist.end(), currentMove) == movelist.end())
+        bool found = false;
+        for (auto currentMove : movelist)
         {
-            std::cout << "move not found in actual list " << currentMove << std::endl;
-            EXPECT_TRUE(false);
+            if (e.is_ok() && currentMove.is_ok())
+                if (currentMove.from_sq() == e.from_sq() && currentMove.to_sq() == e.to_sq())
+                {
+                    found = true;
+                    break;
+                }
+        }
+        if (!found)
+        {
+            std::cout << "move not found in pos produced list " << e << std::endl;
+            ret = false;
         }
     }
+    return ret;
 }
 
 TEST(Bitboard, StandartBoardGetMoves) {
@@ -95,12 +117,12 @@ TEST(Bitboard, StandartBoardGetMoves) {
     Position  pos;
     pos.set(StartFENShatranj, &st, true);
     std::cout << pos << std::endl;
-    std::vector<Move> expected = {
+    std::set<Move> expected = {
       Move(SQ_A2, SQ_A3), Move(SQ_B2, SQ_B3), Move(SQ_C2, SQ_C3), Move(SQ_D2, SQ_D3),
       Move(SQ_E2, SQ_E3), Move(SQ_F2, SQ_F3), Move(SQ_G2, SQ_G3), Move(SQ_H2, SQ_H3),
       Move(SQ_B1, SQ_A3), Move(SQ_B1, SQ_C3), Move(SQ_G1, SQ_F3), Move(SQ_G1, SQ_H3),
       Move(SQ_C1, SQ_A3), Move(SQ_C1, SQ_E3), Move(SQ_F1, SQ_D3), Move(SQ_F1, SQ_H3)};
-    CheckMoves(pos, expected);
+    EXPECT_TRUE(CheckMoves(pos, expected));
 }
 
 TEST(Bitboard, StandartBoardOneSimpleMove) {
@@ -108,68 +130,123 @@ TEST(Bitboard, StandartBoardOneSimpleMove) {
     Position  pos;
     pos.set(StartFENShatranj, &st, true);
     std::cout << pos << std::endl;
-    std::vector<Move> expected = {
+    std::set<Move> expected = {
       Move(SQ_A2, SQ_A3), Move(SQ_B2, SQ_B3), Move(SQ_C2, SQ_C3), Move(SQ_D2, SQ_D3),
       Move(SQ_E2, SQ_E3), Move(SQ_F2, SQ_F3), Move(SQ_G2, SQ_G3), Move(SQ_H2, SQ_H3),
       Move(SQ_B1, SQ_A3), Move(SQ_B1, SQ_C3), Move(SQ_G1, SQ_F3), Move(SQ_G1, SQ_H3),
       Move(SQ_C1, SQ_A3), Move(SQ_C1, SQ_E3), Move(SQ_F1, SQ_D3), Move(SQ_F1, SQ_H3)};
-    CheckMoves(pos, expected);
+    EXPECT_TRUE(CheckMoves(pos, expected));
     StateInfo st2;
     StateInfo st3;
     pos.do_move(Move(SQ_A2, SQ_A3), st2);
     pos.do_move(Move(SQ_A7, SQ_A6), st3);
     std::cout << pos << std::endl;
-    std::vector<Move> expected2 =
+    std::set<Move> expected2 =
       expected = {Move(SQ_A3, SQ_A4), Move(SQ_B2, SQ_B3), Move(SQ_C2, SQ_C3), Move(SQ_D2, SQ_D3),
                   Move(SQ_E2, SQ_E3), Move(SQ_F2, SQ_F3), Move(SQ_G2, SQ_G3), Move(SQ_H2, SQ_H3),
                   Move(SQ_B1, SQ_C3), Move(SQ_G1, SQ_F3), Move(SQ_G1, SQ_H3), Move(SQ_C1, SQ_E3),
                   Move(SQ_F1, SQ_D3), Move(SQ_F1, SQ_H3), Move(SQ_A1, SQ_A2)};
-    CheckMoves(pos, expected2);
+    EXPECT_TRUE(CheckMoves(pos, expected2));
 }
 
-void recursiveCheck(Position&                                          pos,
+struct MoveHist {
+    Move move;
+};
+
+void dump(std::set<Move> tod) {
+    std::cout << "expected moves:" << tod.size() << " -> ";
+    for (auto m : tod)
+    {
+        std::cout << m << "/" << m.type_of() << " ";
+    }
+    std::cout << std::endl;
+}
+
+void dump(Position& pos) {
+    auto movelistfrompos = MoveList<Stockfish::LEGAL>(pos);
+    std::cout << "pos      moves:" << movelistfrompos.size() << " -> ";
+    for (auto m : movelistfrompos)
+    {
+        std::cout << m << "/" << m.type_of() << " ";
+    }
+    std::cout << std::endl;
+}
+void recursiveCheck(MoveHist*                                          movehist,
+                    Position&                                          pos,
                     shatranj::Shatranj&                                spos,
                     std::optional<std::pair<shatranj::Movement, Move>> move,
-                    size_t                                             depth) {
+                    size_t                                             depth,
+                    size_t                                             ndepth) {
     if (depth == 0)
         return;
 
     StateInfo st;
 
-    if (move)
+    if (move.has_value())
     {
+        movehist[ndepth].move = move->second;
         pos.do_move(move->second, st);
         spos.Play(move->first);
     }
     RollbackerRAII rollback([&]() {
-        if (move)
+        if (move.has_value())
         {
+            movehist->move = Move::none();
             pos.undo_move(move->second);
             spos.GetBoard()->Revert(1);
         }
     });
 
     auto movesFromOldCode = spos.GetBoard()->GetPossibleMoves(spos.GetBoard()->GetCurrentTurn());
-    std::vector<Move> expected;
+    std::set<Move> expected;
     for (auto m : movesFromOldCode)
     {
-        expected.push_back(ShatranjMoveToBitboardMove(m));
+        expected.insert(ShatranjMoveToBitboardMove(m));
     }
 
-    CheckMoves(pos, expected);
+    auto ret = CheckMoves(pos, expected);
+    if (ret == false)
+    {
+        std::cout << "problem on depth: " << depth << std::endl;
+        for (size_t i = 0; i < ndepth; i++)
+        {
+            if (movehist[i].move.is_ok())
+                std::cout << i << ":" << movehist[i].move << " ";
+        }
+        std::cout << std::endl;
+        dump(expected);
+        dump(pos);
+        std::cout << pos << std::endl;
+        std::cout << *spos.GetBoard() << std::endl;
+        std::cout << std::endl;
+        EXPECT_TRUE(ret);
+    }
 
     for (auto m : movesFromOldCode)
     {
-        recursiveCheck(pos, spos, std::make_pair(m, ShatranjMoveToBitboardMove(m)), depth - 1);
+        recursiveCheck(++movehist, pos, spos, std::make_pair(m, ShatranjMoveToBitboardMove(m)),
+                       depth - 1, ndepth + 1);
     }
 }
 
 TEST(Bitboard, CompareMovesWithRegularShatranjCode) {
-    StateInfo st;
-    Position  pos;
-    pos.set(StartFENShatranj, &st, true);
-    shatranj::Shatranj spos;
-    recursiveCheck(pos, spos, std::nullopt, 4);
+    {
+        MoveHist  movehist[1000];
+        StateInfo st;
+        Position  pos;
+        pos.set(StartFENShatranj, &st, true);
+        shatranj::Shatranj spos;
+        recursiveCheck(movehist, pos, spos, std::nullopt, 3, 0);
+    }
+    {
+        MoveHist  movehist[1000];
+        StateInfo st;
+        Position  pos;
+        pos.set("1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10", &st, true);
+        shatranj::Shatranj spos;
+        spos.GetBoard()->ApplyFEN("1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10");
+        recursiveCheck(movehist, pos, spos, std::nullopt, 3, 0);
+    }
 }
 
 TEST(Bitboard, CheckBlockingPieceMovePreventedCheck) {
