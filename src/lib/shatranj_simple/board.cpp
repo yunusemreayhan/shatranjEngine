@@ -973,8 +973,16 @@ long long Board::perft(int depth) {
         return 0;
     }
     long long ret = 0;
-    for (auto move : GetPossibleMoves(currentTurn_))
+    std::set<Movement> visited;
+    auto               mlist = GetPossibleMoves(currentTurn_);
+    //std::cout << "current perft depth: " << depth << " moves: " << mlist.size() << std::endl;
+    for (auto move : mlist)
     {
+        if (visited.find(move) != visited.end())
+        {
+            continue;
+        }
+        visited.insert(move);
         Play(move);
         ret += perft(depth - 1);
         Revert(1);
@@ -983,12 +991,18 @@ long long Board::perft(int depth) {
     return ret;
 }
 
+template<typename ftype>
+long long timeit_us(ftype func) {
+    auto start = std::chrono::steady_clock::now();
+    func();
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+}
+
 std::tuple<long long, long long> Board::perft_time(int depth) {
-    auto start = std::chrono::high_resolution_clock::now();
-    auto ret   = perft(depth);
-    auto end   = std::chrono::high_resolution_clock::now();
-    return std::make_tuple(
-      ret, std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+    auto ret    = 0;
+    auto resdur = timeit_us([&]() { ret = perft(depth); });
+    return std::make_tuple(resdur, ret);
 }
 
 const std::vector<Movement> Board::GetPossibleMovesCalcOpponentToo(Color color) {

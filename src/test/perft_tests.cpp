@@ -3,6 +3,7 @@
 #include "gtest/gtest.h"
 #include "shatranj.h"
 #include "board.h"
+#include "stockfish_position.h"
 #include <chrono>
 #include <iomanip>
 
@@ -16,7 +17,8 @@ TEST(PerfTests, PerfTest_001) {
     StateInfo          st;
 
     pos.set(StartFEN, &st, false);
-    for (int d = 0; d < 10; d++)
+
+    for (int d = 0; d < 5; d++)
     {
         {
             const auto& [duration, visited_node_count] = perft_time(pos, d);

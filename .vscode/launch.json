@@ -107,7 +107,7 @@
             "name": "(gdb) dummy_chess_enginetest release perft",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/debug/src/test/dummy_chess_enginetest",
+            "program": "${workspaceFolder}/build/release/src/test/dummy_chess_enginetest",
             "args": [
                 "--gtest_filter=Per*"
             ],

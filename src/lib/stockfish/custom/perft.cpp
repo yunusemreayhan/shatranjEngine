@@ -8,11 +8,17 @@ long long perft(Stockfish::Position pos, int depth) {
         return 0;
     Stockfish::StateInfo st;
     long long            ret = 0;
-    for (auto move : MoveList<Stockfish::LEGAL>(pos))
+    std::set<Move>       visited;
+    auto                 mlist = MoveList<Stockfish::LEGAL>(pos);
+    for (auto move : mlist)
     {
-        pos.do_move(move, st);
-        ret += perft(pos, depth - 1);
-        pos.undo_move(move);
+        if (visited.find(move) == visited.end())
+        {
+            pos.do_move(move, st);
+            ret += perft(pos, depth - 1);
+            pos.undo_move(move);
+            visited.insert(move);
+        }
         ret++;
     }
     return ret;
