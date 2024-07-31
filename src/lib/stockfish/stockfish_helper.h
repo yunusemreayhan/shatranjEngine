@@ -7,7 +7,7 @@
 #include "bitboard.h"
 #include "../shatranj_simple/shatranj.h"
 
-using namespace Stockfish;
+namespace Stockfish {
 
 const inline std::string_view square_to_string(Square sq) {
     switch (sq)
@@ -279,4 +279,5 @@ inline std::string MoveToStr(Move& m) {
     ret += " -> ";
     ret += square_to_string(m.to_sq());
     return ret;
+}
 }

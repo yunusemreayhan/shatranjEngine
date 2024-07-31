@@ -967,7 +967,7 @@ const std::vector<Movement> Board::GetPossibleMoves(Color color) {
 
     return ret;
 }
-long long Board::perft(int depth) {
+long long Board::perft_safe(int depth) {
     if (depth == 0)
     {
         return 0;
@@ -990,6 +990,23 @@ long long Board::perft(int depth) {
     }
     return ret;
 }
+long long Board::perft(int depth) {
+    if (depth == 0)
+    {
+        return 0;
+    }
+    long long ret   = 0;
+    auto      mlist = GetPossibleMoves(currentTurn_);
+    //std::cout << "current perft depth: " << depth << " moves: " << mlist.size() << std::endl;
+    for (auto move : mlist)
+    {
+        Play(move);
+        ret += perft(depth - 1);
+        Revert(1);
+        ret++;
+    }
+    return ret;
+}
 
 template<typename ftype>
 long long timeit_us(ftype func) {
@@ -1002,6 +1019,12 @@ long long timeit_us(ftype func) {
 std::tuple<long long, long long> Board::perft_time(int depth) {
     auto ret    = 0;
     auto resdur = timeit_us([&]() { ret = perft(depth); });
+    return std::make_tuple(resdur, ret);
+}
+
+std::tuple<long long, long long> Board::perft_time_safe(int depth) {
+    auto ret    = 0;
+    auto resdur = timeit_us([&]() { ret = perft_safe(depth); });
     return std::make_tuple(resdur, ret);
 }
 

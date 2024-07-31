@@ -77,6 +77,31 @@ struct MoveList {
     ExtMove*       end() { return last; }
     size_t         size() const { return last - moveList; }
     bool           contains(Move move) { return std::find(begin(), end(), move) != end(); }
+    inline ExtMove* pickfirst() {
+        ExtMove* ret = begin();
+        assert(ret->is_ok());
+        return ret;
+    }
+    inline ExtMove* pick() {
+        ExtMove* lastpos = begin();
+        for (ExtMove& m : *this)
+        {
+            if (m.value == begin()->value)
+                lastpos = &m;
+            else
+                break;
+        }
+        auto distance = std::distance(begin(), lastpos);
+        // pick a random number between 0 and distance
+        size_t random = 0;
+        if (distance != 0)
+            random = std::rand() % distance;
+
+        ExtMove* ret = begin() + random;
+        assert(ret->value == begin()->value);
+        assert(ret->is_ok());
+        return ret;
+    }
 
    private:
     ExtMove moveList[MAX_MOVES], *last;

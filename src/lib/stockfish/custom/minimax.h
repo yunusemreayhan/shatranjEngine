@@ -18,6 +18,8 @@ namespace Stockfish {
 constexpr int min_val = std::numeric_limits<int>::min();
 constexpr int max_val = std::numeric_limits<int>::max();
 
-MoveList<LEGAL> minimax(TranspositionTable& tt, Position& position, const int depth);
-MoveList<LEGAL> iterative_deepening(TranspositionTable& tt, Position& position, const int depth);
+MoveList<LEGAL>
+minimax(bool use_ordered, TranspositionTable& tt, Position& position, const int depth);
+MoveList<LEGAL>
+iterative_deepening(bool use_ordered, TranspositionTable& tt, Position& position, const int depth);
 }

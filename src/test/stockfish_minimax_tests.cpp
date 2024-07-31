@@ -39,12 +39,18 @@ void dumpMoveList(const std::string& title, Position& pos) {
 
 void dumpPositions(Position& pos) {
     std::cout << pos << std::endl;
-    dumpMoveList<Stockfish::CAPTURES>("Captures", pos);
-    dumpMoveList<Stockfish::QUIETS>("Quites", pos);
-    dumpMoveList<Stockfish::QUIET_CHECKS>("QuiteChecks", pos);
-    dumpMoveList<Stockfish::EVASIONS>("Evasions", pos);
-    dumpMoveList<Stockfish::NON_EVASIONS>("NonEvasions", pos);
-    dumpMoveList<Stockfish::LEGAL>("LEGAL", pos);
+    if (pos.checkers() == 0)
+    {
+        dumpMoveList<Stockfish::CAPTURES>("Captures", pos);
+        dumpMoveList<Stockfish::QUIETS>("Quites", pos);
+        dumpMoveList<Stockfish::QUIET_CHECKS>("QuiteChecks", pos);
+        dumpMoveList<Stockfish::NON_EVASIONS>("NonEvasions", pos);
+        dumpMoveList<Stockfish::LEGAL>("LEGAL", pos);
+    }
+    else
+    {
+        dumpMoveList<Stockfish::EVASIONS>("Evasions", pos);
+    }
 }
 
 TEST(StockfishMinimax, MinimaxTest) {
@@ -57,7 +63,7 @@ TEST(StockfishMinimax, MinimaxTest) {
     StateInfo states[1000];
     for (int i = 0; i < 5; i++)
     {
-        auto res = Stockfish::minimax(tt, pos, 3);
+        auto res = Stockfish::minimax(true, tt, pos, 3);
 
         for (auto m : res)
         {
@@ -80,19 +86,18 @@ TEST(StockfishMinimax, DummyGamePlay) {
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::minimax(tt, pos, 2);
+        auto res = Stockfish::minimax(true, tt, pos, 2);
 
-        auto picked = *res.begin();
         for (auto m : res)
         {
             std::cout << "move: " << m << " score: " << m.value << std::endl;
         }
+        auto p = res.pick();
+        std::cout << "move: " << *(p) << std::endl;
 
-        std::cout << "move: " << picked << std::endl;
-
-        played.push_back(picked);
-        pos.do_move(picked, sts[i]);
-        std::cout << pos << std::endl;
+        played.push_back(*(p));
+        pos.do_move(*(p), sts[i]);
+        dumpPositions(pos);
     }
 
     std::cout << "played: ";
@@ -115,16 +120,21 @@ TEST(StockfishMinimax, DummyGamePlay2) {
     for (int i = 0; i < 100; i++)
     {
         std::cout << pos << std::endl;
-        auto res = Stockfish::iterative_deepening(tt, pos, 7);
+        auto res = Stockfish::iterative_deepening(true, tt, pos, 11);
         for (auto m : res)
         {
             std::cout << "move: " << m << " score: " << m.value << std::endl;
         }
+        if (res.size() == 0)
+        {
+            std::cout << "Game over" << std::endl;
+            break;
+        }
+        auto p = res.pick();
+        std::cout << "move: " << *(p) << std::endl;
 
-        std::cout << "move: " << *(res.begin()) << std::endl;
-
-        played.push_back(*(res.begin()));
-        pos.do_move(*(res.begin()), sts[i]);
+        played.push_back(*(p));
+        pos.do_move(*(p), sts[i]);
         dumpPositions(pos);
     }
 

@@ -10,6 +10,7 @@
 #include <sstream>
 #include <iomanip>
 #include <array>
+#include <stdexcept>
 
 using std::string;
 namespace Stockfish {
@@ -165,7 +166,7 @@ void Position::set_state() const {
 // to a StateInfo object. The move is assumed to be legal. Pseudo-legal
 // moves should be filtered out before this function is called.
 void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
-
+    st->playMove = m;
     assert(m.is_ok());
     assert(&newSt != st);
 
@@ -207,6 +208,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
     {
         std::cout << "King move! : " << m << "\n";
         std::cout << *this << std::endl;
+        dump();
     }
     assert(type_of(captured) != KING);
 
@@ -375,7 +377,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 // Unmakes a move. When it returns, the position should
 // be restored to exactly the same state as before the move was made.
 void Position::undo_move(Move m) {
-
+    st->playMove = Move::none();
     assert(m.is_ok());
 
     sideToMove = ~sideToMove;
@@ -491,6 +493,13 @@ bool Position::pos_is_ok() const {
 bool Position::gives_check(Move m) const {
 
     assert(m.is_ok());
+    if (color_of(moved_piece(m)) != sideToMove)
+    {
+        std::cout << "failed move : " << m << " " << color_of(moved_piece(m)) << " " << sideToMove
+                  << std::endl;
+        dump();
+        throw std::runtime_error("gives_check: Wrong side to move");
+    }
     assert(color_of(moved_piece(m)) == sideToMove);
 
     Square from = m.from_sq();
@@ -1049,6 +1058,53 @@ void Position::set_check_info() const {
     st->checkSquares[KING]   = 0;
 }
 
+
+// Used to do a "null move": it flips
+// the side to move without executing any move on the board.
+void Position::do_null_move(StateInfo& newSt, TranspositionTable& tt) {
+
+    assert(!checkers());
+    assert(&newSt != st);
+
+    std::memcpy(&newSt, st, sizeof(StateInfo));
+
+    newSt.previous = st;
+    st             = &newSt;
+
+    st->dirtyPiece.dirty_num = 0;
+    st->dirtyPiece.piece[0]  = NO_PIECE;  // Avoid checks in UpdateAccumulator()
+    /* st->accumulatorBig.computed[WHITE]     = st->accumulatorBig.computed[BLACK] =
+      st->accumulatorSmall.computed[WHITE] = st->accumulatorSmall.computed[BLACK] = false; */
+
+    /* if (st->epSquare != SQ_NONE)
+    {
+        st->key ^= Zobrist::enpassant[file_of(st->epSquare)];
+        st->epSquare = SQ_NONE;
+    } */
+
+    st->key ^= Zobrist::side;
+    ++st->rule50;
+    prefetch(tt.first_entry(key()));
+
+    st->pliesFromNull = 0;
+
+    sideToMove = ~sideToMove;
+
+    set_check_info();
+
+    st->repetition = 0;
+
+    assert(pos_is_ok());
+}
+
+// Must be used to undo a "null move"
+void Position::undo_null_move() {
+
+    assert(!checkers());
+
+    st         = st->previous;
+    sideToMove = ~sideToMove;
+}
 
 // Overload to initialize the position object with the given endgame code string
 // like "KBPKN". It's mainly a helper to get the material key out of an endgame code.

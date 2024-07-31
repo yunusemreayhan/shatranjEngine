@@ -36,12 +36,12 @@ ExtMove* make_promotions(ExtMove* moveList, [[maybe_unused]] Square to) {
     if constexpr (Type == CAPTURES || all)
         *moveList++ = Move::make<PROMOTION>(to - D, to, QUEEN);
 
-    if constexpr ((Type == CAPTURES && Enemy) || (Type == QUIETS && !Enemy) || all)
+    /* if constexpr ((Type == CAPTURES && Enemy) || (Type == QUIETS && !Enemy) || all)
     {
         *moveList++ = Move::make<PROMOTION>(to - D, to, ROOK);
         *moveList++ = Move::make<PROMOTION>(to - D, to, BISHOP);
         *moveList++ = Move::make<PROMOTION>(to - D, to, KNIGHT);
-    }
+    } */
 
     return moveList;
 }
@@ -237,14 +237,16 @@ ExtMove* generate_all(const Position& pos, ExtMove* moveList) {
 // Returns a pointer to the end of the move list.
 template<GenType Type>
 ExtMove* generate(const Position& pos, ExtMove* moveList) {
-
+    auto start = moveList;
     static_assert(Type != LEGAL, "Unsupported type in generate()");
     assert((Type == EVASIONS) == bool(pos.checkers()));
 
     Color us = pos.side_to_move();
 
-    return us == WHITE ? generate_all<WHITE, Type>(pos, moveList)
-                       : generate_all<BLACK, Type>(pos, moveList);
+    auto ret         = us == WHITE ? generate_all<WHITE, Type>(pos, moveList)
+                                   : generate_all<BLACK, Type>(pos, moveList);
+    pos.st->movesize = ret - start;
+    return ret;
 }
 
 // Explicit template instantiations

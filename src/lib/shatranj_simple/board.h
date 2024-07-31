@@ -104,6 +104,8 @@ class Board {
 
     long long                        perft(int depth);
     std::tuple<long long, long long> perft_time(int depth);
+    long long                        perft_safe(int depth);
+    std::tuple<long long, long long> perft_time_safe(int depth);
 
    private:
     std::shared_ptr<PieceGroup>  pieces_;

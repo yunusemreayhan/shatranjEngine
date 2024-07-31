@@ -3,8 +3,12 @@
 #include <memory>
 #include <deque>
 
+#include "custom/helper.h"
+#include "movegen.h"
+#include "stockfish_helper.h"
 #include "types.h"
 #include "bitboard.h"
+#include "tt.h"
 
 namespace Stockfish {
 
@@ -33,6 +37,8 @@ struct StateInfo {
     //Eval::NNUE::Accumulator<Eval::NNUE::TransformedFeatureDimensionsBig>   accumulatorBig;
     //Eval::NNUE::Accumulator<Eval::NNUE::TransformedFeatureDimensionsSmall> accumulatorSmall;
     DirtyPiece dirtyPiece;
+    int        movesize;
+    Move       playMove;
 };
 
 
@@ -58,6 +64,8 @@ class Position {
     void do_move(Move m, StateInfo& newSt);
     void do_move(Move m, StateInfo& newSt, bool givesCheck);
     void undo_move(Move m);
+    void do_null_move(StateInfo& newSt, TranspositionTable& tt);
+    void undo_null_move();
 
     // Static Exchange Evaluation
     bool see_ge(Move m, int threshold = 0) const;
@@ -129,7 +137,22 @@ class Position {
     StateInfo* st;
     int        gamePly;
     Color      sideToMove;
+
+    void dump() const;
 };
+
+inline std::tuple<ExtMove*, size_t> all_possible_counter_moves(Position pos, Move move) {
+    StateInfo st;
+    auto      curside = pos.side_to_move();
+    pos.do_move(move, st);
+    RollbackerRAII undoer([&]() {
+        pos.undo_move(move);
+        assert(curside == pos.side_to_move());
+    });
+    auto           retlist = MoveList<LEGAL>(pos);
+    return std::make_tuple(retlist.begin(), retlist.size());
+}
+
 inline bool Position::empty(Square s) const { return piece_on(s) == NO_PIECE; }
 
 inline bool Position::capture(Move m) const {
@@ -148,6 +171,19 @@ inline bool Position::capture_stage(Move m) const {
 inline void Position::do_move(Move m, StateInfo& newSt) { do_move(m, newSt, gives_check(m)); }
 
 std::ostream& operator<<(std::ostream& os, const Position& pos);
+
+inline void Position::dump() const {
+    std::cout << *this << std::endl;
+    StateInfo* current = st;
+    int        i       = 0;
+    while (current)
+    {
+        auto top = (current->playMove.is_ok() ? MoveToStr(current->playMove) : "null");
+        std::cout << i-- << ":" << top << " " << std::endl;
+        current = current->previous;
+    }
+    std::cout << std::endl;
+}
 
 inline Key Position::key() const { return adjust_key50<false>(st->key); }
 
