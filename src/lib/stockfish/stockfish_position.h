@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <deque>
+#include <tuple>
 
 #include "custom/helper.h"
 #include "movegen.h"
@@ -139,7 +140,50 @@ class Position {
     Color      sideToMove;
 
     void dump() const;
+    std::tuple<bool, PieceType, bool, PieceType> IsMoveToAProtectedPosition(Move& m);
+    PieceType                                    GetLeastValuablePieceTypeFromBitboard(Bitboard bb);
+    std::tuple<bool, PieceType>                  IsSquareUnderAttackByColor(Square s, Color c);
 };
+
+inline PieceType Position::GetLeastValuablePieceTypeFromBitboard(Bitboard bb) {
+    PieceType ret = NO_PIECE_TYPE;
+    while (bb != 0)
+    {
+        Square    lsbsq = lsb(bb);
+        PieceType cur   = type_of(piece_on(lsbsq));
+        if (PieceValue[cur] < PieceValue[ret])
+        {
+            ret = cur;
+        }
+        bb ^= lsbsq;
+    }
+    return ret;
+}
+
+inline std::tuple<bool, PieceType, bool, PieceType> Position::IsMoveToAProtectedPosition(Move& m) {
+    Piece pc = moved_piece(m);
+
+    remove_piece(m.from_sq());
+    auto attacker_bb        = attackers_to(m.to_sq(), pieces());
+    auto bba_protected      = attacker_bb & pieces(side_to_move());
+    auto bba_attacked_by_op = attacker_bb & pieces(~side_to_move());
+    put_piece(pc, m.from_sq());
+
+    return std::make_tuple(bba_protected != 0, GetLeastValuablePieceTypeFromBitboard(bba_protected),
+                           bba_attacked_by_op != 0,
+                           GetLeastValuablePieceTypeFromBitboard(bba_attacked_by_op));
+}
+
+inline std::tuple<bool, PieceType> Position::IsSquareUnderAttackByColor(Square s, Color c) {
+    auto bba      = attackers_to(s, pieces()) & pieces(c);
+    auto attacker = bba & s;
+
+    if (attacker != 0)
+    {
+        return std::make_tuple(true, type_of(piece_on(lsb(attacker))));
+    }
+    return std::make_tuple(false, NO_PIECE_TYPE);
+}
 
 inline std::tuple<ExtMove*, size_t> all_possible_counter_moves(Position pos, Move move) {
     StateInfo st;

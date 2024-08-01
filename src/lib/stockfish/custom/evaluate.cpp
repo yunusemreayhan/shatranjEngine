@@ -56,6 +56,18 @@ int evaluate(Stockfish::Position pos, Color maximColor) {
         }
     }
 
+    if (pos.checkers() != 0)
+    {
+        if (pos.side_to_move() == maximColor)
+        {
+            return -15000;
+        }
+        else
+        {
+            return 15000;
+        }
+    }
+
     int materialScore = 0;
     materialScore += (pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK)) * PawnValue;
     materialScore += (pos.count<KNIGHT>(WHITE) - pos.count<KNIGHT>(BLACK)) * KnightValue;

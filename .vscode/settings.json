@@ -18,5 +18,7 @@
     "accessibility.signals.format": {
         "sound": "always"
     },
-    "makefile.compileCommandsPath": "/home/yunus/repos/TamerKaratekinChessProject/build/debug/"
+    "makefile.compileCommandsPath": "/home/yunus/repos/TamerKaratekinChessProject/build/debug/",
+    "breadcrumbs.showFunctions": true,
+    "workbench.tree.stickyScrollMaxItemCount": 10
 }
