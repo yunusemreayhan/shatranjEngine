@@ -37,6 +37,17 @@ struct pv_tree {
         return true;
     }
 
+    bool equal_until(const pv_tree& other, size_t until) {
+        for (size_t i = 0; i < until; i++)
+        {
+            if (moves.size() <= i || other.moves.size() <= i)
+                return false;
+            if (moves[i] != other.moves[i])
+                return false;
+        }
+        return true;
+    }
+
     void clear() { moves.clear(); }
 
     void dump(std::string title, size_t till) {
@@ -135,6 +146,6 @@ class PVManager {
 
    private:
     std::map<ExtMove, pv_tree> pvs;
-    PVManager(){};
+    PVManager() {};
     const size_t MAX_PV_TREE_ITEM = 4;
 };

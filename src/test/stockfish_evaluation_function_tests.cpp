@@ -102,8 +102,8 @@ TEST(EvaluationTests, single_move_checkmatefinding) {
     {
         testfen(fenmove.first, "single move win", "iterative deepening", fenmove.second, 6,
                 [&](TranspositionTable& tt, Position& pos, size_t d) -> Move {
-                    search s;
-                    return s.iterative_deepening(&tt, pos, d);
+                    search s(&tt, pos);
+                    return s.iterative_deepening(d);
                 });
     }
 }
