@@ -4,6 +4,7 @@
 #include "../stockfish_position.h"
 #include "customtranspositiontable.h"
 
+#include "pv_manager.h"
 namespace Stockfish {
 
 template<GenType genType = LEGAL>
@@ -33,7 +34,7 @@ class CustomMovePicker {
              | (pos.pieces(pos.side_to_move(), KNIGHT, BISHOP, QUEEN) & threatenedByPawn);
     }
 
-    static constexpr int CHECK_COEFFICIENT   = 10000;
+    static constexpr int CHECK_COEFFICIENT   = 20000;
     static constexpr int HASH_COEFFICIENT    = 9000;
     static constexpr int EVASION_COEFFICIENT = 8000;
     static constexpr int CAPTURE_COEFFICIENT = 6000;
@@ -325,8 +326,8 @@ class CustomMovePicker {
     int DetermineScore(Position& pos, Move& m, const bool debug = false) {
         if (debug)
             std::cout << "determining  " << m << std::endl;
-        int index = 0;
-        if (m_tt != nullptr && m_tt->is_hash_move(pos, m, index))
+
+        if (int index = pvmanager_ref.index(m, current_depth) != -1)
         {
             return HASH_COEFFICIENT * (index + 1);
         }
@@ -358,9 +359,15 @@ class CustomMovePicker {
     }
 
    public:
-    CustomMovePicker(Position& pos, TT* tt, const bool debug = false) :
+    CustomMovePicker(Position&           pos,
+                     TranspositionTable* tt,
+                     PVManager&          pvmove,
+                     size_t              curd,
+                     const bool          debug = false) :
         m_pos(pos),
         m_tt(tt),
+        pvmanager_ref(pvmove),
+        current_depth(curd),
         list(MoveList<genType>(pos)) {
         for (auto& move : list)
         {
@@ -376,13 +383,16 @@ class CustomMovePicker {
     size_t size() { return list.size(); }
 
     ExtMove* pickfirst() { return list.pickfirst(); }
+    ExtMove* picklast() { return list.pickfirst() + (size() - 1); }
 
     ExtMove* pick() { return list.pick(); }
 
    private:
-    Position&         m_pos;
-    TT*               m_tt;
-    MoveList<genType> list;
-    ExtMove*          m_cur;
+    Position&           m_pos;
+    TranspositionTable* m_tt;
+    PVManager&          pvmanager_ref;
+    size_t              current_depth = 0;
+    MoveList<genType>   list;
+    ExtMove*            m_cur;
 };
 }

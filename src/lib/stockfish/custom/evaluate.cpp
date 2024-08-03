@@ -1,4 +1,5 @@
 #include "evaluate.h"
+#include "pesto_evaluate.h"
 #include <limits>
 
 namespace Stockfish {
@@ -8,75 +9,49 @@ struct MobilityCalculator {
     int mobility;
 
     inline MobilityCalculator& operator()(const Stockfish::Position& pos) {
-        auto movelist = MoveList<LEGAL>(pos);
 
         if (pos.st->previous != nullptr && pos.st->previous->movesize != 0)
-            cmcount = pos.st->previous->movesize;
+        {
+            otherSideMobilityCount = pos.st->previous->movesize;
+        }
         else
         {
-            const auto [cmbegin, cmcount_] = all_possible_counter_moves(pos, *movelist.begin());
-            cmcount                        = cmcount_;
+            const auto [cmbegin, cmcount_] =
+              all_possible_counter_moves(pos, *MoveList<LEGAL>(pos).begin());
+            otherSideMobilityCount = cmcount_;
         }
 
         if (pos.side_to_move() == WHITE)
         {
-            movecount_w = movelist.size();
-            movecount_b = cmcount;
+            movecount_w = pos.st->movesize < 0 ? MoveList<LEGAL>(pos).size() : pos.st->movesize;
+            movecount_b = otherSideMobilityCount;
+            movecount   = movecount_w;
         }
         else
         {
-            movecount_b = movelist.size();
-            movecount_w = cmcount;
+            movecount_b = pos.st->movesize < 0 ? MoveList<LEGAL>(pos).size() : pos.st->movesize;
+            movecount_w = otherSideMobilityCount;
+            movecount   = movecount_b;
         }
-        mobility  = (movecount_w - movecount_b) * MobilityW;
-        movecount = pos.side_to_move() == WHITE ? movecount_w : movecount_b;
+        mobility = (movecount_w - movecount_b) * MobilityW;
         return (*this);
     }
 
    private:
-    int cmcount;
+    int otherSideMobilityCount;
     int movecount_w;
     int movecount_b;
 };
 
 
-int evaluate(Stockfish::Position pos, Color maximColor) {
-    MobilityCalculator mobCalculator;
-    auto               mobCalculatorRes = mobCalculator(pos);
-    // checkmate control
-    if (mobCalculatorRes.movecount == 0)
-    {
-        if (pos.side_to_move() == maximColor)
-        {
-            return -VALUE_INFINITE;
-        }
-        else
-        {
-            return VALUE_INFINITE;
-        }
-    }
+int16_t evaluate(Stockfish::Position pos) {
+    //MobilityCalculator mobCalculator;
+    //auto               mobCalculatorRes = mobCalculator(pos);
 
-    if (pos.checkers() != 0)
-    {
-        if (pos.side_to_move() == maximColor)
-        {
-            return -15000;
-        }
-        else
-        {
-            return 15000;
-        }
-    }
+    int materialScore = eval_PeSTO(pos);
 
-    int materialScore = 0;
-    materialScore += (pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK)) * PawnValue;
-    materialScore += (pos.count<KNIGHT>(WHITE) - pos.count<KNIGHT>(BLACK)) * KnightValue;
-    materialScore += (pos.count<BISHOP>(WHITE) - pos.count<BISHOP>(BLACK)) * BishopValue;
-    materialScore += (pos.count<ROOK>(WHITE) - pos.count<ROOK>(BLACK)) * RookValue;
-    materialScore += (pos.count<QUEEN>(WHITE) - pos.count<QUEEN>(BLACK)) * QueenValue;
-
-    int ret = materialScore + mobCalculatorRes.mobility;
-    ret *= WHITE == maximColor ? 1 : -1;
+    int ret = materialScore /* + mobCalculatorRes.mobility */;
+    assert(ret == ((int16_t) ret));
 
     return ret;
 }

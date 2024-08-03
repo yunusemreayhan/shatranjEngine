@@ -178,6 +178,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
     std::memcpy(&newSt, st, offsetof(StateInfo, key));
     newSt.previous = st;
     st             = &newSt;
+    st->movesize   = -1;
+    st->playMove   = Move::none();
 
     // Increment ply counters. In particular, rule50 will be reset to zero later on
     // in case of a capture or a pawn move.

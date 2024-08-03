@@ -78,7 +78,7 @@ int minimax(bool                use_ordered,
 
     if (depth == 0 || movelist.size() == 0)
     {
-        auto eval = evaluate(position, max_color);
+        auto eval = evaluate(position);
         transposition_table[position.key()][depth] =
           position.side_to_move() == max_color ? eval : -eval;
         return eval;
