@@ -140,7 +140,7 @@ class Position {
     int        gamePly;
     Color      sideToMove;
 
-    void dump() const;
+    void                                         dump() const;
     std::tuple<bool, PieceType, bool, PieceType> IsMoveToAProtectedPosition(Move& m);
     PieceType                                    GetLeastValuablePieceTypeFromBitboard(Bitboard bb);
     std::tuple<bool, PieceType>                  IsSquareUnderAttackByColor(Square s, Color c);
@@ -307,6 +307,11 @@ inline int Position::count(Color c) const {
 
 template<PieceType Pt>
 inline Square Position::square(Color c) const {
+    if (count<Pt>(c) != 1)
+    {
+        std::cout << count<Pt>(c) << std::endl;
+        std::cout << *this << std::endl;
+    }
     assert(count<Pt>(c) == 1);
     return lsb(pieces(c, Pt));
 }

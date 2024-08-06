@@ -167,9 +167,12 @@ inline Square coord_to_square(uint8_t x, uint8_t y) {
     return static_cast<Square>(static_cast<int>(SQ_A1) + x + y * 8);
 }
 
-inline Move strToMove(std::string_view str) {
+inline Move strToMove(std::string str) {
     if (str.size() != 4)
+    {
+        std::cerr << "Invalid move: " << str << std::endl;
         return Move::none();
+    }
 
     return Move(string_to_square(str.substr(0, 2)), string_to_square(str.substr(2, 2)));
 }
