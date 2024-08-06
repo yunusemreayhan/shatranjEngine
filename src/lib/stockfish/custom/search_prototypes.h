@@ -33,13 +33,13 @@ class search {
     Value null_move_prune(int plyRemaining, int plyFromRoot, Value& beta) {
         StateInfo st;
         m_pos.do_null_move(st, *m_tt);
-        Value nullValue = -negmax(plyRemaining - 1, plyFromRoot + 1, -beta, -beta + 1);
+        Value nullValue = -negmax<NonPV>(plyRemaining - 1, plyFromRoot + 1, -beta, -beta + 1);
         m_pos.undo_null_move();
 
         if (nullValue >= beta)
         {
             // verification for null value result
-            Value v = negmax(plyRemaining - 1, plyFromRoot + 1, -beta, -beta + 1);
+            Value v = negmax<NonPV>(plyRemaining - 1, plyFromRoot + 1, -beta, -beta + 1);
             if (v >= beta)
             {
                 return nullValue;
@@ -48,10 +48,39 @@ class search {
         return beta - 1;
     }
 
-    inline Value
-    negmax(int plyRemaining, int plyFromRoot, Value alpha, Value beta, bool pvnode = false) {
+    void pv_extraction(int plyRemaining, int plyFromRoot, pv_tree& best_moves) {
+        if (plyRemaining <= 0)
+        {
+            return;
+        }
         auto [ttHit, ttData, ttWriter] = m_tt->probe(m_pos.key());
-        if (ttHit && ttData.depth >= plyRemaining && !pvnode)
+        if (ttHit && ttData.depth >= plyRemaining)
+        {
+            if (ttData.move.is_ok())
+            {
+                best_moves.set(plyFromRoot, ExtMove{ttData.move, ttData.eval});
+                StateInfo st;
+                m_pos.do_move(ttData.move, st);
+                pv_extraction(plyRemaining - 1, plyFromRoot + 1, best_moves);
+                m_pos.undo_move(ttData.move);
+            }
+        }
+    }
+
+    enum SearchRunType {
+        Root,
+        PV,
+        NonPV
+    };
+
+    template<SearchRunType nodeType>
+    inline Value negmax(int plyRemaining, int plyFromRoot, Value alpha, Value beta) {
+        Key            posKey = m_pos.key();
+        constexpr bool PvNode = nodeType != NonPV;
+        // constexpr bool rootNode = nodeType == Root;
+
+        auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
+        if (ttHit && ttData.depth >= plyRemaining && !PvNode)
         {
             return ttData.eval;
         }
@@ -61,37 +90,41 @@ class search {
         if (moves.size() == 0)
         {
             Value ret = -VALUE_MATE;
-            ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_UPPER, plyRemaining,
+            ttWriter.write(posKey, VALUE_ZERO, false, Stockfish::BOUND_UPPER, plyRemaining,
                            Move::none(), ret, m_tt->generation());
             return ret;
         }
 
         if (plyRemaining == 0)
         {
-            auto res = evaluate(m_pos);
-            ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_UPPER, plyRemaining,
+            auto res = qnegmax(alpha, beta);
+            ttWriter.write(posKey, VALUE_ZERO, false, Stockfish::BOUND_UPPER, plyRemaining,
                            Move::none(), res, m_tt->generation());
             return res;
         }
 
         Value value    = -VALUE_INFINITE;
         Value besteval = -VALUE_INFINITE;
+        Move  bestmove = Move::none();
 
+        int moveCount = 0;
         for (auto& m : moves)
         {
+            moveCount++;
             StateInfo st;
             m_pos.do_move(m, st);
             value = m.value;
-            last_moves.set(plyFromRoot, m);
-            m.value = -negmax(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha, false);
+
+            if (!PvNode || moveCount > 1)  // root node is also non pv node
+                m.value = -negmax<NonPV>(plyRemaining - 1, plyFromRoot + 1, -(alpha + 1), -alpha);
+
+            if (PvNode && (moveCount == 1 || m.value > alpha))
+                m.value = -negmax<PV>(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha);
+
             if (besteval < m.value)
             {
                 besteval = m.value;
-                if (best_moves.equal_until(last_moves, plyFromRoot))
-                {
-                    best_moves.set(plyFromRoot, m);
-                }
-                last_best_moves.set(plyFromRoot, m);
+                bestmove = m;
             }
             m_pos.undo_move(m);
 
@@ -101,55 +134,103 @@ class search {
                 break;
             }
         }
-        ttWriter.write(m_pos.key(), value, false, Stockfish::BOUND_UPPER, plyRemaining,
-                       Move::none(), besteval, m_tt->generation());
+        ttWriter.write(posKey, value, false, Stockfish::BOUND_UPPER, plyRemaining, bestmove,
+                       besteval, m_tt->generation());
         return besteval;
+    }
+
+    inline Value qnegmax(Value alpha, Value beta) {
+        Key posKey                     = m_pos.key();
+        auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
+        if (ttHit && ttData.depth >= DEPTH_QS_CHECKS)
+        {
+            return ttData.eval;
+        }
+
+        auto moves    = CustomMovePickerForQSearch(m_pos, pv_manager, DEPTH_UNSEARCHED);
+        auto allmoves = CustomMovePicker(m_pos, m_tt, pv_manager, DEPTH_UNSEARCHED);
+
+        if (allmoves.size() == 0)
+        {
+            Value ret = -VALUE_MATE;
+            ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_UPPER, DEPTH_UNSEARCHED,
+                           Move::none(), ret, m_tt->generation());
+            return ret;
+        }
+
+        if (moves.size() == 0)
+        {
+            auto res = evaluate(m_pos);
+            ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_EXACT, DEPTH_UNSEARCHED,
+                           Move::none(), res, m_tt->generation());
+            return res;
+        }
+
+        Value bestValue = VALUE_ZERO;
+        Move  bestMove  = Move::none();
+        Value value     = VALUE_ZERO;
+
+        size_t movecount = 0;
+        for (auto& m : moves)
+        {
+            movecount++;
+            bool givesCheck = m_pos.gives_check(m);
+
+            if (!m_pos.legal(m))
+                continue;
+
+            if (!givesCheck && movecount > 2)
+                break;
+
+            StateInfo st;
+            m_pos.do_move(m, st);
+            value = -qnegmax(-beta, -alpha);
+            m_pos.undo_move(m);
+
+            assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
+
+            // Step 8. Check for a new best move
+            if (value > bestValue)
+            {
+                bestValue = value;
+
+                if (value > alpha)
+                {
+                    bestMove = m;
+
+                    if (value < beta)  // Update alpha here!
+                        alpha = value;
+                    else
+                        break;  // Fail high
+                }
+            }
+        }
+        ttWriter.write(posKey, VALUE_ZERO, false, bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
+                       DEPTH_QS_CHECKS, bestMove, bestValue, m_tt->generation());
+        assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
+
+        return bestValue;
     }
 
    public:
     inline Move iterative_deepening(int d) {
-        auto [ttHit, ttData, ttWriter] = m_tt->probe(m_pos.key());
+        Key posKey                     = m_pos.key();
+        auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
         if (ttHit && ttData.depth >= d)
         {
             return ttData.move;
         }
-        auto moves = CustomMovePicker(m_pos, m_tt, pv_manager, 0);
-
-        if (moves.size() == 0)
-            return Move::none();
 
         for (int depth = 1; depth <= d; depth++)
         {
-            Value besteval = -VALUE_INFINITE;
-            Move  move     = Move::none();
-            Value bestvalue = -VALUE_INFINITE;
+            negmax<Root>(depth, 0, -VALUE_INFINITE, VALUE_INFINITE);
 
-            last_moves.clear();
-            best_moves.clear();
-            for (auto& m : moves)
-            {
-                StateInfo st;
-                Value     value = -VALUE_INFINITE;
-                value           = m.value;
-                m_pos.do_move(m, st);
-                last_moves.set(0, m);
-                m.value = -negmax(depth - 1, 1, -VALUE_INFINITE, VALUE_INFINITE);
-                if (m.value > besteval)
-                {
-                    last_best_moves.set(0, m);
-                    move     = m;
-                    besteval = m.value;
-                    bestvalue = value;
-                }
-                m_pos.undo_move(m);
-            }
-            pv_manager.insert(best_moves);
-            ttWriter.write(m_pos.key(), bestvalue, false, Stockfish::BOUND_UPPER, depth, move,
-                           besteval, m_tt->generation());
+            pv_tree bestmoves;
+            pv_extraction(d, 0, bestmoves);
+            pv_manager.insert(bestmoves);
         }
-        partial_insertion_sort(moves.begin(), moves.end(), std::numeric_limits<int>::min());
 
-        return *moves.pickfirst();
+        return pv_manager.begin()->first;
     }
 
     search(TranspositionTable* tt, Position& pos) :
@@ -161,7 +242,4 @@ class search {
     TranspositionTable* m_tt;
     Position&           m_pos;
     PVManager           pv_manager;
-    pv_tree             last_moves;
-    pv_tree             best_moves;
-    pv_tree             last_best_moves;
 };

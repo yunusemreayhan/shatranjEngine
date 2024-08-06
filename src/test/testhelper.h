@@ -27,6 +27,7 @@ template<typename MoveFindingFunctionType>
 inline bool testfen(const std::string&       fen,
                     const std::string&       fentitle,
                     const std::string&       operatitle,
+                    bool                     shatranj,
                     const std::vector<Move>& expectedmoves,
                     size_t                   depth,
                     MoveFindingFunctionType  oper) {
@@ -36,7 +37,7 @@ inline bool testfen(const std::string&       fen,
     Position  pos;
     StateInfo st[100];
     int       j = 0;
-    pos.set(fen, &st[j++], false);
+    pos.set(fen, &st[j++], shatranj);
     std::cout << pos << std::endl;
     size_t i = 0;
     std::cout << "===========================================================" << std::endl;

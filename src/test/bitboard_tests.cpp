@@ -289,6 +289,104 @@ TEST(Bitboard, CheckBlockingPieceMovePreventedCheck) {
     assert(std::find(movelist.begin(), movelist.end(), Move(SQ_F5, SQ_E3)) == movelist.end());
 }
 
+TEST(Bitboard, CheckIfShahCanNotCaptureProtectedPiece) {
+    StateInfo st;
+    Position  pos;
+    /*
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   | r | 8
+            +---+---+---+---+---+---+---+---+
+            | p | p |   |   |   |   |   | p | 7
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 6
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 5
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 4
+            +---+---+---+---+---+---+---+---+
+            |   | H |   |   |   |   |   |   | 3
+            +---+---+---+---+---+---+---+---+
+            |   |   | P | P | P |   |   |   | 2
+            +---+---+---+---+---+---+---+---+
+            | R | s |   | S | R |   |   |   | 1
+            +---+---+---+---+---+---+---+---+
+              a   b   c   d   e   f   g   h
+    */
+    const std::string fen = "7r/pp5p/8/8/8/1N6/2PPP3/Rk1KR3 b 10 12";
+    pos.set(fen, &st, false);
+    auto movelist = Stockfish::MoveList<LEGAL>(pos);
+    std::cout << "Possible moves:" << std::endl;
+    int i = 0;
+    for (auto move : movelist)
+    {
+        std::cout << " " << move;
+        if (i++ % 8 == 7)
+            std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    std::cout << pos << std::endl;
+    ASSERT_TRUE(std::find(movelist.begin(), movelist.end(), Move(SQ_B1, SQ_A1)) == movelist.end());
+    ASSERT_TRUE(movelist.size() == 1);
+}
+
+TEST(Bitboard, ShahCanNotGetCloseToOtherShah) {
+    StateInfo st;
+    Position  pos;
+    /*
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   | r | 8
+            +---+---+---+---+---+---+---+---+
+            | p | p |   |   |   |   |   | p | 7
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 6
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 5
+            +---+---+---+---+---+---+---+---+
+            |   |   |   |   |   |   |   |   | 4
+            +---+---+---+---+---+---+---+---+
+            |   | H |   |   |   |   |   |   | 3
+            +---+---+---+---+---+---+---+---+
+            |   |   | P | P | P |   |   |   | 2
+            +---+---+---+---+---+---+---+---+
+            |   | s |   | S | R |   |   |   | 1
+            +---+---+---+---+---+---+---+---+
+              a   b   c   d   e   f   g   h
+    */
+    const std::string fen = "7r/pp5p/8/8/8/1N6/2PPP3/1k1KR3 w 0 14";
+    pos.set(fen, &st, false);
+
+    {
+        auto movelist = Stockfish::MoveList<Stockfish::QUIET_CHECKS>(pos);
+        std::cout << "Possible moves:" << std::endl;
+        int i = 0;
+        for (auto move : movelist)
+        {
+            std::cout << " " << move;
+            if (i++ % 8 == 7)
+                std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << pos << std::endl;
+        ASSERT_TRUE(std::find(movelist.begin(), movelist.end(), Move(SQ_D1, SQ_C1))
+                    == movelist.end());
+    }
+    {
+        auto movelist = Stockfish::MoveList<Stockfish::CAPTURES>(pos);
+        std::cout << "Possible moves:" << std::endl;
+        int i = 0;
+        for (auto move : movelist)
+        {
+            std::cout << " " << move;
+            if (i++ % 8 == 7)
+                std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << pos << std::endl;
+        ASSERT_TRUE(std::find(movelist.begin(), movelist.end(), Move(SQ_D1, SQ_C1))
+                    == movelist.end());
+    }
+}
+
 TEST(Bitboard, CheckPinnerLogic) {
     {
         StateInfo st;

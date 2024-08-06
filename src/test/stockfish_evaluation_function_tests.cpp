@@ -20,27 +20,14 @@
 
 using namespace Stockfish;
 
+struct fencik {
+    std::string fen;
+    bool        shatranj;
+};
 struct testitem {
-    std::string       fen;
+    fencik            fen;
     std::vector<Move> expectedmoves;
     size_t            searchdepth;
-};
-
-const inline std::vector<testitem> testitemlist = {
-  {"3k3r/pp1r3p/8/8/6n1/8/2PPP3/2NKRR2 b - - 0 1", {Move(SQ_G4, SQ_E3)}, 4},
-  {"3k3r/pp1r3p/8/8/6n1/8/2PPP3/2NKRR2 b - - 0 1", {Move(SQ_G4, SQ_E3)}, 5},
-  {"k6r/8/3B4/6P1/4n3/2P5/1K3R2/8 b - - 0 1", {Move(SQ_E4, SQ_F2)}, 4},
-  {"k6r/8/3B4/6P1/4n3/2P5/1K3R2/8 b - - 0 1", {Move(SQ_E4, SQ_F2)}, 5},
-  {"4k3/8/8/8/1n6/3N4/8/R3K3 b - - 0 1", {Move(SQ_B4, SQ_C2)}, 4},
-  {"4k3/8/8/8/1n6/3N4/8/R3K3 b - - 0 1", {Move(SQ_B4, SQ_C2)}, 5},
-  {"4k3/r7/8/8/4n1PK/8/8/8 b - - 0 1", {Move(SQ_A7, SQ_H7)}, 4},
-  {"4k3/r7/8/8/4n1PK/8/8/8 b - - 0 1", {Move(SQ_A7, SQ_H7)}, 5},
-  {"r3k3/8/1b6/3N4/8/8/8/4K3 w - - 0 1", {Move(SQ_D5, SQ_C7)}, 4},
-  {"r3k3/8/1b6/3N4/8/8/8/4K3 w - - 0 1", {Move(SQ_D5, SQ_C7)}, 5},
-  {"8/7R/8/kp1N4/6PK/8/8/8 w - - 0 1", {Move(SQ_H7, SQ_A7)}, 4},
-  {"8/7R/8/kp1N4/6PK/8/8/8 w - - 0 1", {Move(SQ_H7, SQ_A7)}, 5},
-  {"r3k3/8/1n6/3N4/8/8/8/4K3 w - - 0 1", {Move(SQ_D5, SQ_B6)}, 4},
-  {"r3k3/8/1n6/3N4/8/8/8/4K3 w - - 0 1", {Move(SQ_D5, SQ_B6)}, 5},
 };
 
 TEST(EvaluationTests, evaluation_test_min_max_black_white) {
@@ -146,13 +133,61 @@ TEST(EvaluationTests, evaluation_test1) {
     std::cout << "=========================================================" << std::endl;
 }
 
-TEST(EvaluationTests, single_move_checkmatefinding) {
+const inline std::vector<testitem> simple_puzzles_handmade = {
+  {{"3k3r/pp1r3p/8/8/6n1/8/2PPP3/2NKRR2 b - - 0 1", false}, {Move(SQ_G4, SQ_E3)}, 4},
+  {{"3k3r/pp1r3p/8/8/6n1/8/2PPP3/2NKRR2 b - - 0 1", false}, {Move(SQ_G4, SQ_E3)}, 5},
+  {{"k6r/8/3B4/6P1/4n3/2P5/1K3R2/8 b - - 0 1", false}, {Move(SQ_E4, SQ_F2)}, 4},
+  {{"k6r/8/3B4/6P1/4n3/2P5/1K3R2/8 b - - 0 1", false}, {Move(SQ_E4, SQ_F2)}, 5},
+  {{"4k3/8/8/8/1n6/3N4/8/R3K3 b - - 0 1", false}, {Move(SQ_B4, SQ_C2)}, 4},
+  {{"4k3/8/8/8/1n6/3N4/8/R3K3 b - - 0 1", false}, {Move(SQ_B4, SQ_C2)}, 5},
+  {{"4k3/r7/8/8/4n1PK/8/8/8 b - - 0 1", false}, {Move(SQ_A7, SQ_H7)}, 4},
+  {{"4k3/r7/8/8/4n1PK/8/8/8 b - - 0 1", false}, {Move(SQ_A7, SQ_H7)}, 5},
+  {{"r3k3/8/1b6/3N4/8/8/8/4K3 w - - 0 1", false}, {Move(SQ_D5, SQ_C7)}, 4},
+  {{"r3k3/8/1b6/3N4/8/8/8/4K3 w - - 0 1", false}, {Move(SQ_D5, SQ_C7)}, 5},
+  {{"8/7R/8/kp1N4/6PK/8/8/8 w - - 0 1", false}, {Move(SQ_H7, SQ_A7)}, 4},
+  {{"8/7R/8/kp1N4/6PK/8/8/8 w - - 0 1", false}, {Move(SQ_H7, SQ_A7)}, 5},
+  {{"r3k3/8/1n6/3N4/8/8/8/4K3 w - - 0 1", false}, {Move(SQ_D5, SQ_B6)}, 4},
+  {{"r3k3/8/1n6/3N4/8/8/8/4K3 w - - 0 1", false}, {Move(SQ_D5, SQ_B6)}, 5},
+};
+
+TEST(EvaluationTests, single_move_simple_puzzles) {
     size_t successes = 0;
     size_t wrongs    = 0;
-    for (auto& testitem : testitemlist)
+    for (auto& testitem : simple_puzzles_handmade)
     {
-        auto res = testfen(testitem.fen, "single move win", "iterative deepening",
-                           testitem.expectedmoves, testitem.searchdepth,
+        auto res = testfen(testitem.fen.fen, "single move win", "iterative deepening",
+                           testitem.fen.shatranj, testitem.expectedmoves, testitem.searchdepth,
+                           [&](TranspositionTable& tt, Position& pos, size_t d) -> Move {
+                               search s(&tt, pos);
+                               return s.iterative_deepening(d);
+                           });
+
+        if (res)
+            successes++;
+        else
+            wrongs++;
+    }
+    std::cout << "successes: " << successes << " wrongs: " << wrongs << std::endl;
+}
+
+const inline std::vector<testitem> book_puzzles = {
+  {{"1r1r4/8/1h6/2p5/2P5/1HS5/R3R3/1s6 b 0 10", true},
+   {Move(SQ_B6, SQ_A4), Move(SQ_A2, SQ_A4), Move(SQ_B8, SQ_B3), Move(SQ_C3, SQ_B3),
+    Move(SQ_D8, SQ_D3)},
+   7},
+  {{"1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10", true},
+   {Move(SQ_H4, SQ_H8), Move(SQ_G8, SQ_H8), Move(SQ_H3, SQ_F5), Move(SQ_H8, SQ_G8),
+    Move(SQ_H1, SQ_H8), Move(SQ_G8, SQ_H8), Move(SQ_G6, SQ_G7), Move(SQ_H8, SQ_G8),
+    Move(SQ_G4, SQ_H6)},
+   11}};
+
+TEST(EvaluationTests, book_questions) {
+    size_t successes = 0;
+    size_t wrongs    = 0;
+    for (auto& testitem : book_puzzles)
+    {
+        auto res = testfen(testitem.fen.fen, "single move win", "iterative deepening",
+                           testitem.fen.shatranj, testitem.expectedmoves, testitem.searchdepth,
                            [&](TranspositionTable& tt, Position& pos, size_t d) -> Move {
                                search s(&tt, pos);
                                return s.iterative_deepening(d);

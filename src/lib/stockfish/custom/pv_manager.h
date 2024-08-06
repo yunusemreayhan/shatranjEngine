@@ -98,6 +98,8 @@ class PVManager {
     }
 
     void insert_or_replace(pv_tree& tree) {
+        if (tree.moves.size() == 0)
+            return;
         auto oldone = find_move(tree.moves[0]);
 
         if (oldone != pvs.end())
@@ -143,6 +145,9 @@ class PVManager {
             std::cout << std::endl;
         }
     }
+
+    std::map<ExtMove, pv_tree>::const_iterator begin() const { return pvs.begin(); }
+    std::map<ExtMove, pv_tree>::const_iterator end() const { return pvs.end(); }
 
    private:
     std::map<ExtMove, pv_tree> pvs;

@@ -7,8 +7,9 @@
 #include "pv_manager.h"
 namespace Stockfish {
 
-template<GenType genType = LEGAL>
-class CustomMovePicker {
+
+class MoveSorter {
+   protected:
     using offset = int;
     offset capturing_offset(PieceType capturing, PieceType beingcaptured) {
         return PieceValue[beingcaptured] - PieceValue[capturing];
@@ -323,25 +324,22 @@ class CustomMovePicker {
         return retscore;
     }
 
-    int DetermineScore(Position& pos, Move& m, const bool debug = false) {
-        if (debug)
-            std::cout << "determining  " << m << std::endl;
-
-        if (int index = pvmanager_ref.index(m, current_depth) != -1)
+    int DetermineScore(Position& pos, Move& m, int index) {
+        if (index != -1)
         {
             return HASH_COEFFICIENT * (index + 1);
         }
         if (pos.checkers())
         {
-            return DetermineEvasionType(pos, m, debug);
+            return DetermineEvasionType(pos, m);
         }
         else if (pos.capture_stage(m))
         {
-            return DetermineCaptureType(pos, m, debug);
+            return DetermineCaptureType(pos, m);
         }
         else
         {
-            return DetermineQuiteType(pos, m, debug);
+            return DetermineQuiteType(pos, m);
         }
     }
 
@@ -357,13 +355,13 @@ class CustomMovePicker {
                 *q = tmp;
             }
     }
+};
+
+template<GenType genType = LEGAL>
+class CustomMovePicker: public MoveSorter {
 
    public:
-    CustomMovePicker(Position&           pos,
-                     TranspositionTable* tt,
-                     PVManager&          pvmove,
-                     size_t              curd,
-                     const bool          debug = false) :
+    CustomMovePicker(Position& pos, TranspositionTable* tt, PVManager& pvmove, size_t curd) :
         m_pos(pos),
         m_tt(tt),
         pvmanager_ref(pvmove),
@@ -371,7 +369,7 @@ class CustomMovePicker {
         list(MoveList<genType>(pos)) {
         for (auto& move : list)
         {
-            move.value = DetermineScore(pos, move, debug);
+            move.value = DetermineScore(pos, move, pvmanager_ref.index(move, current_depth));
         }
         partial_insertion_sort(list.begin(), list.end(), std::numeric_limits<int>::min());
     }
@@ -394,5 +392,48 @@ class CustomMovePicker {
     size_t              current_depth = 0;
     MoveList<genType>   list;
     ExtMove*            m_cur;
+};
+
+class CustomMovePickerForQSearch: public MoveSorter {
+
+   public:
+    CustomMovePickerForQSearch(Position& pos, PVManager& pvmanager, size_t curd) :
+        pvmanager_ref(pvmanager),
+        current_depth(curd) {
+        if (pos.checkers())
+        {
+            for (auto& move : MoveList<EVASIONS>(pos))
+            {
+                if (move.is_ok())
+                    moves[i++] = move;
+            }
+        }
+        else
+        {
+            for (auto& move : MoveList<CAPTURES>(pos))
+            {
+                if (move.is_ok())
+                    moves[i++] = move;
+            }
+        }
+        for (auto& move : *this)
+        {
+            move.value = DetermineScore(pos, move, pvmanager_ref.index(move, current_depth));
+        }
+        partial_insertion_sort(this->begin(), this->end(), std::numeric_limits<int>::min());
+    }
+
+    ExtMove* begin() { return moves; }
+
+    ExtMove* end() { return moves + size(); }
+
+    ExtMove moves[MAX_MOVES];
+
+    int size() { return i; }
+
+   private:
+    int        i = 0;
+    PVManager& pvmanager_ref;
+    size_t     current_depth = 0;
 };
 }
