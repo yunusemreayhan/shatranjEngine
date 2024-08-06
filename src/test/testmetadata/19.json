@@ -1,0 +1,106 @@
+{
+    "gameName": "19",
+    "result": "1-0",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.19 Problem 19",
+    "book": "Libro del acedrex",
+    "pageCell": "220",
+    "event": "Problem 19",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "kn1QN1r1/p1p5/1p5b/p2N1B2/1P5n/pp4q1/5pr1/2BR3K w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d5c7",
+            "color": "w",
+            "FEN": "kn1QN1r1/p1N5/1p5b/p4B2/1P5n/pp4q1/5pr1/2BR3K b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a8b7",
+            "color": "b",
+            "FEN": "1n1QN1r1/pkN5/1p5b/p4B2/1P5n/pp4q1/5pr1/2BR3K w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e8d6",
+            "color": "w",
+            "FEN": "1n1Q2r1/pkN5/1p1N3b/p4B2/1P5n/pp4q1/5pr1/2BR3K b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b7c6",
+            "color": "b",
+            "FEN": "1n1Q2r1/p1N5/1pkN3b/p4B2/1P5n/pp4q1/5pr1/2BR3K w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b4b5",
+            "color": "w",
+            "FEN": "1n1Q2r1/p1N5/1pkN3b/pP3B2/7n/pp4q1/5pr1/2BR3K b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c6c5",
+            "color": "b",
+            "FEN": "1n1Q2r1/p1N5/1p1N3b/pPk2B2/7n/pp4q1/5pr1/2BR3K w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1e3",
+            "color": "w",
+            "FEN": "1n1Q2r1/p1N5/1p1N3b/pPk2B2/7n/pp2B1q1/5pr1/3R3K b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c5b4",
+            "color": "b",
+            "FEN": "1n1Q2r1/p1N5/1p1N3b/pP3B2/1k5n/pp2B1q1/5pr1/3R3K w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c7d5",
+            "color": "w",
+            "FEN": "1n1Q2r1/p7/1p1N3b/pP1N1B2/1k5n/pp2B1q1/5pr1/3R3K b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b4a4",
+            "color": "b",
+            "FEN": "1n1Q2r1/p7/1p1N3b/pP1N1B2/k6n/pp2B1q1/5pr1/3R3K w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d1d4",
+            "color": "w",
+            "FEN": "1n1Q2r1/p7/1p1N3b/pP1N1B2/k2R3n/pp2B1q1/5pr1/7K b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}

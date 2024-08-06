@@ -1,0 +1,83 @@
+{
+    "gameName": "21",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.21 Problem 21",
+    "book": "Libro del acedrex",
+    "pageCell": "224",
+    "event": "Problem  21",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "7k/4p2P/4rpR1/2pn1B2/1qr2bb1/QP1n4/NP1R1PN1/3K4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "7k/4p2P/4rpR1/2pn1B2/1q3bb1/QP1n4/NP1R1PN1/2rK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c4c1",
+            "FEN": "7k/4p2P/4rpR1/2pn1B2/1q3bb1/QP1n4/NP1R1PN1/2rK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a2c1",
+            "color": "w",
+            "FEN": "7k/4p2P/4rpR1/2pn1B2/1q3bb1/QP1n4/1P1R1PN1/2NK4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e6e1",
+            "color": "b",
+            "FEN": "7k/4p2P/5pR1/2pn1B2/1q3bb1/QP1n4/1P1R1PN1/2NKr3 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g2e1",
+            "color": "w",
+            "FEN": "7k/4p2P/5pR1/2pn1B2/1q3bb1/QP1n4/1P1R1P2/2NKN3 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d3f2",
+            "color": "b",
+            "FEN": "7k/4p2P/5pR1/2pn1B2/1q3bb1/QP6/1P1R1n2/2NKN3 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d2f2",
+            "color": "w",
+            "FEN": "7k/4p2P/5pR1/2pn1B2/1q3bb1/QP6/1P3R2/2NKN3 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d5e3",
+            "color": "b",
+            "FEN": "7k/4p2P/5pR1/2p2B2/1q3bb1/QP2n3/1P3R2/2NKN3 w - - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}

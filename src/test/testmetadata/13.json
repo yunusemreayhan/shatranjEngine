@@ -1,0 +1,139 @@
+{
+    "gameName": "13",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.13 Problem 13",
+    "book": "Libro del acedrex",
+    "pageCell": "204",
+    "event": "Problem 13",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "3k4/R5R1/2p1p2b/ppPnpp2/3P2br/rP1KN3/2P2PP1/8 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "3k4/R5R1/2p1p2b/ppPn1p2/3Pp1br/rP1KN3/2P2PP1/8 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e5e4",
+            "FEN": "3k4/R5R1/2p1p2b/ppPn1p2/3Pp1br/rP1KN3/2P2PP1/8 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d3d2",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p2b/ppPn1p2/3Pp1br/rP2N3/2PK1PP1/8 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h6f4",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbbr/rP2N3/2PK1PP1/8 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d2c1",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbbr/rP2N3/2P2PP1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h4h1",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbb1/rP2N3/2P2PP1/2K4r w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e3d1",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbb1/rP6/2P2PP1/2KN3r b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h1d1",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbb1/rP6/2P2PP1/2Kr4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1b2",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbb1/rP6/1KP2PP1/3r4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a3a2",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbb1/1P6/rKP2PP1/3r4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b2a2",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p3/ppPn1p2/3Ppbb1/1P6/K1P2PP1/3r4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d5c3",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/ppP2p2/3Ppbb1/1Pn5/K1P2PP1/3r4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a2a3",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p3/ppP2p2/3Ppbb1/KPn5/2P2PP1/3r4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b5b4",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/p1P2p2/1p1Ppbb1/KPn5/2P2PP1/3r4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a3b2",
+            "color": "w",
+            "FEN": "3k4/R5R1/2p1p3/p1P2p2/1p1Ppbb1/1Pn5/1KP2PP1/3r4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d1b1",
+            "color": "b",
+            "FEN": "3k4/R5R1/2p1p3/p1P2p2/1p1Ppbb1/1Pn5/1KP2PP1/1r6 w - - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}

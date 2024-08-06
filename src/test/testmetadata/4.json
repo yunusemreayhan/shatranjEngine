@@ -1,0 +1,148 @@
+{
+    "gameName": "4",
+    "result": "1-0",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.4 Problem 4",
+    "book": "Libro del acedrex",
+    "pageCell": "183",
+    "event": "Problem 4",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "kn1rN3/p2P3P/2p1b1Pb/PPPqPN2/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e8c7",
+            "color": "w",
+            "FEN": "kn1r4/p1NP3P/2p1b1Pb/PPPqPN2/3P2R1/1pnBB1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a8b7",
+            "color": "b",
+            "FEN": "1n1r4/pkNP3P/2p1b1Pb/PPPqPN2/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f5d6",
+            "color": "w",
+            "FEN": "1n1r4/pkNP3P/2pNb1Pb/PPPqP3/3P2R1/1pnBB1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b7c7",
+            "color": "b",
+            "FEN": "1n1r4/p1kP3P/2pNb1Pb/PPPqP3/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b5b6",
+            "color": "w",
+            "FEN": "1n1r4/p1kP3P/1PpNb1Pb/P1PqP3/3P2R1/1pnBB1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a7b6",
+            "color": "b",
+            "FEN": "1n1r4/2kP3P/1ppNb1Pb/P1PqP3/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a5b6",
+            "color": "w",
+            "FEN": "1n1r4/2kP3P/1PpNb1Pb/2PqP3/3P2R1/1pnBB1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c7d7",
+            "color": "b",
+            "FEN": "1n1r4/3k3P/1PpNb1Pb/2PqP3/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d3f5",
+            "color": "w",
+            "FEN": "1n1r4/3k3P/1PpNb1Pb/2PqPB2/3P2R1/1pn1B1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d7e7",
+            "color": "b",
+            "FEN": "1n1r4/4k2P/1PpNb1Pb/2PqPB2/3P2R1/1pn1B1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e3g5",
+            "color": "w",
+            "FEN": "1n1r4/4k2P/1PpNb1Pb/2PqPBB1/3P2R1/1pn3R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e7f8",
+            "color": "b",
+            "FEN": "1n1r1k2/7P/1PpNb1Pb/2PqPBB1/3P2R1/1pn3R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g6g7",
+            "color": "w",
+            "FEN": "1n1r1k2/6PP/1PpNb2b/2PqPBB1/3P2R1/1pn3R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f8g7",
+            "color": "b",
+            "FEN": "1n1r4/6kP/1PpNb2b/2PqPBB1/3P2R1/1pn3R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g5e3",
+            "color": "w",
+            "FEN": "1n1r4/6kP/1PpNb2b/2PqPB2/3P2R1/1pn1B1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g7h8",
+            "color": "b",
+            "FEN": "1n1r3k/7P/1PpNb2b/2PqPB2/3P2R1/1pn1B1R1/r5Q1/2K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d6f7",
+            "color": "w",
+            "FEN": "1n1r3k/5N1P/1Pp1b2b/2PqPB2/3P2R1/1pn1B1R1/r5Q1/2K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}

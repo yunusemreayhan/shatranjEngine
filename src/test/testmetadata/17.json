@@ -1,0 +1,92 @@
+{
+    "gameName": "17",
+    "result": "1-0",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.17 Problem 17",
+    "book": "Libro del acedrex",
+    "pageCell": "214",
+    "event": "Problem 17",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "1b2kn1r/4p3/PPp4p/2N1PN1P/1n6/2q4B/1rpR4/K1B3R1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f5g7",
+            "color": "w",
+            "FEN": "1b2kn1r/4p1N1/PPp4p/2N1P2P/1n6/2q4B/1rpR4/K1B3R1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e8f7",
+            "color": "b",
+            "FEN": "1b3n1r/4pkN1/PPp4p/2N1P2P/1n6/2q4B/1rpR4/K1B3R1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d2f2",
+            "color": "w",
+            "FEN": "1b3n1r/4pkN1/PPp4p/2N1P2P/1n6/2q4B/1rp2R2/K1B3R1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f7g8",
+            "color": "b",
+            "FEN": "1b3nkr/4p1N1/PPp4p/2N1P2P/1n6/2q4B/1rp2R2/K1B3R1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g7e6",
+            "color": "w",
+            "FEN": "1b3nkr/4p3/PPp1N2p/2N1P2P/1n6/2q4B/1rp2R2/K1B3R1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f8g6",
+            "color": "b",
+            "FEN": "1b4kr/4p3/PPp1N1np/2N1P2P/1n6/2q4B/1rp2R2/K1B3R1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g1g6",
+            "color": "w",
+            "FEN": "1b4kr/4p3/PPp1N1Rp/2N1P2P/1n6/2q4B/1rp2R2/K1B5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g8h7",
+            "color": "b",
+            "FEN": "1b5r/4p2k/PPp1N1Rp/2N1P2P/1n6/2q4B/1rp2R2/K1B5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f2f7",
+            "color": "w",
+            "FEN": "1b5r/4pR1k/PPp1N1Rp/2N1P2P/1n6/2q4B/1rp5/K1B5 b - - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}

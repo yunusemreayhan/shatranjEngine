@@ -1,0 +1,83 @@
+{
+    "gameName": "5",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.4 Problem 5",
+    "book": "Libro del acedrex",
+    "pageCell": "187",
+    "event": "Problem 5",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "2rrnb2/8/bRp1pppp/k1n5/p1P3p1/P1KQB1PP/1RNPN3/5B2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "2r1nb2/8/bRp1pppp/k1n5/p1P3p1/P1KrB1PP/1RNPN3/5B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d8d3",
+            "FEN": "2r1nb2/8/bRp1pppp/k1n5/p1P3p1/P1KrB1PP/1RNPN3/5B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f1d3",
+            "color": "w",
+            "FEN": "2r1nb2/8/bRp1pppp/k1n5/p1P3p1/P1KBB1PP/1RNPN3/8 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c5e4",
+            "color": "b",
+            "FEN": "2r1nb2/8/bRp1pppp/k7/p1P1n1p1/P1KBB1PP/1RNPN3/8 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c3d4",
+            "color": "w",
+            "FEN": "2r1nb2/8/bRp1pppp/k7/p1PKn1p1/P2BB1PP/1RNPN3/8 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e6e5",
+            "color": "b",
+            "FEN": "2r1nb2/8/bRp2ppp/k3p3/p1PKn1p1/P2BB1PP/1RNPN3/8 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d4e4",
+            "color": "w",
+            "FEN": "2r1nb2/8/bRp2ppp/k3p3/p1P1K1p1/P2BB1PP/1RNPN3/8 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e8d6",
+            "color": "b",
+            "FEN": "2r2b2/8/bRpn1ppp/k3p3/p1P1K1p1/P2BB1PP/1RNPN3/8 w - - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}

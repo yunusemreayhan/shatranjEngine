@@ -1,0 +1,190 @@
+{
+    "gameName": "6",
+    "result": "1-0",
+    "game": "chess",
+    "gameDesc": "",
+    "gameVariant": "shatranj",
+    "questionNo": "1.1.6.4 Problem 6",
+    "book": "Libro del acedrex",
+    "pageCell": "188",
+    "event": "Problem 6",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "1rbk4/3p4/2P3PP/1NBp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c6c7",
+            "color": "w",
+            "FEN": "1rbk4/2Pp4/6PP/1NBp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d8e8",
+            "color": "b",
+            "FEN": "1rb1k3/2Pp4/6PP/1NBp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b5d6",
+            "color": "w",
+            "FEN": "1rb1k3/2Pp4/3N2PP/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e8f8",
+            "color": "b",
+            "FEN": "1rb2k2/2Pp4/3N2PP/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g6g7",
+            "color": "w",
+            "FEN": "1rb2k2/2Pp2P1/3N3P/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f8g8",
+            "color": "b",
+            "FEN": "1rb3k1/2Pp2P1/3N3P/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h6h7",
+            "color": "w",
+            "FEN": "1rb3k1/2Pp2PP/3N4/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g8h7",
+            "color": "b",
+            "FEN": "1rb5/2Pp2Pk/3N4/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g7g8",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp3k/3N4/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h7h6",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp4/3N3k/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d6f7",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/7k/2Bp1Q2/1p1nP3/p7/1rPpPpR1/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h6h5",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1Q1k/1p1nP3/p7/1rPpPpR1/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g2g5",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1QRk/1p1nP3/p7/1rPpPp2/KBn1N1q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h5h4",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1QR1/1p1nP2k/p7/1rPpPp2/KBn1N1q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e1g2",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1QR1/1p1nP2k/p7/1rPpPpN1/KBn3q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h4h3",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1QR1/1p1nP3/p6k/1rPpPpN1/KBn3q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g2f4",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1QR1/1p1nPN2/p6k/1rPpPp2/KBn3q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h3h2",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1QR1/1p1nPN2/p7/1rPpPp1k/KBn3q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g5h5",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1Q1R/1p1nPN2/p7/1rPpPp1k/KBn3q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h2g3",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1Q1R/1p1nPN2/p5k1/1rPpPp2/KBn3q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h5h3",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1Q2/1p1nPN2/p5kR/1rPpPp2/KBn3q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g3f4",
+            "color": "b",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1Q2/1p1nPk2/p6R/1rPpPp2/KBn3q1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e2e3",
+            "color": "w",
+            "FEN": "1rb3Q1/2Pp1N2/8/2Bp1Q2/1p1nPk2/p3P2R/1rPp1p2/KBn3q1 b - - 0 1",
+            "children": [],
+            "description": ""
+        }
+    ]
+}
