@@ -48,6 +48,20 @@ int16_t evaluate(Stockfish::Position pos) {
     //MobilityCalculator mobCalculator;
     //auto               mobCalculatorRes = mobCalculator(pos);
 
+    size_t movecount = MoveList<LEGAL>(pos).size();
+
+    if (movecount == 0)
+    {
+        if (pos.side_to_move() == WHITE)
+        {
+            return VALUE_MATE;
+        }
+        else
+        {
+            return -VALUE_MATE;
+        }
+    }
+
     int materialScore = eval_PeSTO(pos);
 
     int ret = materialScore /* + mobCalculatorRes.mobility */;

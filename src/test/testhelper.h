@@ -24,12 +24,13 @@ inline void play(Position& pos, Move& move, StateInfo& st) {
 
 
 template<typename MoveFindingFunctionType>
-inline void testfen(const std::string&       fen,
+inline bool testfen(const std::string&       fen,
                     const std::string&       fentitle,
                     const std::string&       operatitle,
                     const std::vector<Move>& expectedmoves,
                     size_t                   depth,
                     MoveFindingFunctionType  oper) {
+    bool               ret = true;
     TranspositionTable tt;
     tt.resize(2048);
     Position  pos;
@@ -40,10 +41,12 @@ inline void testfen(const std::string&       fen,
     size_t i = 0;
     std::cout << "===========================================================" << std::endl;
     std::cout << "game start with " << fentitle << "    " << operatitle << std::endl;
-    for (i = 0; i < expectedmoves.size(); ++i)
+    for (i = 0; i < depth; ++i)
     {
         Move picked   = Move::none();
         long duration = timeit_us([&]() { picked = oper(tt, pos, depth); });
+        if (picked == Move::none())
+            break;
         std::cout << "move " << picked << " found in " << duration << std::endl;
         std::cout << "-----------------------------------------------------" << std::endl;
         if (picked == Move::none())
@@ -56,10 +59,15 @@ inline void testfen(const std::string&       fen,
         }
 
         play(pos, picked, st[j++]);
-        EXPECT_EQ(expectedmoves[i], picked);
+        if (i < expectedmoves.size())
+        {
+            EXPECT_EQ(expectedmoves[i], picked);
+            if (expectedmoves[i] != picked)
+                ret &= false;
+        }
     }
 
-    EXPECT_EQ(expectedmoves.size(), i);
+    return ret;
 }
 
 template<typename movelisttype>

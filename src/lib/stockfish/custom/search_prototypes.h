@@ -60,8 +60,7 @@ class search {
 
         if (moves.size() == 0)
         {
-            Value ret =
-              m_pos.side_to_move() == Stockfish::WHITE ? -VALUE_INFINITE : +VALUE_INFINITE;
+            Value ret = -VALUE_MATE;
             ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_UPPER, plyRemaining,
                            Move::none(), ret, m_tt->generation());
             return ret;
@@ -88,15 +87,13 @@ class search {
             if (besteval < m.value)
             {
                 besteval = m.value;
-                if (pvnode && best_moves.equal_until(last_moves, plyFromRoot))
+                if (best_moves.equal_until(last_moves, plyFromRoot))
                 {
                     best_moves.set(plyFromRoot, m);
-                    // rerun for pv table updating
-                    m.value = -negmax(plyRemaining - 1, plyFromRoot + 1, -beta, -alpha, true);
                 }
+                last_best_moves.set(plyFromRoot, m);
             }
             m_pos.undo_move(m);
-
 
             alpha = std::max(alpha, m.value);  // -min(-a, -b) // max(a, b)
             if (beta <= alpha)
@@ -111,6 +108,11 @@ class search {
 
    public:
     inline Move iterative_deepening(int d) {
+        auto [ttHit, ttData, ttWriter] = m_tt->probe(m_pos.key());
+        if (ttHit && ttData.depth >= d)
+        {
+            return ttData.move;
+        }
         auto moves = CustomMovePicker(m_pos, m_tt, pv_manager, 0);
 
         if (moves.size() == 0)
@@ -120,27 +122,30 @@ class search {
         {
             Value besteval = -VALUE_INFINITE;
             Move  move     = Move::none();
+            Value bestvalue = -VALUE_INFINITE;
 
             last_moves.clear();
             best_moves.clear();
             for (auto& m : moves)
             {
                 StateInfo st;
+                Value     value = -VALUE_INFINITE;
+                value           = m.value;
                 m_pos.do_move(m, st);
                 last_moves.set(0, m);
-                m.value = (m_pos.side_to_move() == WHITE ? -1 : 1)
-                        * negmax(depth - 1, 1, -VALUE_INFINITE, VALUE_INFINITE);
+                m.value = -negmax(depth - 1, 1, -VALUE_INFINITE, VALUE_INFINITE);
                 if (m.value > besteval)
                 {
-                    best_moves.set(0, m);
+                    last_best_moves.set(0, m);
                     move     = m;
                     besteval = m.value;
-                    // rerun for updating pv table
-                    negmax(depth - 1, 1, -VALUE_INFINITE, VALUE_INFINITE, true);
+                    bestvalue = value;
                 }
                 m_pos.undo_move(m);
             }
             pv_manager.insert(best_moves);
+            ttWriter.write(m_pos.key(), bestvalue, false, Stockfish::BOUND_UPPER, depth, move,
+                           besteval, m_tt->generation());
         }
         partial_insertion_sort(moves.begin(), moves.end(), std::numeric_limits<int>::min());
 
@@ -158,4 +163,5 @@ class search {
     PVManager           pv_manager;
     pv_tree             last_moves;
     pv_tree             best_moves;
+    pv_tree             last_best_moves;
 };
