@@ -1,0 +1,141 @@
+{
+    "gameName": "35",
+    "game": "chess",
+    "gameDesc": "1.1.6.35 Problem 35",
+    "gameVariant": "standard",
+    "questionNo": "Problem 35",
+    "book": "Libro Del Axedrez",
+    "pageCell": "244",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb3n2/qppn1Q2/2r1P3/4KN2 w - - 0 1",
+            "children": [
+                {
+                    "move": "e1d1",
+                    "color": "w",
+                    "FEN": "5k2/R6R/5rP1/1B4N1/pb3n2/qppn1Q2/2r1P3/3K1N2 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "c2c1",
+                    "color": "b",
+                    "FEN": "5k2/R6R/5rP1/1B4N1/pb3n2/qppn1Q2/4P3/2rK1N2 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                }
+            ],
+            "description": "Black checkmated."
+        },
+        {
+            "move": "e2d3",
+            "color": "w",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb3n2/qppP1Q2/2r5/4KN2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c2e2",
+            "color": "b",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb3n2/qppP1Q2/4r3/4KN2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f3e2",
+            "color": "w",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb3n2/qppP4/4Q3/4KN2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f4g2",
+            "color": "b",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb6/qppP4/4Q1n1/4KN2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e1d1",
+            "color": "w",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb6/qppP4/4Q1n1/3K1N2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c3c2",
+            "color": "b",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb6/qp1P4/2p1Q1n1/3K1N2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d1c1",
+            "color": "w",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb6/qp1P4/2p1Q1n1/2K2N2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b3b2",
+            "color": "b",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb6/q2P4/1pp1Q1n1/2K2N2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1c2",
+            "color": "w",
+            "FEN": "5k2/R6R/5rP1/1B4N1/pb6/q2P4/1pK1Q1n1/5N2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f6c6",
+            "color": "b",
+            "FEN": "5k2/R6R/2r3P1/1B4N1/pb6/q2P4/1pK1Q1n1/5N2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c2b1",
+            "color": "w",
+            "FEN": "5k2/R6R/2r3P1/1B4N1/pb6/q2P4/1p2Q1n1/1K3N2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c6c1",
+            "color": "b",
+            "FEN": "5k2/R6R/6P1/1B4N1/pb6/q2P4/1p2Q1n1/1Kr2N2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b1a2",
+            "color": "w",
+            "FEN": "5k2/R6R/6P1/1B4N1/pb6/q2P4/Kp2Q1n1/2r2N2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1a1",
+            "color": "b",
+            "FEN": "5k2/R6R/6P1/1B4N1/pb6/q2P4/Kp2Q1n1/r4N2 w - - 0 1",
+            "children": [],
+            "description": "Black checkmated."
+        }
+    ]
+}

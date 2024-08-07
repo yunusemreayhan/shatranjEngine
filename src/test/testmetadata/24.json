@@ -1,0 +1,139 @@
+{
+    "gameName": "24",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "1.1.6.24 Problem 24 ",
+    "gameVariant": "standard",
+    "questionNo": "Problem 24",
+    "book": "Libro Del Axedrez",
+    "pageCell": "229",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "1k2N3/R1RP1n2/1P4p1/P1qp4/2ppn3/1p2P2P/1r4P1/3K1Q2 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "1k2N3/R1RP1n2/1P4p1/P1qp4/2ppn3/1p2P2P/6P1/1r1K1Q2 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b2b1",
+            "FEN": "1k2N3/R1RP1n2/1P4p1/P1qp4/2ppn3/1p2P2P/6P1/1r1K1Q2 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d1e2",
+            "color": "w",
+            "FEN": "1k2N3/R1RP1n2/1P4p1/P1qp4/2ppn3/1p2P2P/4K1P1/1r3Q2 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d4d3",
+            "color": "b",
+            "FEN": "1k2N3/R1RP1n2/1P4p1/P1qp4/2p1n3/1p1pP2P/4K1P1/1r3Q2 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e2f3",
+            "color": "w",
+            "FEN": "1k2N3/R1RP1n2/1P4p1/P1qp4/2p1n3/1p1pPK1P/6P1/1r3Q2 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f7e5",
+            "color": "b",
+            "FEN": "1k2N3/R1RP4/1P4p1/P1qpn3/2p1n3/1p1pPK1P/6P1/1r3Q2 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f3f4",
+            "color": "w",
+            "FEN": "1k2N3/R1RP4/1P4p1/P1qpn3/2p1nK2/1p1pP2P/6P1/1r3Q2 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b1f1",
+            "color": "b",
+            "FEN": "1k2N3/R1RP4/1P4p1/P1qpn3/2p1nK2/1p1pP2P/6P1/5r2 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f4e5",
+            "color": "w",
+            "FEN": "1k2N3/R1RP4/1P4p1/P1qpK3/2p1n3/1p1pP2P/6P1/5r2 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f1f5",
+            "color": "b",
+            "FEN": "1k2N3/R1RP4/1P4p1/P1qpKr2/2p1n3/1p1pP2P/6P1/8 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e5e6",
+            "color": "w",
+            "FEN": "1k2N3/R1RP4/1P2K1p1/P1qp1r2/2p1n3/1p1pP2P/6P1/8 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e4g5",
+            "color": "b",
+            "FEN": "1k2N3/R1RP4/1P2K1p1/P1qp1rn1/2p5/1p1pP2P/6P1/8 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e6e7",
+            "color": "w",
+            "FEN": "1k2N3/R1RPK3/1P4p1/P1qp1rn1/2p5/1p1pP2P/6P1/8 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f5f7",
+            "color": "b",
+            "FEN": "1k2N3/R1RPKr2/1P4p1/P1qp2n1/2p5/1p1pP2P/6P1/8 w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e7d8",
+            "color": "w",
+            "FEN": "1k1KN3/R1RP1r2/1P4p1/P1qp2n1/2p5/1p1pP2P/6P1/8 b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g5e6",
+            "color": "b",
+            "FEN": "1k1KN3/R1RP1r2/1P2n1p1/P1qp4/2p5/1p1pP2P/6P1/8 w KQkq - 0 1",
+            "children": [],
+            "description": "Black checkmated."
+        }
+    ]
+}

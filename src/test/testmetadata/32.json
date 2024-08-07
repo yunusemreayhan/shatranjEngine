@@ -1,0 +1,97 @@
+{
+    "gameName": "32",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "1.1.6.32 Problem 32",
+    "gameVariant": "standard",
+    "questionNo": "Problem 32",
+    "book": "Libro Del Axedrez",
+    "pageCell": "240",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/p1P1n1pP/1r6/2K2B2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/p1P1n1pP/2r5/2K2B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b2c2",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/p1P1n1pP/2r5/2K2B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1b1",
+            "color": "w",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/p1P1n1pP/2r5/1K3B2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a3a2",
+            "color": "b",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/2P1n1pP/p1r5/1K3B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b1a1",
+            "color": "w",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/2P1n1pP/p1r5/K4B2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c2c1",
+            "color": "b",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/2P1n1pP/p7/K1r2B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a1b2",
+            "color": "w",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/2P1n1pP/pK6/2r2B2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1b1",
+            "color": "b",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/2P1n1pP/pK6/1r3B2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b2a3",
+            "color": "w",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/K1P1n1pP/p7/1r3B2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e3c2",
+            "color": "b",
+            "FEN": "4k3/2R4R/3b1p1p/1p1PNP2/2b5/K1P3pP/p1n5/1r3B2 w - - 0 1",
+            "children": [],
+            "description": "Black checkmated."
+        }
+    ]
+}

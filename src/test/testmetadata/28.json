@@ -1,0 +1,106 @@
+{
+    "gameName": "28",
+    "result": "1-0",
+    "game": "chess",
+    "gameDesc": "1.1.6.28 Problem 28 ",
+    "gameVariant": "standard",
+    "questionNo": "Problem 28",
+    "book": "Libro Del Axedrez",
+    "pageCell": "234",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "6r1/3B2p1/2N1n2p/6Pp/1bP3bP/1P1k1pP1/3P3r/n1BK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d7b5",
+            "color": "w",
+            "FEN": "6r1/6p1/2N1n2p/1B4Pp/1bP3bP/1P1k1pP1/3P3r/n1BK4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d3e4",
+            "color": "b",
+            "FEN": "6r1/6p1/2N1n2p/1B4Pp/1bP1k1bP/1P3pP1/3P3r/n1BK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d2d3",
+            "color": "w",
+            "FEN": "6r1/6p1/2N1n2p/1B4Pp/1bP1k1bP/1P1P1pP1/7r/n1BK4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e4f5",
+            "color": "b",
+            "FEN": "6r1/6p1/2N1n2p/1B3kPp/1bP3bP/1P1P1pP1/7r/n1BK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b5d7",
+            "color": "w",
+            "FEN": "6r1/3B2p1/2N1n2p/5kPp/1bP3bP/1P1P1pP1/7r/n1BK4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f5g6",
+            "color": "b",
+            "FEN": "6r1/3B2p1/2N1n1kp/6Pp/1bP3bP/1P1P1pP1/7r/n1BK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c6e5",
+            "color": "w",
+            "FEN": "6r1/3B2p1/4n1kp/4N1Pp/1bP3bP/1P1P1pP1/7r/n1BK4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "g6h7",
+            "color": "b",
+            "FEN": "6r1/3B2pk/4n2p/4N1Pp/1bP3bP/1P1P1pP1/7r/n1BK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d7f5",
+            "color": "w",
+            "FEN": "6r1/6pk/4n2p/4NBPp/1bP3bP/1P1P1pP1/7r/n1BK4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h7h8",
+            "color": "b",
+            "FEN": "6rk/6p1/4n2p/4NBPp/1bP3bP/1P1P1pP1/7r/n1BK4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e5f7",
+            "color": "w",
+            "FEN": "6rk/5Np1/4n2p/5BPp/1bP3bP/1P1P1pP1/7r/n1BK4 b - - 0 1",
+            "children": [],
+            "description": "White  checkmate."
+        }
+    ]
+}

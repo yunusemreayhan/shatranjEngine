@@ -1,0 +1,246 @@
+{
+    "gameName": "33",
+    "game": "chess",
+    "gameDesc": "1.1.6.33 Problem 33",
+    "gameVariant": "standard",
+    "questionNo": "Problem 33",
+    "book": "Libro Del Axedrez",
+    "pageCell": "241",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bbn/pp1Br1p1/8/q4K2 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bbn/pp1B2p1/8/q3rK2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e3e1",
+            "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bbn/pp1B2p1/8/q3rK2 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f1e1",
+            "color": "w",
+            "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bbn/pp1B2p1/8/q3K3 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h4f3",
+            "color": "b",
+            "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bb1/pp1B1np1/8/q3K3 w - - 0 1",
+            "children": [
+                {
+                    "move": "e1f1",
+                    "color": "w",
+                    "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bb1/pp1B1np1/8/q4K2 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "d5e3",
+                    "color": "b",
+                    "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/pp1Bnnp1/8/q4K2 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                }
+            ],
+            "description": "Black checkmated."
+        },
+        {
+            "move": "e1d1",
+            "color": "w",
+            "FEN": "6RN/1r6/2q2N1k/3n1pR1/5bb1/pp1B1np1/8/q2K4 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d5e3",
+            "color": "b",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/pp1Bnnp1/8/q2K4 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d1c1",
+            "color": "w",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/pp1Bnnp1/8/q1K5 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b3b2",
+            "color": "b",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2Bnnp1/1p6/q1K5 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c1b1",
+            "color": "w",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2Bnnp1/1p6/qK6 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f3d2",
+            "color": "b",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2Bn1p1/1p1n4/qK6 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b1a2",
+            "color": "w",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2Bn1p1/Kp1n4/q7 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b2b1",
+            "color": "b",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2Bn1p1/K2n4/qq6 w - - 0 1",
+            "children": [
+                {
+                    "move": "a2a3",
+                    "color": "w",
+                    "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/K2Bn1p1/3n4/qq6 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "e3c2",
+                    "color": "b",
+                    "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/K2B2p1/2nn4/qq6 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "a3a4",
+                    "color": "w",
+                    "FEN": "6RN/1r6/2q2N1k/5pR1/K4bb1/3B2p1/2nn4/qq6 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "b7a7",
+                    "color": "b",
+                    "FEN": "6RN/r7/2q2N1k/5pR1/K4bb1/3B2p1/2nn4/qq6 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "d3b1",
+                    "color": "w",
+                    "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p3n1p1/K2n4/qB6 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "b7b2",
+                    "color": "b",
+                    "FEN": "6RN/8/2q2N1k/5pR1/5bb1/p3n1p1/Kr1n4/qB6 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "a2a3",
+                    "color": "w",
+                    "FEN": "6RN/8/2q2N1k/5pR1/5bb1/K3n1p1/1r1n4/qB6 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "d2b1",
+                    "color": "b",
+                    "FEN": "6RN/8/2q2N1k/5pR1/5bb1/K3n1p1/1r6/qn6 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "a3a4",
+                    "color": "w",
+                    "FEN": "6RN/8/2q2N1k/5pR1/K4bb1/4n1p1/1r6/qn6 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "b1c3",
+                    "color": "b",
+                    "FEN": "6RN/8/2q2N1k/5pR1/K4bb1/2n1n1p1/1r6/q7 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "a4a5",
+                    "color": "w",
+                    "FEN": "6RN/8/2q2N1k/K4pR1/5bb1/2n1n1p1/1r6/q7 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "e3c4",
+                    "color": "b",
+                    "FEN": "6RN/8/2q2N1k/K4pR1/2n2bb1/2n3p1/1r6/q7 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "a5a6",
+                    "color": "w",
+                    "FEN": "6RN/8/K1q2N1k/5pR1/2n2bb1/2n3p1/1r6/q7 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "b2a2",
+                    "color": "b",
+                    "FEN": "6RN/8/K1q2N1k/5pR1/2n2bb1/2n3p1/r7/q7 w - - 0 1",
+                    "children": [],
+                    "description": "Black checkmated."
+                }
+            ],
+            "description": "Black checkmated."
+        },
+        {
+            "move": "a2a1",
+            "color": "w",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2Bn1p1/3n4/Kq6 b - - 0 1",
+            "children": [
+                {
+                    "move": "d2b3",
+                    "color": "b",
+                    "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/pn1Bn1p1/8/Kq6 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                }
+            ],
+            "description": "Black checkmated."
+        },
+        {
+            "move": "e3c2",
+            "color": "b",
+            "FEN": "6RN/1r6/2q2N1k/5pR1/5bb1/p2B2p1/2nn4/Kq6 w - - 0 1",
+            "children": [],
+            "description": "Black checkmated."
+        }
+    ]
+}

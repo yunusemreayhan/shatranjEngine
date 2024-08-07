@@ -1,0 +1,133 @@
+{
+    "gameName": "29",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "1.1.6.29 Problem 29",
+    "gameVariant": "standard",
+    "questionNo": "Problem 29",
+    "book": "Libro Del Axedrez",
+    "pageCell": "236",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "8/1qk2r2/bq1p4/5npp/4P3/5KNP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "8/1qk2r2/bq1p4/6pp/4P2n/5KNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f5h4",
+            "FEN": "8/1qk2r2/bq1p4/6pp/4P2n/5KNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": "Also discovers Rook[f7]+"
+        },
+        {
+            "move": "f3e3",
+            "color": "w",
+            "FEN": "8/1qk2r2/bq1p4/6pp/4P2n/4K1NP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [],
+            "description": "because he cannot cover with white Knight[g3-f5 or e2-f4] because of the other check from Black Knight [h4]"
+        },
+        {
+            "move": "f7f3",
+            "color": "b",
+            "FEN": "8/1qk5/bq1p4/6pp/4P2n/4KrNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e3d4",
+            "color": "w",
+            "FEN": "8/1qk5/bq1p4/6pp/3KP2n/5rNP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b6c5",
+            "color": "b",
+            "FEN": "8/1qk5/b2p4/2q3pp/3KP2n/5rNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d4d5",
+            "color": "w",
+            "FEN": "8/1qk5/b2p4/2qK2pp/4P2n/5rNP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b7c6",
+            "color": "b",
+            "FEN": "8/2k5/b1qp4/2qK2pp/4P2n/5rNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d5e6",
+            "color": "w",
+            "FEN": "8/2k5/b1qpK3/2q3pp/4P2n/5rNP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [
+                {
+                    "move": "a6c4",
+                    "color": "b",
+                    "FEN": "8/2k5/2qpK3/2q3pp/2b1P2n/5rNP/3PN2R/3Q1BBR w KQkq - 0 1",
+                    "children": [],
+                    "description": ""
+                }
+            ],
+            "description": ""
+        },
+        {
+            "move": "a6c8",
+            "color": "b",
+            "FEN": "2b5/2k5/2qpK3/2q3pp/4P2n/5rNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e6e7",
+            "color": "w",
+            "FEN": "2b5/2k1K3/2qp4/2q3pp/4P2n/5rNP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "h4g6",
+            "color": "b",
+            "FEN": "2b5/2k1K3/2qp2n1/2q3pp/4P3/5rNP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e7e8",
+            "color": "w",
+            "FEN": "2b1K3/2k5/2qp2n1/2q3pp/4P3/5rNP/3PN2R/3Q1BBR b KQkq - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "f3f8",
+            "color": "b",
+            "FEN": "2b1Kr2/2k5/2qp2n1/2q3pp/4P3/6NP/3PN2R/3Q1BBR w KQkq - 0 1",
+            "children": [],
+            "description": "Black checkmated. If black errs white cannot mate him in a fixed number of moves but black will be defeated because white outnumbers him"
+        }
+    ]
+}

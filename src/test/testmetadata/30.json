@@ -1,0 +1,121 @@
+{
+    "gameName": "30",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "1.1.6.30 Problem 30",
+    "gameVariant": "standard",
+    "questionNo": "Problem 30",
+    "book": "Libro Del Axedrez",
+    "pageCell": "237",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "8/Pk1P4/1P1q2P1/P2Q3p/1N2pbb1/2R1B2n/5r2/1r2n2K w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c3c7",
+            "color": "w",
+            "FEN": "8/PkRP4/1P1q2P1/P2Q3p/1N2pbb1/4B2n/5r2/1r2n2K b - - 0 1",
+            "children": [
+                {
+                    "move": "b7a8",
+                    "color": "b",
+                    "FEN": "k7/P1RP4/1P1q2P1/P2Q3p/1N2pbb1/4B2n/5r2/1r2n2K w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "c7c8",
+                    "color": "w",
+                    "FEN": "k1R5/P2P4/1P1q2P1/P2Q3p/1N2pbb1/4B2n/5r2/1r2n2K b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "a8b7",
+                    "color": "b",
+                    "FEN": "2R5/Pk1P4/1P1q2P1/P2Q3p/1N2pbb1/4B2n/5r2/1r2n2K w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "c8b8",
+                    "color": "w",
+                    "FEN": "1R6/Pk1P4/1P1q2P1/P2Q3p/1N2pbb1/4B2n/5r2/1r2n2K b - - 0 1",
+                    "children": [],
+                    "description": "Black checkmated."
+                }
+            ],
+            "description": ""
+        },
+        {
+            "move": "d6c7",
+            "color": "b",
+            "FEN": "8/PkqP4/1P4P1/P2Q3p/1N2pbb1/4B2n/5r2/1r2n2K w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d5c6",
+            "color": "w",
+            "FEN": "8/PkqP4/1PQ3P1/P6p/1N2pbb1/4B2n/5r2/1r2n2K b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b7a8",
+            "color": "b",
+            "FEN": "k7/P1qP4/1PQ3P1/P6p/1N2pbb1/4B2n/5r2/1r2n2K w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b6b7",
+            "color": "w",
+            "FEN": "k7/PPqP4/2Q3P1/P6p/1N2pbb1/4B2n/5r2/1r2n2K b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a8a7",
+            "color": "b",
+            "FEN": "8/kPqP4/2Q3P1/P6p/1N2pbb1/4B2n/5r2/1r2n2K w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e3c5",
+            "color": "w",
+            "FEN": "8/kPqP4/2Q3P1/P1B4p/1N2pbb1/7n/5r2/1r2n2K b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a7b8",
+            "color": "b",
+            "FEN": "1k6/1PqP4/2Q3P1/P1B4p/1N2pbb1/7n/5r2/1r2n2K w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b4a6",
+            "color": "w",
+            "FEN": "1k6/1PqP4/N1Q3P1/P1B4p/4pbb1/7n/5r2/1r2n2K b - - 0 1",
+            "children": [],
+            "description": "Black checkmated. if white errs Black Rook [f2]-h2 [or Black Rook f2-f1 or Black Knight e1-anywhere to discover checkmate from Black Rook b1]"
+        }
+    ]
+}

@@ -1,0 +1,140 @@
+{
+    "gameName": "31",
+    "result": "0-1",
+    "game": "chess",
+    "gameDesc": "1.1.6.31 Problem 31 ",
+    "gameVariant": "standard",
+    "questionNo": "Problem 31",
+    "book": "Libro Del Axedrez",
+    "pageCell": "238",
+    "event": "",
+    "site": "",
+    "date": "",
+    "white": "",
+    "black": "",
+    "eco": "",
+    "round": "",
+    "timeControl": "",
+    "whiteClock": "",
+    "blackClock": "",
+    "clock": "",
+    "moveList": [
+        {
+            "move": "initial",
+            "FEN": "4r3/q2r2NN/b1pn1P2/1P1P4/1n6/6PB/3b1R1R/K5k1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "...",
+            "FEN": "8/q2r2NN/b1pn1P2/1P1P4/1n6/6PB/3b1R1R/K3r1k1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e8e1",
+            "FEN": "8/q2r2NN/b1pn1P2/1P1P4/1n6/6PB/3b1R1R/K3r1k1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a1b2",
+            "color": "w",
+            "FEN": "8/q2r2NN/b1pn1P2/1P1P4/1n6/6PB/1K1b1R1R/4r1k1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d6c4",
+            "color": "b",
+            "FEN": "8/q2r2NN/b1p2P2/1P1P4/1nn5/6PB/1K1b1R1R/4r1k1 w - - 0 1",
+            "children": [
+                {
+                    "move": "b2b3",
+                    "color": "w",
+                    "FEN": "8/q2r2NN/b1p2P2/1P1P4/1nn5/1K4PB/3b1R1R/4r1k1 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "e1e3",
+                    "color": "b",
+                    "FEN": "8/q2r2NN/b1p2P2/1P1P4/1nn5/1K2r1PB/3b1R1R/6k1 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "b3a4",
+                    "color": "w",
+                    "FEN": "8/q2r2NN/b1p2P2/1P1P4/Knn5/4r1PB/3b1R1R/6k1 b - - 0 1",
+                    "children": [],
+                    "description": ""
+                },
+                {
+                    "move": "e3a3",
+                    "color": "b",
+                    "FEN": "8/q2r2NN/b1p2P2/1P1P4/Knn5/r5PB/3b1R1R/6k1 w - - 0 1",
+                    "children": [],
+                    "description": ""
+                }
+            ],
+            "description": "Black checkmated."
+        },
+        {
+            "move": "b2c3",
+            "color": "w",
+            "FEN": "8/q2r2NN/b1p2P2/1P1P4/1nn5/2K3PB/3b1R1R/4r1k1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "e1e3",
+            "color": "b",
+            "FEN": "8/q2r2NN/b1p2P2/1P1P4/1nn5/2K1r1PB/3b1R1R/6k1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c3d4",
+            "color": "w",
+            "FEN": "8/q2r2NN/b1p2P2/1P1P4/1nnK4/4r1PB/3b1R1R/6k1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "b4c2",
+            "color": "b",
+            "FEN": "8/q2r2NN/b1p2P2/1P1P4/2nK4/4r1PB/2nb1R1R/6k1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d4c5",
+            "color": "w",
+            "FEN": "8/q2r2NN/b1p2P2/1PKP4/2n5/4r1PB/2nb1R1R/6k1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "a7b6",
+            "color": "b",
+            "FEN": "8/3r2NN/bqp2P2/1PKP4/2n5/4r1PB/2nb1R1R/6k1 w - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "c5c6",
+            "color": "w",
+            "FEN": "8/3r2NN/bqK2P2/1P1P4/2n5/4r1PB/2nb1R1R/6k1 b - - 0 1",
+            "children": [],
+            "description": ""
+        },
+        {
+            "move": "d7c7",
+            "color": "b",
+            "FEN": "8/2r3NN/bqK2P2/1P1P4/2n5/4r1PB/2nb1R1R/6k1 w - - 0 1",
+            "children": [],
+            "description": "Black checkmated. if black errs White Rook f2- g2++ [or White Rook f2-f1++]"
+        }
+    ]
+}

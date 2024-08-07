@@ -2,12 +2,12 @@
     "gameName": "2",
     "result": "1/2-1/2",
     "game": "chess",
-    "gameDesc": "",
-    "gameVariant": "shatranj",
-    "questionNo": "1.1.6.2 Problem 2",
-    "book": "Libro del acedrex",
+    "gameDesc": "1.1.6.2 Problem 2 ",
+    "gameVariant": "standard",
+    "questionNo": "Problem 2",
+    "book": "Libro Del Axedrez",
     "pageCell": "179",
-    "event": "Problem 2",
+    "event": "",
     "site": "",
     "date": "",
     "white": "",
@@ -21,182 +21,182 @@
     "moveList": [
         {
             "move": "initial",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1qK1/q4B1r b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1qK1/q4B1r b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "...",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1qK1/q4Br1 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1qK1/q4Br1 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "h1g1",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1qK1/q4Br1 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1qK1/q4Br1 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "g2f3",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P1K1P/Qq1N1q2/q4Br1 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P1K1P/Qq1N1q2/q4Br1 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "g1g3",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P1KrP/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P1KrP/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "f3e2",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P2rP/Qq1NKq2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P2rP/Qq1NKq2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "g3e3",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3Pr2P/Qq1NKq2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3Pr2P/Qq1NKq2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "e2d1",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3Pr2P/Qq1N1q2/q2K1B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3Pr2P/Qq1N1q2/q2K1B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "e3e1",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q2KrB2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q2KrB2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "d1c2",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/QqKN1q2/q3rB2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/QqKN1q2/q3rB2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "e1c1",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/QqKN1q2/q1r2B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/QqKN1q2/q1r2B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "c2b3",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/1K1P3P/Qq1N1q2/q1r2B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/1K1P3P/Qq1N1q2/q1r2B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "c1c3",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/1KrP3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/1NP2bnp/1KrP3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "b3a4",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/KNP2bnp/2rP3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/KNP2bnp/2rP3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "c3a3",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/5pp1/KNP2bnp/r2P3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/5pp1/KNP2bnp/r2P3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "a4b5",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/1K3pp1/1NP2bnp/r2P3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/1K3pp1/1NP2bnp/r2P3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "a3a5",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/rK3pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/rK3pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "b5c6",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1qKpb1PP/r4pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1qKpb1PP/r4pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "a5c5",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1qKpb1PP/2r2pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1qKpb1PP/2r2pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "c6b7",
             "color": "w",
-            "FEN": "QRn4q/1K1P1PR1/1q1pb1PP/2r2pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/1K1P1PR1/1q1pb1PP/2r2pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "c5c7",
             "color": "b",
-            "FEN": "QRn4q/1KrP1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/1KrP1PR1/1q1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "b7a6",
             "color": "w",
-            "FEN": "QRn4q/2rP1PR1/Kq1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/2rP1PR1/Kq1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "c7a7",
             "color": "b",
-            "FEN": "QRn4q/r2P1PR1/Kq1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/r2P1PR1/Kq1pb1PP/5pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "a6b5",
             "color": "w",
-            "FEN": "QRn4q/r2P1PR1/1q1pb1PP/1K3pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/r2P1PR1/1q1pb1PP/1K3pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "a7a5",
             "color": "b",
-            "FEN": "QRn4q/3P1PR1/1q1pb1PP/rK3pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1q1pb1PP/rK3pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 w - - 0 1",
             "children": [],
             "description": ""
         },
         {
             "move": "b5c6",
             "color": "w",
-            "FEN": "QRn4q/3P1PR1/1qKpb1PP/r4pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
+            "FEN": "QRn4k/3P1PR1/1qKpb1PP/r4pp1/1NP2bnp/3P3P/Qq1N1q2/q4B2 b - - 0 1",
             "children": [],
-            "description": ""
+            "description": "The game is a draw."
         }
     ]
 }
