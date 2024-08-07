@@ -60,14 +60,15 @@ TEST(JsonFileTests, IteratingThroughJsonFiles) {
     }
     std::vector<std::string> skipped = {"./src/test/testmetadata/2.json"};
     std::cout << problems.size() << std::endl;
-    size_t successes = 0;
-    size_t fails     = 0;
+    size_t             successes = 0;
+    size_t             fails     = 0;
+    TranspositionTable tt;
+    tt.resize(2048);
     for (auto& problem : problems)
     {
         if (std::find(skipped.begin(), skipped.end(), problem.problem_fpath) == skipped.end())
         {
-            TranspositionTable tt;
-            tt.resize(2048);
+            tt.clear();
             auto prev    = *problem.games.begin();
             bool success = true;
             for (auto game = problem.games.begin() + 1; game != problem.games.end(); game++)
@@ -86,10 +87,11 @@ TEST(JsonFileTests, IteratingThroughJsonFiles) {
 
                 std::cout << "pos : " << pos << std::endl;
                 search s(&tt, pos);
-                auto   move = s.iterative_deepening(12);
-                EXPECT_EQ(move, game->move);
-                if (move != game->move)
+                auto   move = s.iterative_deepening(0);
+
+                if (move == Move::none() || move != game->move)
                 {
+                    EXPECT_EQ(move, game->move);
                     success = false;
                     break;
                 }

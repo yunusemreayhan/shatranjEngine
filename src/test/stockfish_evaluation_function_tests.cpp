@@ -155,11 +155,10 @@ TEST(EvaluationTests, single_move_simple_puzzles) {
     size_t wrongs    = 0;
     for (auto& testitem : simple_puzzles_handmade)
     {
-        auto res = testfen(testitem.fen.fen, "single move win", "iterative deepening",
-                           testitem.fen.shatranj, testitem.expectedmoves, testitem.searchdepth,
-                           [&](TranspositionTable& tt, Position& pos, size_t d) -> Move {
+        auto res = testfen(testitem.fen.fen, testitem.fen.shatranj, testitem.expectedmoves,
+                           [&](TranspositionTable& tt, Position& pos) -> Move {
                                search s(&tt, pos);
-                               return s.iterative_deepening(d);
+                               return s.iterative_deepening(0);
                            });
 
         if (res)
@@ -186,11 +185,10 @@ TEST(EvaluationTests, book_questions) {
     size_t wrongs    = 0;
     for (auto& testitem : book_puzzles)
     {
-        auto res = testfen(testitem.fen.fen, "single move win", "iterative deepening",
-                           testitem.fen.shatranj, testitem.expectedmoves, testitem.searchdepth,
-                           [&](TranspositionTable& tt, Position& pos, size_t d) -> Move {
+        auto res = testfen(testitem.fen.fen, testitem.fen.shatranj, testitem.expectedmoves,
+                           [&](TranspositionTable& tt, Position& pos) -> Move {
                                search s(&tt, pos);
-                               return s.iterative_deepening(d);
+                               return s.iterative_deepening(0);
                            });
 
         if (res)

@@ -8,8 +8,6 @@
 
 using namespace Stockfish;
 
-using MoveFindingFunctionType =
-  std::function<Stockfish::Move(TranspositionTable*, Position&, int, bool, bool)>;
 
 inline void play(Position& pos, Move& move, StateInfo& st) {
     std::cout << "-----------------------------------------------------" << std::endl;
@@ -25,11 +23,8 @@ inline void play(Position& pos, Move& move, StateInfo& st) {
 
 template<typename MoveFindingFunctionType>
 inline bool testfen(const std::string&       fen,
-                    const std::string&       fentitle,
-                    const std::string&       operatitle,
                     bool                     shatranj,
                     const std::vector<Move>& expectedmoves,
-                    size_t                   depth,
                     MoveFindingFunctionType  oper) {
     bool               ret = true;
     TranspositionTable tt;
@@ -41,11 +36,11 @@ inline bool testfen(const std::string&       fen,
     std::cout << pos << std::endl;
     size_t i = 0;
     std::cout << "===========================================================" << std::endl;
-    std::cout << "game start with " << fentitle << "    " << operatitle << std::endl;
-    for (i = 0; i < depth; ++i)
+    std::cout << "game start " << std::endl;
+    for (i = 0; i < expectedmoves.size(); ++i)
     {
         Move picked   = Move::none();
-        long duration = timeit_us([&]() { picked = oper(tt, pos, depth); });
+        long duration = timeit_us([&]() { picked = oper(tt, pos); });
         if (picked == Move::none())
             break;
         std::cout << "move " << picked << " found in " << duration << std::endl;

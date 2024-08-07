@@ -137,7 +137,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/debug/src/test/dummy_chess_enginetest",
             "args": [
-                "--gtest_filter=EvaluationTests*book_questions*"
+                "--gtest_filter=EvaluationTests*"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
