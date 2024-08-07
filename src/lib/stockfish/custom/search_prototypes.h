@@ -77,6 +77,7 @@ class search {
     inline Value negmax(int plyRemaining, int plyFromRoot, Value alpha, Value beta) {
         Key            posKey = m_pos.key();
         constexpr bool PvNode = nodeType != NonPV;
+        plyRemaining          = std::max(plyRemaining, 0);
         // constexpr bool rootNode = nodeType == Root;
 
         auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
@@ -148,7 +149,7 @@ class search {
         }
 
         auto moves    = CustomMovePickerForQSearch(m_pos, pv_manager, DEPTH_UNSEARCHED);
-        auto allmoves = CustomMovePicker(m_pos, m_tt, pv_manager, DEPTH_UNSEARCHED);
+        auto allmoves = MoveList<Stockfish::LEGAL>(m_pos);
 
         if (allmoves.size() == 0)
         {
@@ -158,17 +159,10 @@ class search {
             return ret;
         }
 
-        if (moves.size() == 0)
-        {
-            auto res = evaluate(m_pos);
-            ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_EXACT, DEPTH_UNSEARCHED,
-                           Move::none(), res, m_tt->generation());
-            return res;
-        }
-
-        Value bestValue = VALUE_ZERO;
+        Value bestValue        = evaluate(m_pos);
         Move  bestMove  = Move::none();
-        Value value     = VALUE_ZERO;
+        Value value            = evaluate(m_pos);
+        bool  played_something = false;
 
         size_t movecount = 0;
         for (auto& m : moves)
@@ -181,6 +175,8 @@ class search {
 
             if (!givesCheck && movecount > 2)
                 break;
+
+            played_something = true;
 
             StateInfo st;
             m_pos.do_move(m, st);
@@ -205,6 +201,14 @@ class search {
                 }
             }
         }
+
+        if (moves.size() == 0 || !played_something)
+        {
+            auto res = evaluate(m_pos);
+            ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_EXACT, DEPTH_UNSEARCHED,
+                           Move::none(), res, m_tt->generation());
+            return res;
+        }
         ttWriter.write(posKey, VALUE_ZERO, false, bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
                        DEPTH_QS_CHECKS, bestMove, bestValue, m_tt->generation());
         assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
@@ -213,7 +217,7 @@ class search {
     }
 
    public:
-    inline Move iterative_deepening(int d) {
+    inline Move iterative_deepening(int d = 20) {
         Key posKey                     = m_pos.key();
         auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
         if (ttHit && ttData.depth >= d)
@@ -225,9 +229,16 @@ class search {
         {
             negmax<Root>(depth, 0, -VALUE_INFINITE, VALUE_INFINITE);
 
+            if (pv_manager.begin()->first.value == VALUE_MATE)
+            {
+                std::cout << "mate in " << depth << " ply" << std::endl;
+                break;
+            }
+
             pv_tree bestmoves;
             pv_extraction(d, 0, bestmoves);
             pv_manager.insert(bestmoves);
+            std::cout << "current depth = " << depth << std::endl;
         }
 
         return pv_manager.begin()->first;

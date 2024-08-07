@@ -104,13 +104,6 @@ class PVManager {
 
         if (oldone != pvs.end())
         {
-            if (oldone->second.moves.size() > tree.moves.size())
-                return;
-            else if (oldone->second.moves.size() == tree.moves.size())
-            {
-                if (oldone->second.moves[0].value >= tree.moves[0].value)
-                    return;
-            }
             pvs.erase(oldone);
         }
         pvs.insert({tree.moves[0], tree});

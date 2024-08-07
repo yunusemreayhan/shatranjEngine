@@ -60,6 +60,8 @@ inline bool testfen(const std::string&       fen,
             EXPECT_EQ(expectedmoves[i], picked);
             if (expectedmoves[i] != picked)
                 ret &= false;
+            else
+                std::cout << "expected move predicted correctly : " << picked << std::endl;
         }
     }
 
