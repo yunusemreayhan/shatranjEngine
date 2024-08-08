@@ -29,18 +29,28 @@ using json = nlohmann::json;
 
 using namespace Stockfish;
 
-struct fenwithtype {
+enum MoveTypeFromJson {
+    INITIAL,
+    NORMAL,
+    ANY
+};
+struct FenWithType {
     std::string fen;
     bool        shatranj;
 };
+
 struct gamepoint {
-    fenwithtype fen;
-    Move        move;
+    FenWithType      fenwithtype;
+    Move             expectedMove;
+    MoveTypeFromJson expectedMoveType = ANY;
 };
+
 struct problem {
     std::string            problem_fpath;
     std::vector<gamepoint> games;
 };
+
+bool operator<(const problem& a, const problem& b) { return a.games.size() < b.games.size(); }
 
 TEST(JsonFileTests, IteratingThroughJsonFiles) {
     std::vector<problem> problems;
@@ -55,58 +65,97 @@ TEST(JsonFileTests, IteratingThroughJsonFiles) {
         json          data = json::parse(f);
         for (auto& move : data.at("moveList"))
         {
-            current_problem.games.push_back({{move.at("FEN"), false}, strToMove(move.at("move"))});
+            gamepoint toinsert;
+            toinsert.fenwithtype.fen      = move.at("FEN");
+            toinsert.fenwithtype.shatranj = false;
+            auto movestr                  = move.at("move");
+            toinsert.expectedMove         = Move::none();
+            if (movestr == "...")
+                toinsert.expectedMoveType = MoveTypeFromJson::ANY;
+            else if (movestr == "initial")
+                toinsert.expectedMoveType = MoveTypeFromJson::INITIAL;
+            else
+            {
+                toinsert.expectedMoveType = MoveTypeFromJson::NORMAL;
+                toinsert.expectedMove     = strToMove(move.at("move"));
+            }
+            current_problem.games.push_back(toinsert);
         }
     }
-    std::vector<std::string> skipped = {"./src/test/testmetadata/2.json"};
+
     std::cout << problems.size() << std::endl;
+    std::sort(problems.begin(), problems.end());
     size_t             successes = 0;
     size_t             fails     = 0;
     TranspositionTable tt;
     tt.resize(2048);
+    std::vector<std::string> solvedproblemnames;
+    std::vector<std::string> failedproblem;
+    std::vector<std::string> skippedproblems;
     for (auto& problem : problems)
     {
-        if (std::find(skipped.begin(), skipped.end(), problem.problem_fpath) == skipped.end())
+        if (problem.games.size() > 10)
         {
-            tt.clear();
-            auto prev    = *problem.games.begin();
-            bool success = true;
-            for (auto game = problem.games.begin() + 1; game != problem.games.end(); game++)
-            {
-                std::stringstream ss;
-                if (game->move.is_ok())
-                    ss << game->move;
-                else
-                    ss << "none";
-                std::cout << "game.fen : " << game->fen.fen
-                          << " game.shatranj : " << game->fen.shatranj << " move : " << ss.str()
-                          << std::endl;
-                Position  pos;
-                StateInfo st;
-                pos.set(prev.fen.fen, &st, game->fen.shatranj);
-
-                std::cout << "pos : " << pos << std::endl;
-                search s(&tt, pos);
-                auto   move = s.iterative_deepening(0);
-
-                if (move == Move::none() || move != game->move)
-                {
-                    EXPECT_EQ(move, game->move);
-                    success = false;
-                    break;
-                }
-                prev = *game;
-            }
-            if (!success)
-            {
-                fails++;
-            }
+            skippedproblems.push_back(problem.problem_fpath);
+            continue;
+        }
+        bool solved = true;
+        tt.clear();
+        auto prev = problem.games.begin();
+        for (auto current = problem.games.begin() + 1; current != problem.games.end();
+             prev++, current++)
+        {
+            std::stringstream ss;
+            if (current->expectedMoveType == MoveTypeFromJson::NORMAL)
+                ss << current->expectedMove;
             else
+                ss << "none";
+            std::cout << "game.fen : " << current->fenwithtype.fen
+                      << " game.shatranj : " << current->fenwithtype.shatranj
+                      << " move : " << ss.str() << std::endl;
+            Position  pos;
+            StateInfo st;
+            pos.set(prev->fenwithtype.fen, &st, current->fenwithtype.shatranj);
+
+            std::cout << "pos : " << pos << std::endl;
+            search s(&tt, pos);
+            auto   move = s.iterative_deepening(9);
+
+            if (current->expectedMoveType == MoveTypeFromJson::NORMAL
+                && move != current->expectedMove)
+            {
+                EXPECT_EQ(move, current->expectedMove);
+                fails++;
+                solved = false;
+            }
+
+            if (move == current->expectedMove && pos.checkers() == 0)
             {
                 successes++;
             }
+            std::cout << "successes: " << successes << " fails: " << fails << std::endl;
+        }
+        if (solved)
+        {
+            solvedproblemnames.push_back(problem.problem_fpath);
+        }
+        else
+        {
+            failedproblem.push_back(problem.problem_fpath);
         }
     }
 
     std::cout << "successes: " << successes << " fails: " << fails << std::endl;
+    for (auto p : solvedproblemnames)
+    {
+        std::cout << "solved problem : " << p << " solved " << std::endl;
+    }
+    for (auto p : failedproblem)
+    {
+        std::cout << "failed problem : " << p << " solved " << std::endl;
+    }
+    for (auto p : skippedproblems)
+    {
+        std::cout << "skipped problem : " << p << " solved " << std::endl;
+    }
 }

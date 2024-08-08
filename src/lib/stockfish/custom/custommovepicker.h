@@ -5,8 +5,64 @@
 #include "customtranspositiontable.h"
 
 #include "pv_manager.h"
+#include "tt.h"
 namespace Stockfish {
 
+class MoveSorterInterface {
+   public:
+    Value DetermineScore(Position& pos, ExtMove& m) {
+
+        bool evasions = pos.checkers() != 0;
+        bool capture  = pos.capture_stage(m);
+
+        if (evasions)
+        {
+            if (capture)
+                m.value =
+                  PieceValue[pos.piece_on(m.to_sq())] - PieceValue[type_of(pos.moved_piece(m))];
+        }
+        else if (capture)
+        {
+            m.value =
+              int(PieceValue[pos.piece_on(m.to_sq())] - PieceValue[type_of(pos.moved_piece(m))]);
+        }
+        else
+        {
+
+            [[maybe_unused]] Bitboard threatenedByPawn, threatenedByMinor, threatenedByRook,
+              threatenedPieces;
+            Color us = pos.side_to_move();
+
+            threatenedByPawn  = pos.attacks_by<PAWN>(~us);
+            threatenedByMinor = pos.attacks_by<QUEEN>(~us) | pos.attacks_by<KNIGHT>(~us)
+                              | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
+            threatenedByRook = pos.attacks_by<ROOK>(~us) | threatenedByMinor;
+
+            // Pieces threatened by pieces of lesser material value
+            threatenedPieces = (pos.pieces(us, ROOK) & threatenedByMinor)
+                             | (pos.pieces(us, KNIGHT, BISHOP, QUEEN) & threatenedByPawn);
+
+            Piece     pc   = pos.moved_piece(m);
+            PieceType pt   = type_of(pc);
+            Square    from = m.from_sq();
+            Square    to   = m.to_sq();
+
+            // bonus for checks
+            m.value += bool(pos.check_squares(pt) & to) * 7000;
+
+            // bonus for escaping from capture
+            m.value += threatenedPieces & from ? (pt == ROOK && !(to & threatenedByMinor) ? 256
+                                                  : !(to & threatenedByPawn)              ? 144
+                                                                                          : 0)
+                                               : 0;
+
+            // malus for putting piece en prise
+            m.value -=
+              (pt == ROOK ? bool(to & threatenedByMinor) * 243 : bool(to & threatenedByPawn) * 149);
+        }
+        return m.value;
+    }
+};
 
 class MoveSorter {
    protected:
@@ -35,8 +91,8 @@ class MoveSorter {
              | (pos.pieces(pos.side_to_move(), KNIGHT, BISHOP, QUEEN) & threatenedByPawn);
     }
 
+    static constexpr int HASH_COEFFICIENT    = 30000;
     static constexpr int CHECK_COEFFICIENT   = 20000;
-    static constexpr int HASH_COEFFICIENT    = 9000;
     static constexpr int EVASION_COEFFICIENT = 8000;
     static constexpr int CAPTURE_COEFFICIENT = 6000;
     static constexpr int QUIET_COEFFICIENT   = 5000;
@@ -324,10 +380,10 @@ class MoveSorter {
         return retscore;
     }
 
-    int DetermineScore(Position& pos, Move& m, int index) {
-        if (index != -1)
+    int DetermineScore(Position& pos, Move& m, Move& ttm) {
+        if (m == ttm)
         {
-            return HASH_COEFFICIENT * (index + 1);
+            return HASH_COEFFICIENT;
         }
         if (pos.checkers())
         {
@@ -342,34 +398,20 @@ class MoveSorter {
             return DetermineQuiteType(pos, m);
         }
     }
-
-    void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
-
-        for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
-            if (p->value >= limit)
-            {
-                ExtMove tmp = *p, *q;
-                *p          = *++sortedEnd;
-                for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
-                    *q = *(q - 1);
-                *q = tmp;
-            }
-    }
 };
 
 template<GenType genType = LEGAL>
 class CustomMovePicker: public MoveSorter {
 
    public:
-    CustomMovePicker(Position& pos, TranspositionTable* tt, PVManager& pvmove, size_t curd) :
+    CustomMovePicker(Position& pos, TranspositionTable* tt) :
         m_pos(pos),
         m_tt(tt),
-        pvmanager_ref(pvmove),
-        current_depth(curd),
         list(MoveList<genType>(pos)) {
         for (auto& move : list)
         {
-            move.value = DetermineScore(pos, move, pvmanager_ref.index(move, current_depth));
+            auto [ttHit, ttData, ttWriter] = m_tt->probe(pos.key());
+            move.value                     = DetermineScore(pos, move, ttData.move);
         }
         partial_insertion_sort(list.begin(), list.end(), std::numeric_limits<int>::min());
     }
@@ -385,21 +427,45 @@ class CustomMovePicker: public MoveSorter {
 
     ExtMove* pick() { return list.pick(); }
 
+
+    void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+
+        for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
+            if (p->value >= limit)
+            {
+                ExtMove tmp = *p, *q;
+                *p          = *++sortedEnd;
+                for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+                    *q = *(q - 1);
+                *q = tmp;
+            }
+    }
+
    private:
     Position&           m_pos;
     TranspositionTable* m_tt;
-    PVManager&          pvmanager_ref;
-    size_t              current_depth = 0;
     MoveList<genType>   list;
     ExtMove*            m_cur;
 };
 
 class CustomMovePickerForQSearch: public MoveSorter {
 
+    void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
+
+        for (ExtMove *sortedEnd = begin, *p = begin + 1; p < end; ++p)
+            if (p->value >= limit)
+            {
+                ExtMove tmp = *p, *q;
+                *p          = *++sortedEnd;
+                for (q = sortedEnd; q != begin && *(q - 1) < tmp; --q)
+                    *q = *(q - 1);
+                *q = tmp;
+            }
+    }
+
    public:
-    CustomMovePickerForQSearch(Position& pos, PVManager& pvmanager, size_t curd) :
-        pvmanager_ref(pvmanager),
-        current_depth(curd) {
+    CustomMovePickerForQSearch(Position& pos, TranspositionTable* tt) :
+        m_tt(tt) {
         if (pos.checkers())
         {
             for (auto& move : MoveList<EVASIONS>(pos))
@@ -418,7 +484,9 @@ class CustomMovePickerForQSearch: public MoveSorter {
         }
         for (auto& move : *this)
         {
-            move.value = DetermineScore(pos, move, pvmanager_ref.index(move, current_depth));
+            auto [ttHit, ttData, ttWriter] = m_tt->probe(pos.key());
+
+            move.value = DetermineScore(pos, move, ttData.move);
         }
         partial_insertion_sort(this->begin(), this->end(), std::numeric_limits<int>::min());
     }
@@ -432,8 +500,8 @@ class CustomMovePickerForQSearch: public MoveSorter {
     int size() { return i; }
 
    private:
-    int        i = 0;
-    PVManager& pvmanager_ref;
-    size_t     current_depth = 0;
+    int                 i             = 0;
+    size_t              current_depth = 0;
+    TranspositionTable* m_tt;
 };
 }

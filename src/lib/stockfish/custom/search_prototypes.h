@@ -74,7 +74,20 @@ class search {
     };
 
     template<SearchRunType nodeType>
-    inline Value negmax(int plyRemaining, int plyFromRoot, Value alpha, Value beta) {
+    inline Value
+    negmax(int plyRemaining, int plyFromRoot, Value alpha, Value beta, bool cutNode = true) {
+        if (nodeType == PV)
+        {
+            pvrun++;
+        }
+        else if (nodeType == NonPV)
+        {
+            nonpvrun++;
+        }
+        else
+        {
+            rootrun++;
+        }
         Key            posKey = m_pos.key();
         constexpr bool PvNode = nodeType != NonPV;
         plyRemaining          = std::max(plyRemaining, 0);
@@ -86,7 +99,7 @@ class search {
             return ttData.eval;
         }
 
-        auto moves = CustomMovePicker(m_pos, m_tt, pv_manager, plyFromRoot);
+        auto moves = CustomMovePicker(m_pos, m_tt);
 
         if (moves.size() == 0)
         {
@@ -102,6 +115,20 @@ class search {
             ttWriter.write(posKey, VALUE_ZERO, false, Stockfish::BOUND_UPPER, plyRemaining,
                            Move::none(), res, m_tt->generation());
             return res;
+        }
+
+        if (cutNode && m_pos.checkers() == 0 && plyRemaining > 3)
+        {
+            StateInfo st;
+
+            m_pos.do_null_move(st, *m_tt);
+            Value nullValue =
+              -negmax<NonPV>(plyRemaining - 3, plyFromRoot + 1, -beta, -beta + 1, false);
+            m_pos.undo_null_move();
+            if (nullValue >= beta)
+            {
+                return nullValue;
+            }
         }
 
         Value value    = -VALUE_INFINITE;
@@ -135,12 +162,16 @@ class search {
                 break;
             }
         }
-        ttWriter.write(posKey, value, false, Stockfish::BOUND_UPPER, plyRemaining, bestmove,
-                       besteval, m_tt->generation());
+        ttWriter.write(posKey, value, false,
+                       besteval >= beta     ? BOUND_LOWER
+                       : PvNode && bestmove ? BOUND_EXACT
+                                            : BOUND_UPPER,
+                       plyRemaining, bestmove, besteval, m_tt->generation());
         return besteval;
     }
 
     inline Value qnegmax(Value alpha, Value beta) {
+        qrun++;
         Key posKey                     = m_pos.key();
         auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
         if (ttHit && ttData.depth >= DEPTH_QS_CHECKS)
@@ -148,7 +179,7 @@ class search {
             return ttData.eval;
         }
 
-        auto moves    = CustomMovePickerForQSearch(m_pos, pv_manager, DEPTH_UNSEARCHED);
+        auto moves    = CustomMovePickerForQSearch(m_pos, m_tt);
         auto allmoves = MoveList<Stockfish::LEGAL>(m_pos);
 
         if (allmoves.size() == 0)
@@ -160,8 +191,8 @@ class search {
         }
 
         Value bestValue        = evaluate(m_pos);
-        Move  bestMove  = Move::none();
-        Value value            = evaluate(m_pos);
+        Move  bestMove         = Move::none();
+        Value value            = bestValue;
         bool  played_something = false;
 
         size_t movecount = 0;
@@ -173,7 +204,7 @@ class search {
             if (!m_pos.legal(m))
                 continue;
 
-            if (!givesCheck && movecount > 2)
+            if (!givesCheck && movecount > 1)
                 break;
 
             played_something = true;
@@ -229,16 +260,17 @@ class search {
         {
             negmax<Root>(depth, 0, -VALUE_INFINITE, VALUE_INFINITE);
 
-            if (pv_manager.begin()->first.value == VALUE_MATE)
-            {
-                std::cout << "mate in " << depth << " ply" << std::endl;
-                break;
-            }
 
             pv_tree bestmoves;
             pv_extraction(d, 0, bestmoves);
             pv_manager.insert(bestmoves);
             std::cout << "current depth = " << depth << std::endl;
+
+            if (pv_manager.begin()->first.value == VALUE_MATE)
+            {
+                std::cout << "mate in " << depth << " ply" << std::endl;
+                break;
+            }
         }
 
         return pv_manager.begin()->first;
@@ -253,4 +285,9 @@ class search {
     TranspositionTable* m_tt;
     Position&           m_pos;
     PVManager           pv_manager;
+
+    long pvrun    = 0;
+    long nonpvrun = 0;
+    long rootrun  = 0;
+    long qrun     = 0;
 };
