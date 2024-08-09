@@ -634,6 +634,52 @@ bool Position::has_game_cycle(int ply) const {
     return false;
 }
 
+// Tests if the position has a move which draws by repetition.
+// This function accurately matches the outcome of is_draw() over all legal moves.
+bool Position::upcoming_repetition(int ply) const {
+
+    int j;
+
+    int end = std::min(st->rule50, st->pliesFromNull);
+
+    if (end < 3)
+        return false;
+
+    Key        originalKey = st->key;
+    StateInfo* stp         = st->previous;
+    Key        other       = originalKey ^ stp->key ^ Zobrist::side;
+
+    for (int i = 3; i <= end; i += 2)
+    {
+        stp = stp->previous;
+        other ^= stp->key ^ stp->previous->key ^ Zobrist::side;
+        stp = stp->previous;
+
+        if (other != 0)
+            continue;
+
+        Key moveKey = originalKey ^ stp->key;
+        if ((j = H1(moveKey), cuckoo[j] == moveKey) || (j = H2(moveKey), cuckoo[j] == moveKey))
+        {
+            Move   move = cuckooMove[j];
+            Square s1   = move.from_sq();
+            Square s2   = move.to_sq();
+
+            if (!((between_bb(s1, s2) ^ s2) & pieces()))
+            {
+                if (ply > i)
+                    return true;
+
+                // For nodes before or at the root, check that the move is a
+                // repetition rather than a move to the current position.
+                if (stp->repetition)
+                    return true;
+            }
+        }
+    }
+    return false;
+}
+
 // Tests whether a pseudo-legal move is legal
 bool Position::legal(Move m) const {
 

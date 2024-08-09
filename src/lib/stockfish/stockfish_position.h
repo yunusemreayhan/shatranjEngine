@@ -107,6 +107,7 @@ class Position {
     void set_state() const;
     void set_check_info() const;
     bool empty(Square s) const;
+    bool upcoming_repetition(int ply) const;
 
     Bitboard checkers() const;
     bool     legal(Move m) const;

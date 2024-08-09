@@ -476,6 +476,11 @@ class CustomMovePickerForQSearch: public MoveSorter {
         }
         else
         {
+            /* for (auto& move : MoveList<QUIET_CHECKS>(pos))
+            {
+                if (move.is_ok())
+                    moves[i++] = move;
+            } */
             for (auto& move : MoveList<CAPTURES>(pos))
             {
                 if (move.is_ok())

@@ -279,7 +279,6 @@ inline void dump_pseudo_attacks() {
 
 inline std::string MoveToStr(Move& m) {
     std::string ret = std::string(square_to_string(m.from_sq()));
-    ret += " -> ";
     ret += square_to_string(m.to_sq());
     return ret;
 }

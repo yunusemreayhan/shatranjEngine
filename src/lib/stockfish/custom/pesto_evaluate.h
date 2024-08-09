@@ -4,8 +4,8 @@
 
 namespace Stockfish {
 // clang-format off
-const static inline int mg_value[8] = {0, 82, 337, 365, 477, 220, 0, 0};
-const static inline int eg_value[8] = {0, 94, 281, 297, 512, 210, 0, 0};
+const static inline int mg_value[8] = {0, 82, 337, 220, 477, 200, 0, 0};
+const static inline int eg_value[8] = {0, 94, 281, 200, 512, 180, 0, 0};
 
 /* piece/sq tables */
 /* values from Rofchade: http://www.talkchess.com/forum3/viewtopic.php?f=2&t=68311&start=19 */
