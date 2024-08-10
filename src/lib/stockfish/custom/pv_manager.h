@@ -5,145 +5,74 @@
 
 using namespace Stockfish;
 
-struct pv_tree {
+struct MoveWithValue {
+    Move  move;
+    Value value;
 
-    std::vector<ExtMove> moves = {};
-
-    bool operator<(const pv_tree& other) const {
-        for (size_t i = 0; i < moves.size(); i++)
-        {
-            if (moves[i].value != other.moves[i].value)
-                return moves[i].value < other.moves[i].value;
-        }
-        return false;
-    }
-
-    bool operator==(const pv_tree& other) const {
-        if (moves.size() != other.moves.size())
-            return false;
-        else
-        {
-            for (size_t i = 0; i < moves.size(); i++)
-            {
-                if (moves[i].from_sq() != other.moves[i].from_sq()
-                    && moves[i].to_sq() != other.moves[i].to_sq())
-                {
-                    std::cout << "moves[" << i << "] : " << moves[i] << " != " << other.moves[i]
-                              << std::endl;
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    bool equal_until(const pv_tree& other, size_t until) {
-        for (size_t i = 0; i < until; i++)
-        {
-            if (moves.size() <= i || other.moves.size() <= i)
-                return false;
-            if (moves[i] != other.moves[i])
-                return false;
-        }
-        return true;
-    }
-
-    void clear() { moves.clear(); }
-
-    void dump(std::string title, size_t till) {
-        std::cout << title << " : ";
-        for (size_t i = 0; i <= till; i++)
-        {
-            if (moves[i] != Move::none())
-            {
-                std::cout << moves[i] << " ";
-            }
-            else
-            {
-                std::cout << "none" << " ";
-            }
-        }
-    }
-
-    void set(size_t index, ExtMove move) {
-        if (moves.size() > index)
-        {
-            moves[index] = move;
-        }
-        else
-        {
-            moves.push_back(move);
-        }
-    }
+    bool operator<(const MoveWithValue& other) const { return move < other.move; }
 };
 
-class PVManager {
+inline std::ostream& operator<<(std::ostream& os, const MoveWithValue& move) {
+    os << square_to_string(move.move.from_sq()) << "-" << square_to_string(move.move.to_sq());
+    return os;
+}
+
+class PVManager2 {
    public:
-    PVManager(const size_t max_pv_tree_item = 4) :
-        MAX_PV_TREE_ITEM(max_pv_tree_item) {}
-    bool insert(pv_tree& tree) {
-        insert_or_replace(tree);
-        if (pvs.size() > MAX_PV_TREE_ITEM)
-            pvs.erase(pvs.rbegin()->first);
-        return true;
-    }
+    PVManager2() {}
 
-    std::map<ExtMove, pv_tree>::const_iterator find_move(Move move) const {
-        for (auto itr = pvs.begin(); itr != pvs.end(); ++itr)
+    void insert_or_replace(MoveWithValue move) {
+        auto itr = rootMovesSet.find(move);
+        if (itr != rootMovesSet.end())
         {
-            if (static_cast<Move>(itr->first) == move)
-                return itr;
+            rootMovesSet2.erase(*itr);
+            rootMovesSet.erase(*itr);
         }
-        return pvs.end();
-    }
-
-    void insert_or_replace(pv_tree& tree) {
-        if (tree.moves.size() == 0)
-            return;
-        auto oldone = find_move(tree.moves[0]);
-
-        if (oldone != pvs.end())
-        {
-            pvs.erase(oldone);
-        }
-        pvs.insert({tree.moves[0], tree});
-        dump();
-    }
-
-    int index(Move move, size_t depth) {
-        int index = 0;
-        for (auto it = pvs.begin(); it != pvs.end(); ++it)
-        {
-            if (it->second.moves.size() > depth)
-                if (it->second.moves[depth] == move)
-                    return index;
-            index++;
-        }
-        return -1;
+        rootMovesSet2.insert(move);
+        rootMovesSet.insert(move);
     }
 
     void dump() {
-        std::cout << "pvs : " << pvs.size() << " ";
-        int i = 0;
-        for (auto it = pvs.begin(); it != pvs.end(); ++it)
+        for (auto it = rootMovesSet2.begin(); it != rootMovesSet2.end(); ++it)
         {
-            std::cout << std::endl << ++i << ". ";
-            for (auto& it2 : it->second.moves)
+            std::cout << "value : " << it->value << " move : " << *it
+                      << ", item count : " << rootMoves[it->move].size() << " : ";
+            for (auto& move : rootMoves[it->move])
             {
-                if (it2 == Move::none())
-                    std::cout << " none " << it2.value << ", ";
-                else
-                    std::cout << it2 << " " << it2.value << ", ";
+                std::cout << move << " ";
             }
             std::cout << std::endl;
         }
     }
 
-    std::map<ExtMove, pv_tree>::const_iterator begin() const { return pvs.begin(); }
-    std::map<ExtMove, pv_tree>::const_iterator end() const { return pvs.end(); }
+    std::set<MoveWithValue>::const_iterator         begin() const { return rootMovesSet2.begin(); }
+    std::set<MoveWithValue>::const_reverse_iterator rbegin() const {
+        return rootMovesSet2.rbegin();
+    }
+    std::set<MoveWithValue>::const_iterator         end() const { return rootMovesSet2.end(); }
+    std::set<MoveWithValue>::const_reverse_iterator rend() const { return rootMovesSet2.rend(); }
+
+    size_t size() const { return rootMovesSet.size(); }
+
+    std::vector<Move>& rootPvMoves(Move key) {
+        if (rootMoves.count(key) == 0)
+            rootMoves[key] = {key};
+        return rootMoves[key];
+    }
 
    private:
-    std::map<ExtMove, pv_tree> pvs;
-    PVManager() {};
-    const size_t MAX_PV_TREE_ITEM = 4;
+    std::map<Move, std::vector<Move>> rootMoves;
+
+    struct MoveWithValueCompareByMove {
+        bool operator()(const MoveWithValue& lhs, const MoveWithValue& rhs) const {
+            return lhs.move < rhs.move;
+        }
+    };
+    std::set<MoveWithValue, MoveWithValueCompareByMove> rootMovesSet;
+    struct MoveWithValueCompareByValue {
+        bool operator()(const MoveWithValue& lhs, const MoveWithValue& rhs) const {
+            return lhs.value < rhs.value || (lhs.value == rhs.value && lhs.move < rhs.move);
+        }
+    };
+    std::multiset<MoveWithValue, MoveWithValueCompareByValue> rootMovesSet2;
 };

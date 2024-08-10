@@ -159,7 +159,7 @@ TEST(EvaluationTests, single_move_simple_puzzles) {
         auto res = testfen(testitem.fen.fen, testitem.fen.shatranj, testitem.expectedmoves,
                            [&](TranspositionTable& tt, Position& pos) -> Move {
                                search s(&tt, pos);
-                               return s.iterative_deepening(0);
+                               return s.iterative_deepening(5);
                            });
 
         if (res)
@@ -177,9 +177,9 @@ const inline std::vector<testitem> book_puzzles = {
    7,
    true},
   {{"1r4s1/8/5PP1/S1h5/6HR/7F/1r6/7R w 0 10", true},
-   {Move(SQ_H4, SQ_H8), Move(SQ_G8, SQ_H8), Move(SQ_H3, SQ_F5), Move(SQ_H8, SQ_G8),
-    Move(SQ_H1, SQ_H8), Move(SQ_G8, SQ_H8), Move(SQ_G6, SQ_G7), Move(SQ_H8, SQ_G8),
-    Move(SQ_G4, SQ_H6)},
+   {Move(SQ_H4, SQ_H8), Move(SQ_G8, SQ_H8), Move(SQ_H3, SQ_F5), Move(SQ_B2, SQ_H2),
+    Move(SQ_H1, SQ_H2), Move(SQ_H8, SQ_G8), Move(SQ_H2, SQ_H8), Move(SQ_G8, SQ_H8),
+    Move(SQ_G6, SQ_G7), Move(SQ_H8, SQ_G8), Move(SQ_G4, SQ_H6)},
    11,
    true},
   {{"2bn2Q1/rQ2p1kP/P2p3p/p1pPQ3/1n3P1N/q5NP/Prp2pp1/KBB4R w 0 10", false},

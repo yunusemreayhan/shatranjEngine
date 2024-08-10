@@ -112,6 +112,7 @@ class MoveSorter {
         // evasion capturing
         if (targetPosPiece != NO_PIECE)
         {
+            retscore += 5 * move_arround;
             if (pt == KING)
             {
                 retscore += -move_arround;

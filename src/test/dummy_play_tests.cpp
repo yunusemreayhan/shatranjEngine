@@ -20,7 +20,7 @@ TEST(DummyPlayTests, StockfishVariantCode) {
     pos.set(StartFENShatranj, &st, true);
 
     std::vector<Move> played;
-    StateInfo         sts[100] = {};
+    StateInfo         sts[100]  = {};
     long              totaltime = 0;
     for (int i = 0; i < 100; i++)
     {
@@ -29,7 +29,7 @@ TEST(DummyPlayTests, StockfishVariantCode) {
         search s2(&tt2, pos);
         Move   res;
         auto   timelong = timeit_us(
-          [&]() { res = (i % 2 == 0) ? s1.iterative_deepening(8) : s2.iterative_deepening(5); });
+          [&]() { res = (i % 2 == 0) ? s1.iterative_deepening(4) : s2.iterative_deepening(3); });
         std::cout << "picking took: " << (double) timelong / 1000000 << "s" << std::endl;
         totaltime += timelong;
         std::cout << "total time: " << (double) totaltime / 1000000 << "s" << std::endl;
