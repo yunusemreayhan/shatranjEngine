@@ -14,7 +14,7 @@
 
 #include "evaluate.h"
 
-#include "search_prototypes.h"
+#include "custom_search.h"
 #include "testhelper.h"
 #include "tt.h"
 #include "types.h"

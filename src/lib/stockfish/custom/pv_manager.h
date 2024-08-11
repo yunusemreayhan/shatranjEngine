@@ -35,12 +35,7 @@ class PVManager2 {
     void dump() {
         for (auto it = rootMovesSet2.begin(); it != rootMovesSet2.end(); ++it)
         {
-            std::cout << "value : " << it->value << " move : " << *it
-                      << ", item count : " << rootMoves[it->move].size() << " : ";
-            for (auto& move : rootMoves[it->move])
-            {
-                std::cout << move << " ";
-            }
+            std::cout << "value : " << it->value << " move : " << *it;
             std::cout << std::endl;
         }
     }
@@ -54,15 +49,7 @@ class PVManager2 {
 
     size_t size() const { return rootMovesSet.size(); }
 
-    std::vector<Move>& rootPvMoves(Move key) {
-        if (rootMoves.count(key) == 0)
-            rootMoves[key] = {key};
-        return rootMoves[key];
-    }
-
    private:
-    std::map<Move, std::vector<Move>> rootMoves;
-
     struct MoveWithValueCompareByMove {
         bool operator()(const MoveWithValue& lhs, const MoveWithValue& rhs) const {
             return lhs.move < rhs.move;

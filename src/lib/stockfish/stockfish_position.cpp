@@ -1219,7 +1219,7 @@ string Position::fen(bool shatranj) const {
 
     if (!can_castle(ANY_CASTLING))
         ss << '-';*/
-
+    ss << "- - ";
     ss /*<< (ep_square() == SQ_NONE ? " - " : " " + UCIEngine::square(ep_square()) + " ")*/
       << st->rule50 << " " << 1 + (gamePly - (sideToMove == BLACK)) / 2;
 

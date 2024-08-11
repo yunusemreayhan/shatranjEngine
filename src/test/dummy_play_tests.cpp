@@ -1,9 +1,10 @@
 
 #include "gtest/gtest.h"
 #include "helper.h"
-#include "search_prototypes.h"
+#include "custom_search.h"
 #include "stockfish_position.h"
 #include "tt.h"
+#include "json_game_exporter.h"
 
 using namespace Stockfish;
 
@@ -20,21 +21,29 @@ TEST(DummyPlayTests, StockfishVariantCode) {
     pos.set(StartFENShatranj, &st, true);
 
     std::vector<Move> played;
-    StateInfo         sts[100]  = {};
+    StateInfo         sts[600]  = {};
     long              totaltime = 0;
-    for (int i = 0; i < 100; i++)
+    size_t            fp_depth  = 5;
+    size_t            sp_depth  = 3;
+    JsonExporter      exporter("DummyPlayTests", "/home/yunus/Desktop", fp_depth, sp_depth);
+
+    for (int i = 0; i < 300; i++)
     {
         std::cout << pos << std::endl;
         search s1(&tt1, pos);
         search s2(&tt2, pos);
         Move   res;
-        auto   timelong = timeit_us(
-          [&]() { res = (i % 2 == 0) ? s1.iterative_deepening(4) : s2.iterative_deepening(3); });
+        auto   timelong = timeit_us([&]() {
+            res =
+              (i % 2 == 0) ? s1.iterative_deepening(fp_depth) : s2.iterative_deepening(sp_depth);
+        });
         std::cout << "picking took: " << (double) timelong / 1000000 << "s" << std::endl;
         totaltime += timelong;
         std::cout << "total time: " << (double) totaltime / 1000000 << "s" << std::endl;
         if (res == Move::none())
         {
+            exporter.set_winner(~pos.side_to_move());
+            exporter.write();
             std::cout << "Game over" << std::endl;
             break;
         }
@@ -42,8 +51,14 @@ TEST(DummyPlayTests, StockfishVariantCode) {
 
         played.push_back(res);
         pos.do_move(res, sts[i]);
+        exporter.add_move({.fen               = pos.fen(false),
+                           .move              = MoveToStr(res),
+                           .calculationtime_s = (double) timelong / 1000000});
+        exporter.write();
         std::cout << "pos : " << pos << std::endl;
     }
+
+    exporter.write();
 
     std::cout << "played: ";
     for (auto m : played)
