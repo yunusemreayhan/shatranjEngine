@@ -12,6 +12,7 @@
 #include <string>
 #include "pv_manager.h"
 #include "stockfish_helper.h"
+#include <atomic>
 
 using namespace Stockfish;
 
@@ -21,6 +22,12 @@ struct Stack {
     Move  move;
     Value eval;
     Move* pv;
+};
+
+enum SearchRunType {
+    Root,
+    PV,
+    NonPV
 };
 
 class search {
@@ -39,24 +46,7 @@ class search {
             }
     }
 
-    enum SearchRunType {
-        Root,
-        PV,
-        NonPV
-    };
-
     Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
-
-    void dumpmoves(int till) {
-        for (int i = 7; i <= till + 7; i++)
-        {
-            if (stack[i].move != Move::none())
-                std::cout << stack[i].ply << ". " << stack[i].move << ", ";
-            else
-                std::cout << stack[i].ply << ". " << "none, ";
-        }
-        std::cout << std::endl;
-    }
 
     template<SearchRunType nodeType>
     inline Value negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode = true) {
@@ -317,11 +307,27 @@ class search {
         return bestValue;
     }
 
-   public:
     TTData GetFromTT() {
         auto [ttHit, ttData, ttWriter] = m_tt->probe(m_pos.key());
 
         return ttData;
+    }
+
+   public:
+    void dumpmoves(int till) {
+        for (int i = 7; i <= till + 7; i++)
+        {
+            if (stack[i].move != Move::none())
+                std::cout << stack[i].ply << ". " << stack[i].move << ", ";
+            else
+                std::cout << stack[i].ply << ". " << "none, ";
+        }
+        std::cout << std::endl;
+    }
+
+    template<SearchRunType nodeType>
+    inline Value negmax(int depth, Value alpha, Value beta, bool cutNode = true) {
+        return negmax<nodeType>(ss, depth, alpha, beta, cutNode);
     }
 
     inline Move iterative_deepening(int d = 20) {
@@ -349,6 +355,8 @@ class search {
             stack[i + 7].ply = i;
         }
         ss = stack + 7;
+
+        ss->pv = pv;
     }
 
     void update_pv(Move* pv, Move move, const Move* childPv) {
@@ -364,6 +372,7 @@ class search {
     PVManager2          pv_manager2;
     Stack               stack[MAX_PLY + 10] = {};
     Stack*              ss;
+    Move                pv[MAX_PLY];
 
     long pvrun    = 0;
     long nonpvrun = 0;

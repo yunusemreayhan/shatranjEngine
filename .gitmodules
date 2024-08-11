@@ -1,0 +1,3 @@
+[submodule "libs/cucumberbolds_chess/Chess"]
+	path = libs/cucumberbolds_chess/Chess
+	url = git@github.com:cucumberbolts/Chess.git
