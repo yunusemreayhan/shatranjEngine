@@ -203,7 +203,10 @@ const inline std::vector<testitem> book_puzzles = {
     Move(SQ_A7, SQ_A5), Move(SQ_B5, SQ_C6)},
    32,
    false},
-  {{"8/8/8/1k6/8/1KQ5/8/q7 w - - 0 1", false}, {}, 5, true}};
+  {{"8/8/8/1k6/8/1KQ5/8/q7 w - - 0 1", false},
+   {Move(SQ_B3, SQ_A2), Move(SQ_B5, SQ_A4), Move(SQ_A2, SQ_A1)},
+   5,
+   true}};
 
 TEST(EvaluationTests, book_questions) {
     size_t successes = 0;

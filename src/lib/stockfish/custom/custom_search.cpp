@@ -389,6 +389,11 @@ Move search::iterative_deepening(int d) {
         std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
                   << ", pvIdx = " << pvIdx << ", bestValue = " << bestValue << ", delta = " << delta
                   << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg << std::endl;
+
+        if (std::abs(rootMoves[0].score) == VALUE_MATE)
+        {
+            break;
+        }
     }
 
     //pv_manager2.dump();
