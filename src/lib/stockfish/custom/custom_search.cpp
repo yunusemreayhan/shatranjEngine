@@ -1,4 +1,5 @@
 #include "custom_search.h"
+#include "evaluate.h"
 #include "game_over_check.h"
 
 namespace Stockfish {
@@ -45,7 +46,7 @@ Value search::negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode
 
     if (moves.size() == 0)
     {
-        Value ret = -VALUE_MATE;
+        Value ret = evaluate(m_pos);
         ttWriter.write(posKey, VALUE_ZERO, false, Stockfish::BOUND_UPPER, depth, Move::none(), ret,
                        m_tt->generation());
         return ret;
@@ -196,7 +197,7 @@ Value search::qnegmax(Stack* ss, Value alpha, Value beta) {
 
     if (allmoves.size() == 0)
     {
-        Value ret = -VALUE_MATE;
+        Value ret = evaluate(m_pos);
         ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_UPPER, DEPTH_UNSEARCHED,
                        Move::none(), ret, m_tt->generation());
         return ret;
@@ -389,11 +390,10 @@ Move search::iterative_deepening(int d) {
         /* std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
                   << ", pvIdx = " << pvIdx << ", bestValue = " << bestValue << ", delta = " << delta
                   << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg << std::endl; */
-
-        if (std::abs(rootMoves[0].score) == VALUE_MATE)
+        /* if (std::abs(rootMoves[0].score) == VALUE_MATE)
         {
             break;
-        }
+        } */
     }
 
     //pv_manager2.dump();
