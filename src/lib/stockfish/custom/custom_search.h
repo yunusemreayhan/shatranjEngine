@@ -90,6 +90,9 @@ class search {
     void dump_root_moves() {
         for (auto& rm : rootMoves)
         {
+            if (rm.score == -VALUE_INFINITE)
+                continue;
+
             std::cout << rm.pv[0] << " " << rm.score << " -> ";
             for (auto& pvm : rm.pv)
             {
@@ -98,6 +101,7 @@ class search {
             std::cout << std::endl;
         }
     }
+    Move picked_move() { return rootMoves[0].pv[0]; }
     Move iterative_deepening(int d = 20);
 
     search(TranspositionTable* tt, Position& pos) :

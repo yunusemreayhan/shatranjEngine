@@ -17,3 +17,4 @@ target_link_libraries(dummy_chess_engine_bin dummy_chess_engine)
 
 enable_testing ()
 add_subdirectory(test)
+add_subdirectory(bin/fencalc)

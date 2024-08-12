@@ -350,11 +350,11 @@ Move search::iterative_deepening(int d) {
                 adjustedDepth =
                   std::max(1, rootDepth - failedHighCnt /* - 3 * (searchAgainCounter + 1) / 4 */);
                 rootDelta = beta - alpha;
-                std::cout << "-- current depth = " << rootDepth
+                /* std::cout << "-- current depth = " << rootDepth
                           << ", adjusted depth = " << adjustedDepth << ", pvIdx = " << pvIdx
                           << ", bestValue = " << bestValue << ", delta = " << delta
                           << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
-                          << std::endl;
+                          << std::endl; */
                 bestValue = negmax<Root>(ss, adjustedDepth, alpha, beta);
                 std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
 
@@ -386,9 +386,9 @@ Move search::iterative_deepening(int d) {
             // Sort the PV lines searched so far and update the GUI
             std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
         }
-        std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
+        /* std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
                   << ", pvIdx = " << pvIdx << ", bestValue = " << bestValue << ", delta = " << delta
-                  << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg << std::endl;
+                  << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg << std::endl; */
 
         if (std::abs(rootMoves[0].score) == VALUE_MATE)
         {
