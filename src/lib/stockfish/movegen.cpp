@@ -22,6 +22,7 @@
 #include <initializer_list>
 
 #include "bitboard.h"
+#include "custom/game_over_check.h"
 #include "stockfish_position.h"
 
 namespace Stockfish {
@@ -237,6 +238,11 @@ ExtMove* generate_all(const Position& pos, ExtMove* moveList) {
 // Returns a pointer to the end of the move list.
 template<GenType Type>
 ExtMove* generate(const Position& pos, ExtMove* moveList) {
+    if (pos.gameEndDetector.Analyse(pos) != GameEndDetector::None)
+    {
+        pos.st->movesize = 0;
+        return moveList;
+    }
     auto start = moveList;
     static_assert(Type != LEGAL, "Unsupported type in generate()");
     assert((Type == EVASIONS) == bool(pos.checkers()));
@@ -262,6 +268,11 @@ template ExtMove* generate<NON_EVASIONS>(const Position&, ExtMove*);
 template<>
 ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 
+    if (pos.gameEndDetector.Analyse(pos) != GameEndDetector::None)
+    {
+        pos.st->movesize = 0;
+        return moveList;
+    }
     Color    us     = pos.side_to_move();
     Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);
     Square   ksq    = pos.square<KING>(us);

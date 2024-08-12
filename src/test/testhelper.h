@@ -37,14 +37,10 @@ inline bool testfen(const std::string&       fen,
     size_t i = 0;
     std::cout << "===========================================================" << std::endl;
     std::cout << "game start " << std::endl;
-    for (i = 0; i < expectedmoves.size(); ++i)
+    for (i = 0; i < std::max((size_t) 15, (size_t) expectedmoves.size()); ++i)
     {
         Move picked   = Move::none();
         long duration = timeit_us([&]() { picked = oper(tt, pos); });
-        if (picked == Move::none())
-            break;
-        std::cout << "move " << picked << " found in " << duration << std::endl;
-        std::cout << "-----------------------------------------------------" << std::endl;
         if (picked == Move::none())
         {
             std::cout << "===========================================================" << std::endl;
@@ -53,6 +49,8 @@ inline bool testfen(const std::string&       fen,
             std::cout << "===========================================================" << std::endl;
             break;
         }
+        std::cout << "move " << picked << " found in " << duration << std::endl;
+        std::cout << "-----------------------------------------------------" << std::endl;
 
         play(pos, picked, st[j++]);
         if (i < expectedmoves.size())
@@ -64,6 +62,7 @@ inline bool testfen(const std::string&       fen,
                 std::cout << "expected move predicted correctly : " << picked << std::endl;
         }
     }
+    pos.gameEndDetector.DumpGameEnd(pos);
 
     return ret;
 }

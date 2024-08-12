@@ -1,4 +1,5 @@
 #include "evaluate.h"
+#include "game_over_check.h"
 #include "pesto_evaluate.h"
 #include <limits>
 
@@ -48,17 +49,26 @@ int16_t evaluate(Stockfish::Position pos) {
     //MobilityCalculator mobCalculator;
     //auto               mobCalculatorRes = mobCalculator(pos);
 
-    size_t movecount = MoveList<LEGAL>(pos).size();
-
-    if (movecount == 0)
+    auto gameresult = pos.gameEndDetector.Analyse(pos);
+    if (gameresult != GameEndDetector::None)
     {
-        if (pos.side_to_move() == WHITE)
+        if (gameresult == GameEndDetector::Draw)
         {
-            return VALUE_MATE;
+            return 0;
+        }
+        else if (pos.side_to_move() == WHITE)
+        {
+            if (gameresult == GameEndDetector::BlackWin)
+                return -VALUE_MATE;
+            else
+                return VALUE_MATE;
         }
         else
         {
-            return -VALUE_MATE;
+            if (gameresult == GameEndDetector::WhiteWin)
+                return -VALUE_MATE;
+            else
+                return VALUE_MATE;
         }
     }
 

@@ -1,4 +1,5 @@
 #include "custom_search.h"
+#include "game_over_check.h"
 
 namespace Stockfish {
 
@@ -279,6 +280,8 @@ Value search::qnegmax(Stack* ss, Value alpha, Value beta) {
 }
 
 Move search::iterative_deepening(int d) {
+    if (m_pos.gameEndDetector.Analyse(m_pos) != Stockfish::GameEndDetector::None)
+        return Move::none();
 
     auto moves = MoveList<Stockfish::LEGAL>(m_pos);
     if (moves.size() == 0)

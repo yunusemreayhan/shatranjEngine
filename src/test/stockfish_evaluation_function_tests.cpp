@@ -202,7 +202,8 @@ const inline std::vector<testitem> book_puzzles = {
     Move(SQ_C5, SQ_C7), Move(SQ_B7, SQ_A6), Move(SQ_C7, SQ_A7), Move(SQ_A6, SQ_B5),
     Move(SQ_A7, SQ_A5), Move(SQ_B5, SQ_C6)},
    32,
-   false}};
+   false},
+  {{"8/8/8/1k6/8/1KQ5/8/q7 w - - 0 1", false}, {}, 5, true}};
 
 TEST(EvaluationTests, book_questions) {
     size_t successes = 0;
@@ -214,7 +215,9 @@ TEST(EvaluationTests, book_questions) {
         auto res = testfen(testitem.fen.fen, testitem.fen.shatranj, testitem.expectedmoves,
                            [&](TranspositionTable& tt, Position& pos) -> Move {
                                search s(&tt, pos);
-                               return s.iterative_deepening(testitem.expectedmoves.size() + 1);
+                               return s.iterative_deepening(
+                                 std::max((size_t) testitem.searchdepth,
+                                          (size_t) testitem.expectedmoves.size() + 1));
                            });
 
         if (res)

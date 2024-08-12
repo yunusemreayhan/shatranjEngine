@@ -5,6 +5,7 @@
 #include "stockfish_position.h"
 #include "tt.h"
 #include "json_game_exporter.h"
+#include "types.h"
 
 using namespace Stockfish;
 
@@ -42,8 +43,23 @@ TEST(DummyPlayTests, StockfishVariantCode) {
         std::cout << "total time: " << (double) totaltime / 1000000 << "s" << std::endl;
         if (res == Move::none())
         {
-            exporter.set_winner(~pos.side_to_move());
-            exporter.write();
+            auto winner = pos.gameEndDetector.Analyse(pos);
+            if (winner == GameEndDetector::WhiteWin)
+            {
+                std::cout << "White wins" << std::endl;
+                exporter.set_winner(WHITE);
+            }
+            else if (winner == GameEndDetector::BlackWin)
+            {
+                std::cout << "Black wins" << std::endl;
+                exporter.set_winner(BLACK);
+            }
+            else if (winner == GameEndDetector::Draw)
+            {
+                std::cout << "Draw" << std::endl;
+                exporter.set_winner(Color::COLOR_NB);
+            }
+
             std::cout << "Game over" << std::endl;
             break;
         }

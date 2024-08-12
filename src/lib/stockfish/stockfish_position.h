@@ -11,6 +11,7 @@
 #include "types.h"
 #include "bitboard.h"
 #include "tt.h"
+#include "custom/game_over_check.h"
 
 namespace Stockfish {
 
@@ -140,6 +141,7 @@ class Position {
     StateInfo* st;
     int        gamePly;
     Color      sideToMove;
+    GameEndDetector gameEndDetector;
 
     void                                         dump() const;
     std::tuple<bool, PieceType, bool, PieceType> IsMoveToAProtectedPosition(Move& m);
