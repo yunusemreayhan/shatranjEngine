@@ -37,6 +37,9 @@ Value search::negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode
     }
 
     auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
+    ss->ttHit                      = ttHit;
+    ss->ttMove                     = ttData.move;
+    bool ttCapture                 = ttData.move && m_pos.capture_stage(ttData.move);
     if (ttHit && ttData.depth >= depth && !PvNode)
     {
         return ttData.eval;
@@ -62,20 +65,41 @@ Value search::negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode
         return res;
     }
 
-    // maybe noise but slows down 42s to 45s ~ in stockfish_evaluation_function_tests
-    // will keep it probably might be usefull for big boards with more pieces
-    if (cutNode && (ss - 1)->move != Move::null() && m_pos.checkers() == 0 && depth > 3)
-    {
-        StateInfo st;
+    // futility pruning
+    Value eval             = evaluate(m_pos);
+    ss->staticEval         = eval;
+    bool improving         = ss->staticEval > (ss - 2)->staticEval;
+    bool opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
+    ss->improving          = improving;
 
-        m_pos.do_null_move(st, *m_tt);
-        this->nodes.fetch_add(1, std::memory_order_relaxed);
-        ss->move        = Move::none();
-        Value nullValue = -negmax<NonPV>(ss + 1, depth - 3, -beta, -beta + 1, false);
-        m_pos.undo_null_move();
-        if (nullValue >= beta)
+    Value futilityMargin = 100;
+    futilityMargin += depth * (improving && ss->improving ? -10 : 10);
+    futilityMargin += cutNode && !ss->ttHit ? -10 : 10;
+    futilityMargin += opponentWorsening ? -10 : 10;
+
+    if (m_pos.checkers() == 0)
+    {
+        if ((ss - 1)->move != Move::null() && depth > 3 && eval - futilityMargin >= beta
+            && eval >= beta && (!ttData.move || ttCapture))
         {
-            return nullValue;
+            return beta + (eval - beta) / 3;
+        }
+
+        // maybe noise but slows down 42s to 45s ~ in stockfish_evaluation_function_tests
+        // will keep it probably might be usefull for big boards with more pieces
+        if (cutNode && (ss - 1)->move != Move::null() && depth > 3)
+        {
+            StateInfo st;
+
+            m_pos.do_null_move(st, *m_tt);
+            this->nodes.fetch_add(1, std::memory_order_relaxed);
+            ss->move        = Move::none();
+            Value nullValue = -negmax<NonPV>(ss + 1, depth - 3, -beta, -beta + 1, false);
+            m_pos.undo_null_move();
+            if (nullValue >= beta)
+            {
+                return nullValue;
+            }
         }
     }
 

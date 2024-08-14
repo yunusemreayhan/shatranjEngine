@@ -23,6 +23,9 @@ struct Stack {
     Value eval;
     Move* pv;
     Value staticEval;
+    bool  improving;
+    bool  ttHit;
+    Move  ttMove;
 };
 
 enum SearchRunType {
@@ -90,8 +93,8 @@ class search {
     void dump_root_moves() {
         for (auto& rm : rootMoves)
         {
-            if (rm.score == -VALUE_INFINITE)
-                continue;
+            /* if (rm.score == -VALUE_INFINITE)
+                continue; */
 
             std::cout << rm.pv[0] << " " << rm.score << " -> ";
             for (auto& pvm : rm.pv)
