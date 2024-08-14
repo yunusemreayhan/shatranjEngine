@@ -4,8 +4,9 @@
 
 namespace Stockfish {
 
+template<bool HaveTimeout>
 template<SearchRunType nodeType>
-Value search::negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode) {
+Value search<HaveTimeout>::negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode) {
     Move pv[MAX_PLY];
     if (nodeType == PV)
     {
@@ -193,8 +194,9 @@ Value search::negmax(Stack* ss, int depth, Value alpha, Value beta, bool cutNode
     return besteval;
 }
 
+template<bool HaveTimeout>
 template<SearchRunType nodeType>
-Value search::qnegmax(Stack* ss, Value alpha, Value beta) {
+Value search<HaveTimeout>::qnegmax(Stack* ss, Value alpha, Value beta) {
 
     constexpr bool PvNode = nodeType == PV;
 
@@ -304,7 +306,8 @@ Value search::qnegmax(Stack* ss, Value alpha, Value beta) {
     return bestValue;
 }
 
-Move search::iterative_deepening(int d) {
+template<bool HaveTimeout>
+Move search<HaveTimeout>::iterative_deepening(int d) {
     if (m_pos.gameEndDetector.Analyse(m_pos) != Stockfish::GameEndDetector::None)
         return Move::none();
 
@@ -429,4 +432,7 @@ Move search::iterative_deepening(int d) {
     }
     return rootMoves[0].pv[0];
 }
+template class search<true>;
+
+template class search<false>;
 }

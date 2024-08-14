@@ -31,8 +31,8 @@ TEST(DummyPlayTests, StockfishVariantCode) {
     for (int i = 0; i < 300; i++)
     {
         std::cout << pos << std::endl;
-        search s1(&tt1, pos);
-        search s2(&tt2, pos);
+        search<false> s1(&tt1, pos);
+        search<false> s2(&tt2, pos);
         Move   res;
         auto   timelong = timeit_us([&]() {
             res =
