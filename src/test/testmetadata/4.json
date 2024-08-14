@@ -63,7 +63,7 @@
         {
             "move": "a7b6",
             "color": "b",
-            "FEN": "1n1r4/2kP3P/1ppNb1Pb/P1PqP3/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1",
+            "FEN": "1n1r4/2kP3P/1ppNb1Pb/P1PqP3/3P2R1/1pnBB1R1/r5Q1/2K5 w - - 0 1", // last place it can find mate
             "children": [],
             "description": ""
         },

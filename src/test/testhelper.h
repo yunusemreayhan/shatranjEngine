@@ -47,7 +47,7 @@ inline bool testfen(const testitem& item, MoveFindingFunctionType oper) {
     size_t i = 0;
     std::cout << "===========================================================" << std::endl;
     std::cout << "game start " << std::endl;
-    for (i = 0; i < std::max((size_t) 15, (size_t) item.expectedmoves.size()); ++i)
+    for (i = 0; i < std::max((size_t) 30, (size_t) item.expectedmoves.size()); ++i)
     {
         Move picked   = Move::none();
         long duration = timeit_us([&]() { picked = oper(tt, pos); });
