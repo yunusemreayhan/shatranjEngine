@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../stockfish_position.h"
+#include "game_over_check.h"
 #include "gtest/gtest.h"
 
 #include <cstddef>
@@ -8,6 +9,18 @@
 
 using namespace Stockfish;
 
+struct FenWithType {
+    std::string fen;
+    bool        shatranj;
+};
+
+struct testitem {
+    FenWithType              fenwithtype;
+    std::vector<Move>        expectedmoves;
+    size_t                   minsearchdepth;
+    bool                     enabled;
+    GameEndDetector::GameEnd gameEnd;
+};
 
 inline void play(Position& pos, Move& move, StateInfo& st) {
     std::cout << "-----------------------------------------------------" << std::endl;
@@ -22,22 +35,19 @@ inline void play(Position& pos, Move& move, StateInfo& st) {
 
 
 template<typename MoveFindingFunctionType>
-inline bool testfen(const std::string&       fen,
-                    bool                     shatranj,
-                    const std::vector<Move>& expectedmoves,
-                    MoveFindingFunctionType  oper) {
+inline bool testfen(const testitem& item, MoveFindingFunctionType oper) {
     bool               ret = true;
     TranspositionTable tt;
     tt.resize(2048);
     Position  pos;
     StateInfo st[100];
     int       j = 0;
-    pos.set(fen, &st[j++], shatranj);
+    pos.set(item.fenwithtype.fen, &st[j++], item.fenwithtype.shatranj);
     std::cout << pos << std::endl;
     size_t i = 0;
     std::cout << "===========================================================" << std::endl;
     std::cout << "game start " << std::endl;
-    for (i = 0; i < std::max((size_t) 15, (size_t) expectedmoves.size()); ++i)
+    for (i = 0; i < std::max((size_t) 15, (size_t) item.expectedmoves.size()); ++i)
     {
         Move picked   = Move::none();
         long duration = timeit_us([&]() { picked = oper(tt, pos); });
@@ -53,15 +63,17 @@ inline bool testfen(const std::string&       fen,
         std::cout << "-----------------------------------------------------" << std::endl;
 
         play(pos, picked, st[j++]);
-        if (i < expectedmoves.size())
+        if (i < item.expectedmoves.size())
         {
-            EXPECT_EQ(expectedmoves[i], picked);
-            if (expectedmoves[i] != picked)
+            EXPECT_EQ(item.expectedmoves[i], picked);
+            if (item.expectedmoves[i] != picked)
                 ret &= false;
             else
                 std::cout << "expected move predicted correctly : " << picked << std::endl;
         }
     }
+    std::cout << item.fenwithtype.fen << std::endl;
+    EXPECT_EQ(pos.gameEndDetector.Analyse(pos), item.gameEnd);
     pos.gameEndDetector.DumpGameEnd(pos);
 
     return ret;

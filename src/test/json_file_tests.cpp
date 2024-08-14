@@ -34,10 +34,7 @@ enum MoveTypeFromJson {
     NORMAL,
     ANY
 };
-struct FenWithType {
-    std::string fen;
-    bool        shatranj;
-};
+
 
 struct gamepoint {
     FenWithType      fenwithtype;
