@@ -2,6 +2,7 @@
 #include "custommovepicker.h"
 #include "evaluate.h"
 #include "game_over_check.h"
+#include <chrono>
 
 namespace Stockfish {
 
@@ -75,7 +76,7 @@ Value search<HaveTimeout>::negmax(Stack* ss, int depth, Value alpha, Value beta,
     ss->improving          = improving;
 
     Value futilityMargin = 100;
-    futilityMargin += depth * (improving && ss->improving ? -10 : 10);
+    futilityMargin += depth * (improving ? -10 : 10) / 3;
     futilityMargin += cutNode && !ss->ttHit ? -10 : 10;
     futilityMargin += opponentWorsening ? -10 : 10;
 
@@ -200,6 +201,17 @@ template<SearchRunType nodeType>
 Value search<HaveTimeout>::qnegmax(Stack* ss, Value alpha, Value beta) {
 
     constexpr bool PvNode = nodeType == PV;
+    Value          eval   = evaluate(m_pos);
+
+    // standing pat
+    if (eval >= beta)
+    {
+        return beta;
+    }
+    if (eval > alpha)
+    {
+        alpha = eval;
+    }
 
     qrun++;
     Key posKey                     = m_pos.key();
@@ -224,13 +236,12 @@ Value search<HaveTimeout>::qnegmax(Stack* ss, Value alpha, Value beta) {
 
     if (allmoves.size() == 0)
     {
-        Value ret = evaluate(m_pos);
         ttWriter.write(m_pos.key(), VALUE_ZERO, false, Stockfish::BOUND_UPPER, DEPTH_UNSEARCHED,
-                       Move::none(), ret, m_tt->generation());
-        return ret;
+                       Move::none(), eval, m_tt->generation());
+        return eval;
     }
 
-    Value bestValue        = evaluate(m_pos);
+    Value bestValue        = eval;
     Move  bestMove         = Move::none();
     Value value            = bestValue;
     bool  played_something = false;
@@ -398,7 +409,9 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
                           << ", adjusted depth = " << adjustedDepth << ", pvIdx = " << pvIdx
                           << ", bestValue = " << bestValue << ", delta = " << delta
                           << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
-                          << ", stopper flag = " << stopflag << std::endl;
+                          << ", stopper flag = " << stopflag
+                          << ", elapsed_us = " << elapsed_us(std::chrono::system_clock::now())
+                          << std::endl;
                 bestValue = negmax<Root>(ss, adjustedDepth, alpha, beta);
                 std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
 
@@ -433,7 +446,8 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
         std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
                   << ", pvIdx = " << pvIdx << ", bestValue = " << bestValue << ", delta = " << delta
                   << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
-                  << ", stopper flag = " << stopflag << std::endl;
+                  << ", stopper flag = " << stopflag
+                  << ", elapsed_us = " << elapsed_us(std::chrono::system_clock::now()) << std::endl;
         if (std::abs(rootMoves[0].score) == VALUE_MATE)
         {
             break;

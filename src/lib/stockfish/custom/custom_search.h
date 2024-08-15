@@ -118,8 +118,11 @@ class search {
 
     void stop() { stopflag = true; }
 
-    std::chrono::microseconds elapsed_us() {
-        return std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::chrono::seconds elapsed_us() {
+        return std::chrono::duration_cast<std::chrono::seconds>(end - start);
+    }
+    std::chrono::seconds elapsed_us(std::chrono::time_point<std::chrono::system_clock> mend) {
+        return std::chrono::duration_cast<std::chrono::seconds>(mend - start);
     }
 
    public:
