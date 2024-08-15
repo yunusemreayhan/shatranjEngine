@@ -1,13 +1,11 @@
 
-#include "custommovepicker.h"
 #include "game_over_check.h"
-#include "minimax.h"
 #include "movegen.h"
 
 #include "gtest/gtest.h"
 #include "stockfish_position.h"
+#include <chrono>
 #include <cstdint>
-#include <limits>
 #include <sys/types.h>
 
 #include "evaluate.h"
@@ -15,8 +13,6 @@
 #include "custom_search.h"
 #include "testhelper.h"
 #include "tt.h"
-#include "types.h"
-#include "pesto_evaluate.h"
 #include "evaluate.h"
 
 using namespace Stockfish;
@@ -138,7 +134,7 @@ const inline std::vector<testitem> simple_puzzles_handmade = {
    GameEndDetector::GameEnd::BlackWin},
   {{"k6r/8/3B4/6P1/4n3/2P5/1K3R2/8 b - - 0 1", false},
    {Move(SQ_E4, SQ_F2)},
-   4,
+   5,
    true,
    GameEndDetector::GameEnd::BlackWin},
   {{"k6r/8/3B4/6P1/4n3/2P5/1K3R2/8 b - - 0 1", false},
@@ -204,8 +200,8 @@ TEST(EvaluationTests, single_move_simple_puzzles) {
     for (auto& testitem : simple_puzzles_handmade)
     {
         auto res = testfen(testitem, [&](TranspositionTable& tt, Position& pos) -> Move {
-            search s(&tt, pos);
-            return s.iterative_deepening(5);
+            search<true> s(&tt, pos);
+            return s.iterative_deepening(testitem.minsearchdepth);
         });
 
         if (res)
@@ -291,8 +287,9 @@ TEST(EvaluationTests, book_questions) {
             continue;
         auto res = testfen(testitem, [&](TranspositionTable& tt, Position& pos) -> Move {
             search s(&tt, pos);
-            return s.iterative_deepening(std::max((size_t) testitem.minsearchdepth,
-                                                  (size_t) testitem.expectedmoves.size() + 1));
+            size_t depth = std::max((size_t) testitem.minsearchdepth,
+                                    (size_t) testitem.expectedmoves.size() + 1);
+            return s.iterative_deepening(depth);
         });
 
         if (res)

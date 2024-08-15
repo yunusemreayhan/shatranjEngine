@@ -1,4 +1,5 @@
 #include "custom_search.h"
+#include "custommovepicker.h"
 #include "evaluate.h"
 #include "game_over_check.h"
 
@@ -307,7 +308,7 @@ Value search<HaveTimeout>::qnegmax(Stack* ss, Value alpha, Value beta) {
 }
 
 template<bool HaveTimeout>
-Move search<HaveTimeout>::iterative_deepening(int d) {
+Move search<HaveTimeout>::iterative_deepening_background(int d) {
     if (m_pos.gameEndDetector.Analyse(m_pos) != Stockfish::GameEndDetector::None)
         return Move::none();
 
@@ -343,6 +344,11 @@ Move search<HaveTimeout>::iterative_deepening(int d) {
 
     for (rootDepth = 1; rootDepth <= d; rootDepth++)
     {
+        if constexpr (HaveTimeout)
+        {
+            if (stopflag)
+                break;
+        }
         // MultiPV loop. We perform a full root search for each PV line
 
         // Save the last iteration's scores before the first PV line is searched and
@@ -361,6 +367,11 @@ Move search<HaveTimeout>::iterative_deepening(int d) {
 
         for (pvIdx = 0; pvIdx < multiPV; ++pvIdx)
         {
+            if constexpr (HaveTimeout)
+            {
+                if (stopflag)
+                    break;
+            }
             if (pvIdx == pvLast)
             {
                 pvFirst = pvLast;
@@ -375,6 +386,11 @@ Move search<HaveTimeout>::iterative_deepening(int d) {
             int failedHighCnt = 0;
             while (true)
             {
+                if constexpr (HaveTimeout)
+                {
+                    if (stopflag)
+                        break;
+                }
                 adjustedDepth =
                   std::max(1, rootDepth - failedHighCnt /* - 3 * (searchAgainCounter + 1) / 4 */);
                 rootDelta = beta - alpha;
@@ -382,7 +398,7 @@ Move search<HaveTimeout>::iterative_deepening(int d) {
                           << ", adjusted depth = " << adjustedDepth << ", pvIdx = " << pvIdx
                           << ", bestValue = " << bestValue << ", delta = " << delta
                           << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
-                          << std::endl;
+                          << ", stopper flag = " << stopflag << std::endl;
                 bestValue = negmax<Root>(ss, adjustedDepth, alpha, beta);
                 std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
 
@@ -416,7 +432,8 @@ Move search<HaveTimeout>::iterative_deepening(int d) {
         }
         std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
                   << ", pvIdx = " << pvIdx << ", bestValue = " << bestValue << ", delta = " << delta
-                  << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg << std::endl;
+                  << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
+                  << ", stopper flag = " << stopflag << std::endl;
         if (std::abs(rootMoves[0].score) == VALUE_MATE)
         {
             break;

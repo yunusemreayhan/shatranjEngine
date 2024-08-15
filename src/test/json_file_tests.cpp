@@ -1,13 +1,9 @@
 
-#include "custommovepicker.h"
-#include "minimax.h"
 #include "movegen.h"
 
 #include "gtest/gtest.h"
 #include "stockfish_helper.h"
 #include "stockfish_position.h"
-#include <cstdint>
-#include <limits>
 #include <sstream>
 #include <string>
 #include <sys/types.h>
@@ -17,9 +13,6 @@
 #include "custom_search.h"
 #include "testhelper.h"
 #include "tt.h"
-#include "types.h"
-#include "pesto_evaluate.h"
-#include "evaluate.h"
 
 #include <fstream>
 

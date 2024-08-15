@@ -1,11 +1,9 @@
 
 #include "gtest/gtest.h"
-#include "helper.h"
 #include "custom_search.h"
 #include "stockfish_position.h"
 #include "tt.h"
 #include "json_game_exporter.h"
-#include "types.h"
 
 using namespace Stockfish;
 
@@ -34,9 +32,15 @@ TEST(DummyPlayTests, StockfishVariantCode) {
         search<false> s1(&tt1, pos);
         search<false> s2(&tt2, pos);
         Move   res;
-        auto   timelong = timeit_us([&]() {
-            res =
-              (i % 2 == 0) ? s1.iterative_deepening(fp_depth) : s2.iterative_deepening(sp_depth);
+        auto          timelong = timeit_us([&]() {
+            if (i % 2 == 0)
+            {
+                return s1.iterative_deepening(fp_depth);
+            }
+            else
+            {
+                return s2.iterative_deepening(sp_depth);
+            }
         });
         std::cout << "picking took: " << (double) timelong / 1000000 << "s" << std::endl;
         totaltime += timelong;

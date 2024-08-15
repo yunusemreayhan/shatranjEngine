@@ -3,19 +3,15 @@
 #include "../types.h"
 #include "../tt.h"
 #include "../stockfish_position.h"
-#include "custommovepicker.h"
-#include "evaluate.h"
 #include "../movegen.h"
+
+#include "timer.h"
+
 #include <chrono>
 #include <condition_variable>
 #include <cstddef>
-#include <deque>
-#include <future>
-#include <limits>
 #include <mutex>
-#include <string>
 #include "pv_manager.h"
-#include "../stockfish_helper.h"
 #include <atomic>
 #include <thread>
 
@@ -63,42 +59,10 @@ struct RootMove {
     std::vector<Move> pv;
 };
 
-template<bool enabled = false>
-class TimeChecker {
-   public:
-    TimeChecker(std::atomic<bool>&        stopper_flag_inp,
-                std::chrono::milliseconds t = std::chrono::milliseconds(0)) :
-        stopper_flag(stopper_flag_inp) {
-        if constexpr (enabled)
-        {
-            std::async(std::launch::async, [&]() {
-                // Use sleep_for to wait specified time (or sleep_until).
-                std::this_thread::sleep_for(t);
-                // Do whatever you want.
-                stopper_flag.store(true);
-            });
-
-            deadline = std::chrono::system_clock::now() + t;
-        }
-    }
-
-    inline bool IsTimeUp() {
-        if constexpr (enabled)
-        {
-            if (deadline < std::chrono::system_clock::now())
-                return true;
-        }
-        return false;
-    }
-
-   private:
-    std::chrono::time_point<std::chrono::system_clock> deadline;
-    std::atomic<bool>&                                 stopper_flag;
-};
 
 using RootMoves = std::vector<RootMove>;
 
-template<bool HaveTimeOut = false>
+template<bool HaveTimeOut = true>
 class search {
     // Sort moves in descending order up to and including
     // a given limit. The order of moves smaller than the limit is left unspecified.
@@ -143,9 +107,8 @@ class search {
             std::cout << std::endl;
         }
     }
-    Move picked_move() { return rootMoves[0].pv[0]; }
-    Move iterative_deepening(int d = 20);
 
+    Move iterative_deepening_background(int d = 20);
 
     void update_pv(Move* pv, Move move, const Move* childPv) {
         for (*pv++ = move; childPv && *childPv != Move::none();)
@@ -153,28 +116,62 @@ class search {
         *pv = Move::none();
     }
 
+    void stop() { stopflag = true; }
+
+    std::chrono::microseconds elapsed_us() {
+        return std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    }
+
    public:
     search(TranspositionTable*       tt,
            Position&                 pos,
-           std::chrono::milliseconds t = std::chrono::milliseconds(0)) :
+           std::chrono::milliseconds t = std::chrono::seconds(60)) :
         m_tt(tt),
         m_pos(pos),
         stopflag(false),
         timeChecker(stopflag, t) {}
 
     void start_parallel_root(int d = 20) {
-        cv.wait(mutex, [&]() { return busy.load() == 0; });
-        rootThread = std::thread([&]() {
-            std::lock_guard<std::mutex> lock(mutex);
+        stop();
+        parallel_thread_for_search = std::thread([&]() {
+            std::unique_lock<std::mutex> lock(m);
+            cv.wait(lock, [&]() { return busy.load() == false; });
             stopflag = false;
-            busy     = true;
-            this->iterative_deepening(d);
-            busy = false;
+            busy.store(true);
+            start = std::chrono::system_clock::now();
+            if constexpr (HaveTimeOut)
+            {
+                timeChecker.Reset();
+            }
+            this->iterative_deepening_background(d);
+            timeChecker.Cancel();
+            end = std::chrono::system_clock::now();
+            busy.store(false);
             cv.notify_all();
         });
     }
 
-    void stop() { stopflag = true; }
+    Move iterative_deepening(int d = 20) {
+        start_parallel_root(d);
+        block_for_search();
+        return picked_move();
+    }
+
+    void block_for_search() {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        std::unique_lock<std::mutex> lk(m);
+        cv.wait(lk, [&]() { return busy.load() == false; });
+    }
+
+    Move picked_move() {
+        if (rootMoves.size() > 0)
+            return rootMoves[0].pv[0];
+
+        return Move::none();
+    }
+    Value picked_move_score() { return rootMoves[0].score; }
+
+    ~search() { parallel_thread_for_search.join(); }
 
    private:
     const static int    MAX_PLY = 500;
@@ -184,8 +181,8 @@ class search {
     RootMoves           rootMoves;
     size_t              multiPV = 1;
     Value               rootDelta;
-    Depth               rootDepth;
-    std::thread         rootThread;
+    Depth               completedDepth, rootDepth;
+    std::thread         parallel_thread_for_search;
 
     long pvrun    = 0;
     long nonpvrun = 0;
@@ -196,8 +193,10 @@ class search {
     int                      delta;
     size_t                   pvIdx, pvLast;
     std::atomic<bool>        stopflag = false, busy = false;
-    TimeChecker<HaveTimeOut> timeChecker;
+    TimeChecker<false>                                 timeChecker;
     std::condition_variable  cv;
-    std::mutex               mutex;
+    std::mutex               m;
+    std::chrono::time_point<std::chrono::system_clock> start;
+    std::chrono::time_point<std::chrono::system_clock> end;
 };
 }
