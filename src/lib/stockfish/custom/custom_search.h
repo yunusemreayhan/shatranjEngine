@@ -128,7 +128,7 @@ class search {
    public:
     search(TranspositionTable*       tt,
            Position&                 pos,
-           std::chrono::milliseconds t = std::chrono::seconds(60)) :
+           std::chrono::milliseconds t = std::chrono::seconds(3600)) :
         m_tt(tt),
         m_pos(pos),
         stopflag(false),

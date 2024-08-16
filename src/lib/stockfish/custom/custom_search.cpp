@@ -43,10 +43,10 @@ Value search<HaveTimeout>::negmax(Stack* ss, int depth, Value alpha, Value beta,
     ss->ttHit                      = ttHit;
     ss->ttMove                     = ttData.move;
     bool ttCapture                 = ttData.move && m_pos.capture_stage(ttData.move);
-    if (ttHit && ttData.depth >= depth && !PvNode)
+    /*     if (ttHit && ttData.depth >= depth && !PvNode)
     {
         return ttData.eval;
-    }
+    } */
 
     auto moves = CustomMovePicker(m_pos, m_tt);
 
@@ -76,7 +76,7 @@ Value search<HaveTimeout>::negmax(Stack* ss, int depth, Value alpha, Value beta,
     ss->improving          = improving;
 
     Value futilityMargin = 100;
-    futilityMargin += depth * (improving ? -10 : 10) / 3;
+    futilityMargin += depth * (improving ? -10 : 10);
     futilityMargin += cutNode && !ss->ttHit ? -10 : 10;
     futilityMargin += opponentWorsening ? -10 : 10;
 
@@ -216,10 +216,10 @@ Value search<HaveTimeout>::qnegmax(Stack* ss, Value alpha, Value beta) {
     qrun++;
     Key posKey                     = m_pos.key();
     auto [ttHit, ttData, ttWriter] = m_tt->probe(posKey);
-    if (ttHit && ttData.depth >= DEPTH_QS_CHECKS)
+    /*     if (ttHit && ttData.depth >= DEPTH_QS_CHECKS)
     {
         return ttData.eval;
-    }
+    } */
 
     // Check if we have an upcoming move that draws by repetition (~1 Elo)
     if (alpha < VALUE_DRAW && m_pos.upcoming_repetition(ss->ply))
@@ -405,13 +405,13 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
                 adjustedDepth =
                   std::max(1, rootDepth - failedHighCnt /* - 3 * (searchAgainCounter + 1) / 4 */);
                 rootDelta = beta - alpha;
-                std::cout << "-- current depth = " << rootDepth
+                /* std::cout << "-- current depth = " << rootDepth
                           << ", adjusted depth = " << adjustedDepth << ", pvIdx = " << pvIdx
                           << ", bestValue = " << bestValue << ", delta = " << delta
                           << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
                           << ", stopper flag = " << stopflag
                           << ", elapsed_us = " << elapsed_us(std::chrono::system_clock::now())
-                          << std::endl;
+                          << std::endl; */
                 bestValue = negmax<Root>(ss, adjustedDepth, alpha, beta);
                 std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
 
@@ -425,12 +425,12 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
                 {
                     beta = std::min(bestValue + delta, VALUE_INFINITE);
                     ++failedHighCnt;
-                } /*
+                }
                 else if (adjustedDepth != rootDepth)
                 {
                     if (failedHighCnt > 0)
                         --failedHighCnt;
-                } */
+                }
                 else
                 {
                     break;
@@ -443,11 +443,11 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
             // Sort the PV lines searched so far and update the GUI
             std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
         }
-        std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
+        /* std::cout << "current depth = " << rootDepth << ", adjusted depth = " << adjustedDepth
                   << ", pvIdx = " << pvIdx << ", bestValue = " << bestValue << ", delta = " << delta
                   << ", alpha = " << alpha << ", beta = " << beta << ", avg = " << avg
                   << ", stopper flag = " << stopflag
-                  << ", elapsed_us = " << elapsed_us(std::chrono::system_clock::now()) << std::endl;
+                  << ", elapsed_us = " << elapsed_us(std::chrono::system_clock::now()) << std::endl; */
         if (std::abs(rootMoves[0].score) == VALUE_MATE)
         {
             break;
