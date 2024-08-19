@@ -113,6 +113,11 @@ Value search<HaveTimeout>::negmax(Stack* ss, int depth, Value alpha, Value beta,
     int moveCount = 0;
     for (auto& m : moves)
     {
+        if constexpr (HaveTimeout)
+        {
+            if (stopflag)
+                break;
+        }
         Value       recCalc = -VALUE_INFINITE;
         std::string mstr    = MoveToStr(m);
         (void) mstr;
@@ -257,6 +262,11 @@ Value search<HaveTimeout>::qnegmax(Stack* ss, Value alpha, Value beta) {
     size_t movecount = 0;
     for (auto& m : moves)
     {
+        if constexpr (HaveTimeout)
+        {
+            if (stopflag)
+                break;
+        }
         (ss + 1)->pv    = pv;
         (ss + 1)->pv[0] = Move::none();
         movecount++;
@@ -330,6 +340,7 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
     }
     for (auto move : moves)
     {
+        //std::cout << "inserting root move : " << move << std::endl;
         rootMoves.emplace_back(move);
     }
 
@@ -413,6 +424,11 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
                           << ", elapsed_us = " << elapsed_us(std::chrono::system_clock::now())
                           << std::endl; */
                 bestValue = negmax<Root>(ss, adjustedDepth, alpha, beta);
+                if constexpr (HaveTimeout)
+                {
+                    if (stopflag)
+                        break;
+                }
                 std::stable_sort(rootMoves.begin() + pvIdx, rootMoves.begin() + pvLast);
 
                 if (bestValue <= alpha)
@@ -440,6 +456,11 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
 
+            if constexpr (HaveTimeout)  // return before sorting with possibly faulty information
+            {
+                if (stopflag)
+                    break;
+            }
             // Sort the PV lines searched so far and update the GUI
             std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
         }
@@ -451,6 +472,11 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
         if (std::abs(rootMoves[0].score) == VALUE_MATE)
         {
             break;
+        }
+        if constexpr (HaveTimeout)
+        {
+            if (stopflag)
+                break;
         }
     }
 

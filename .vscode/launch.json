@@ -471,13 +471,23 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/release/src/bin/fencalc/fen_calculator",
             "args": [
-                "4",
+                "10",
                 "2048",
-                "\"8/8/8/1k6/8/1KQ5/8/q7 w - - 0 1\""
+                "30",
+                "\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1\""
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
+            "cwd": "${workspaceFolder}", /*
+            "environment": [
+                {
+                    "name": "LSAN_OPTIONS",
+                    "value": "verbosity=1"
+                },
+                {
+                    "name": "log_threads",
+                    "value": "1"
+                }
+            ], */
             "externalConsole": true,
             "MIMode": "gdb",
             "setupCommands": [
@@ -501,9 +511,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/debug/src/bin/fencalc/fen_calculator",
             "args": [
-                "4",
+                "10",
                 "2048",
-                "\"8/8/8/1k6/8/1KQ5/8/q7 w - - 0 1\""
+                "30",
+                "\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1\""
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
