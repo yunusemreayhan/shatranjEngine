@@ -34,10 +34,11 @@ int main(int argc, char** argv) {
     tt.resize(ttsize_int);
     Stockfish::StateInfo st;
     Stockfish::Position  pos;
-    pos.set(fen, &st, false);
+    pos.set(fen, &st, true);
     search s1(&tt, pos, timeout);
     s1.iterative_deepening(depth_int);
-    if (Stockfish::MoveList<Stockfish::LEGAL>(pos).size() == 0)
+    int movecount = Stockfish::MoveList<Stockfish::LEGAL>(pos).size();
+    if (movecount == 0)
     {
         auto winner = pos.gameEndDetector.Analyse(pos);
         if (winner == GameEndDetector::WhiteWin)
@@ -56,7 +57,8 @@ int main(int argc, char** argv) {
         std::cout << "Game over" << std::endl;
         return 0;
     }
-    std::cout << "last completed search depth : " << s1.completedDepth << std::endl;
+    std::cout << "last completed search depth : " << s1.completedDepth
+              << ", total movecount : " << movecount << std::endl;
     std::cout << s1.picked_move() << std::endl;
     return 0;
 }
