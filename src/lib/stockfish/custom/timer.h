@@ -50,7 +50,7 @@ class TimeChecker {
         if (clock_is_active.load())
             Cancel();
 
-        std::cout << "starting timer" << std::endl;
+        // std::cout << "starting timer" << std::endl;
         deadline = std::chrono::system_clock::now() + period;
 
         std::thread([&]() {
@@ -60,7 +60,9 @@ class TimeChecker {
             active.store(true);
             clock_is_active.store(true);
             if constexpr (debug)
+            {
                 std::cout << "starting timer" << std::endl;
+            }
             while (true)
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -79,14 +81,18 @@ class TimeChecker {
             }
             if (active.load())
             {
-                //if constexpr (debug)
-                std::cout << "firing stopper flag!" << std::endl;
+                if constexpr (debug)
+                {
+                    std::cout << "firing stopper flag!" << std::endl;
+                }
                 stopper_flag.store(true);
             }
             clock_is_active.store(false);
             if constexpr (debug)
+            {
                 std::cout << "notifying all" << std::endl;
-            std::cout << "done with the timer" << std::endl;
+                std::cout << "done with the timer" << std::endl;
+            }
             cv.notify_all();
         }).detach();
     }

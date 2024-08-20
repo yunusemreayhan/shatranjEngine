@@ -473,7 +473,7 @@
             "args": [
                 "10",
                 "2048",
-                "30",
+                "5",
                 "\"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1\""
             ],
             "stopAtEntry": false,

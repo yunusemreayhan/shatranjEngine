@@ -176,6 +176,8 @@ class search {
 
     ~search() { parallel_thread_for_search.join(); }
 
+    Depth completedDepth, rootDepth;
+
    private:
     const static int    MAX_PLY = 500;
     TranspositionTable* m_tt;
@@ -184,7 +186,6 @@ class search {
     RootMoves           rootMoves;
     size_t              multiPV = 1;
     Value               rootDelta;
-    Depth               completedDepth, rootDepth;
     std::thread         parallel_thread_for_search;
 
     long pvrun    = 0;

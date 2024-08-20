@@ -478,15 +478,16 @@ Move search<HaveTimeout>::iterative_deepening_background(int d) {
             if (stopflag)
                 break;
         }
+        completedDepth = std::max(completedDepth, adjustedDepth);
     }
 
     //pv_manager2.dump();
-    dump_root_moves();
-    auto [ttHit, ttData, ttWriter] = m_tt->probe(m_pos.key());
+    // dump_root_moves();
+    /* auto [ttHit, ttData, ttWriter] = m_tt->probe(m_pos.key());
     if (ttHit && ttData.depth >= d && ttData.move != Move::none())
     {
         return ttData.move;
-    }
+    } */
     return rootMoves[0].pv[0];
 }
 template class search<true>;
