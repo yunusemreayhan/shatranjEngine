@@ -20,5 +20,12 @@
     },
     "makefile.compileCommandsPath": "/home/yunus/repos/TamerKaratekinChessProject/build/debug/",
     "breadcrumbs.showFunctions": true,
-    "workbench.tree.stickyScrollMaxItemCount": 10
+    "workbench.tree.stickyScrollMaxItemCount": 10,
+    "vim.useCtrlKeys": true,
+    "vim.handleKeys": {
+        "<C-p>": false,
+        "<C-S-p>": false,
+        "<C-z>": false,
+        "<C-y>": false
+    }
 }

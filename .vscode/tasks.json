@@ -30,7 +30,7 @@
         {
             "label": "build debug",
             "type": "shell",
-            "command": "mkdir -p build/debug && cmake --build ./build/debug --target all",
+            "command": "mkdir -p build/debug && cmake --build ./build/debug --target all -j 16",
             "dependsOn": "configure debug",
             "problemMatcher": [
                 "$gcc"
@@ -39,7 +39,7 @@
         {
             "label": "build release",
             "type": "shell",
-            "command": "mkdir -p build/release && cmake --build ./build/release --target all",
+            "command": "mkdir -p build/release && cmake --build ./build/release --target all -j 16",
             "dependsOn": "configure release",
             "problemMatcher": [
                 "$gcc"

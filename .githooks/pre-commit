@@ -2,7 +2,7 @@
 
 pre-commit run
 mkdir -p build/build-release-ctest
-cmake --build ./build/build-release-ctest --target all
+cmake --build ./build/build-release-ctest --target all -j 16
 cmake -S . -B ./build/build-release-ctest -DCMAKE_BUILD_TYPE=Release
 cd ./build/build-release-ctest
 ctest -j 4
