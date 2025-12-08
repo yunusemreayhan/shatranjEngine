@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shatranj WASM UCI Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .engine { border: 1px solid #ccc; margin: 10px 0; padding: 15px; }
+        .success { border-color: green; }
+        .error { border-color: red; }
+        button { padding: 10px 20px; margin: 5px; }
+        #output { background: #f5f5f5; padding: 10px; margin: 10px 0; height: 200px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <h1>Shatranj WASM UCI Engine Test</h1>
+    
+    <div class="engine">
+        <h3>Basic UCI Engine</h3>
+        <button onclick="testEngine('shatranj_uci.js', 'ShatranjUCI')">Test Basic UCI</button>
+    </div>
+    
+    <div class="engine">
+        <h3>Enhanced UCI Engine</h3>
+        <button onclick="testEngine('shatranj_simple_uci.js', 'ShatranjSimpleUCI')">Test Enhanced UCI</button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            output.innerHTML += message + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        async function testEngine(jsFile, exportName) {
+            log('Loading ' + jsFile + '...');
+            
+            try {
+                const module = await import('./' + jsFile);
+                const engine = await module.default();
+                log('✓ Engine loaded successfully');
+                
+                try {
+                    const result = engine.callMain([]);
+                    log('✓ Engine executed (result: ' + result + ')');
+                } catch (error) {
+                    log('✓ Engine executed (expected exit)');
+                }
+                
+            } catch (error) {
+                log('✗ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shatranj - Ancient Chess</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #1a1a1a; color: #fff; }
+        
+        .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .welcome-screen h1 { font-size: 48px; margin-bottom: 20px; }
+        .welcome-screen p { font-size: 18px; margin-bottom: 40px; text-align: center; max-width: 600px; }
+        
+        .mode-selection { display: flex; gap: 30px; margin-bottom: 30px; }
+        .mode-card { background: #2d2d2d; padding: 30px; border-radius: 12px; cursor: pointer; transition: all 0.3s; min-width: 200px; text-align: center; }
+        .mode-card:hover { background: #3d3d3d; transform: translateY(-5px); }
+        .mode-card h3 { margin: 0 0 15px 0; font-size: 24px; }
+        .mode-card p { margin: 0; opacity: 0.8; }
+        
+        .side-selection { display: none; margin-top: 20px; }
+        .side-btn { background: #4ecdc4; color: #fff; border: none; padding: 15px 30px; margin: 10px; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        .side-btn:hover { background: #45b7aa; }
+        
+        .game-screen { display: none; flex: 1; }
+        .container { display: flex; height: 100vh; }
+        .board-section { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .sidebar { width: 350px; background: #2d2d2d; padding: 20px; overflow-y: auto; }
+        
+        .board-container { position: relative; }
+        .board { display: grid; grid-template-columns: repeat(8, 60px); border: 3px solid #444; }
+        .square { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; transition: all 0.2s; }
+        .light { background: #f0d9b5; color: #333; }
+        .dark { background: #b58863; color: #333; }
+        .selected { box-shadow: inset 0 0 0 4px #ff6b6b !important; background-color: rgba(255, 107, 107, 0.3) !important; }
+        .move-option { box-shadow: inset 0 0 0 3px #4ecdc4 !important; background-color: rgba(78, 205, 196, 0.3) !important; }
+        
+        .coords { position: absolute; color: #888; font-size: 12px; font-weight: bold; }
+        .rank-coord { left: -15px; }
+        .file-coord { bottom: -15px; }
+        
+        .controls { margin: 20px 0; }
+        .btn { background: #4ecdc4; color: #fff; border: none; padding: 12px 20px; margin: 5px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn:hover { background: #45b7aa; }
+        
+        .game-info { background: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .status { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        
+        .move-list { background: #333; border-radius: 8px; padding: 15px; max-height: 300px; overflow-y: auto; }
+        .move-item { padding: 5px 10px; margin: 2px 0; border-radius: 4px; cursor: pointer; }
+        .move-item:hover { background: #444; }
+    </style>
+</head>
+<body>
+    <div class="welcome-screen" id="welcomeScreen">
+        <h1>🏛️ Shatranj</h1>
+        <p>Experience the ancient predecessor of chess. Shatranj features different piece movements including the Ferz (one square diagonally) and Alfil (jumps two squares diagonally).</p>
+        
+        <div class="mode-selection">
+            <div class="mode-card" onclick="selectMode('playground')">
+                <h3>🎯 Playground</h3>
+                <p>Explore moves and practice freely. Switch between sides anytime.</p>
+            </div>
+            <div class="mode-card" onclick="selectMode('computer')">
+                <h3>🤖 vs Computer</h3>
+                <p>Play against the Shatranj engine. Choose your side and difficulty.</p>
+            </div>
+        </div>
+        
+        <div class="side-selection" id="sideSelection">
+            <p>Choose your side:</p>
+            <button class="side-btn" onclick="startGame('white')">Play as White</button>
+            <button class="side-btn" onclick="startGame('black')">Play as Black</button>
+        </div>
+    </div>
+
+    <div class="game-screen" id="gameScreen">
+        <div class="container">
+            <div class="board-section">
+                <div class="controls">
+                    <button class="btn" onclick="showWelcome()">← Back to Menu</button>
+                    <button class="btn" onclick="newGame()">New Game</button>
+                    <button class="btn" onclick="flipBoard()">Flip Board</button>
+                    <button class="btn" onclick="takeBack()">Take Back</button>
+                </div>
+                
+                <div class="board-container">
+                    <div class="board" id="board"></div>
+                    <div class="coords" id="coords"></div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="game-info">
+                    <div class="status" id="status">White to move</div>
+                    <div id="modeInfo">Mode: Playground</div>
+                </div>
+                
+                <div class="move-list">
+                    <h3>Move History</h3>
+                    <div id="moveHistory"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="movedump.js"></script>
+    <script src="shatranj_simple_uci.js"></script>
+    <script>
+        let board = {};
+        let selectedSquare = null;
+        let availableMoves = [];
+        let gameMode = 'playground';
+        let playerSide = 'white';
+        let currentPlayer = 'w';
+        let moveHistory = [];
+        let gameHistory = [];
+        let flipped = false;
+        let moveDumpModule = null;
+        let uciEngine = null;
+
+        const pieceSymbols = {
+            'P': '♙', 'H': '♘', 'F': '♗', 'R': '♖', 'V': '♕', 'S': '♔',
+            'p': '♟', 'h': '♞', 'f': '♝', 'r': '♜', 'v': '♛', 's': '♚'
+        };
+
+        const startingFEN = 'rhfvshfr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSHFR w - - 0 1';
+
+        async function initModules() {
+            try {
+                moveDumpModule = await MoveDump();
+                console.log('MoveDump loaded');
+                
+                const ShatranjSimpleUCI = (typeof Module !== 'undefined') ? Module : ShatranjSimpleUCI;
+                uciEngine = await ShatranjSimpleUCI();
+                console.log('UCI Engine loaded');
+            } catch (e) {
+                console.error('Failed to load modules:', e);
+            }
+        }
+
+        function selectMode(mode) {
+            gameMode = mode;
+            if (mode === 'computer') {
+                document.getElementById('sideSelection').style.display = 'block';
+            } else {
+                startGame('white');
+            }
+        }
+
+        function startGame(side) {
+            playerSide = side;
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+            
+            newGame();
+            
+            // If playing as black in computer mode, computer (white) moves first
+            if (gameMode === 'computer' && playerSide === 'black') {
+                setTimeout(makeComputerMove, 1000);
+            }
+        }
+
+        function showWelcome() {
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('sideSelection').style.display = 'none';
+        }
+
+        function parseFEN(fen) {
+            const parts = fen.split(' ');
+            const position = parts[0];
+            const rows = position.split('/');
+            const newBoard = {};
+            
+            for (let rank = 0; rank < 8; rank++) {
+                let file = 0;
+                for (let char of rows[rank]) {
+                    if (isNaN(char)) {
+                        newBoard[fileRankToSquare(file, 7-rank)] = char;
+                        file++;
+                    } else {
+                        file += parseInt(char);
+                    }
+                }
+            }
+            return newBoard;
+        }
+
+        function fileRankToSquare(file, rank) {
+            return String.fromCharCode(97 + file) + (rank + 1);
+        }
+
+        function createBoard() {
+            const boardEl = document.getElementById('board');
+            const coordsEl = document.getElementById('coords');
+            boardEl.innerHTML = '';
+            coordsEl.innerHTML = '';
+            
+            for (let i = 0; i < 8; i++) {
+                const rankCoord = document.createElement('div');
+                rankCoord.className = 'coords rank-coord';
+                rankCoord.style.top = `${i * 60 + 25}px`;
+                rankCoord.textContent = flipped ? i + 1 : 8 - i;
+                coordsEl.appendChild(rankCoord);
+                
+                const fileCoord = document.createElement('div');
+                fileCoord.className = 'coords file-coord';
+                fileCoord.style.left = `${i * 60 + 25}px`;
+                fileCoord.textContent = String.fromCharCode(97 + (flipped ? 7 - i : i));
+                coordsEl.appendChild(fileCoord);
+            }
+            
+            for (let rank = 0; rank < 8; rank++) {
+                for (let file = 0; file < 8; file++) {
+                    const displayRank = flipped ? rank : 7 - rank;
+                    const displayFile = flipped ? 7 - file : file;
+                    const square = fileRankToSquare(displayFile, displayRank);
+                    const squareEl = document.createElement('div');
+                    squareEl.className = `square ${(file + rank) % 2 === 0 ? 'light' : 'dark'}`;
+                    squareEl.id = square;
+                    squareEl.onclick = () => handleSquareClick(square);
+                    
+                    const piece = board[square];
+                    if (piece) {
+                        squareEl.textContent = pieceSymbols[piece] || piece;
+                    }
+                    
+                    boardEl.appendChild(squareEl);
+                }
+            }
+        }
+
+        async function getMoves() {
+            if (!moveDumpModule) return [];
+            
+            return new Promise((resolve) => {
+                const fen = getCurrentFEN();
+                console.log('Getting moves for FEN:', fen);
+                
+                let output = '';
+                let moves = [];
+                
+                // Override console.log to capture movedump output
+                const originalLog = console.log;
+                console.log = function(...args) {
+                    const text = args.join(' ');
+                    output += text + '\n';
+                    
+                    // Parse moves from output
+                    if (text.match(/^[a-h][1-8]-[a-h][1-8]$/)) {
+                        moves.push(text.trim());
+                    }
+                };
+                
+                try {
+                    moveDumpModule.callMain([fen]);
+                } catch (e) {
+                    // Module exits normally
+                }
+                
+                // Restore console.log
+                console.log = originalLog;
+                
+                originalLog('MoveDump output captured:', output);
+                originalLog('Parsed moves from movedump:', moves);
+                
+                resolve(moves);
+            });
+        }
+        
+        async function getComputerMove() {
+            if (!uciEngine) {
+                console.log('No UCI engine, using random move from movedump');
+                const moves = await getMoves();
+                if (moves.length > 0) {
+                    const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                    const [from, to] = randomMove.split('-');
+                    return { from, to };
+                }
+                return null;
+            }
+            
+            return new Promise((resolve) => {
+                console.log('Using UCI engine for computer move');
+                
+                let bestMove = null;
+                let output = '';
+                
+                // Capture UCI output
+                const originalLog = console.log;
+                console.log = function(...args) {
+                    const text = args.join(' ');
+                    output += text + '\n';
+                    
+                    // Parse bestmove from UCI output
+                    if (text.startsWith('bestmove ')) {
+                        const parts = text.split(' ');
+                        if (parts[1] && parts[1].length >= 4) {
+                            bestMove = {
+                                from: parts[1].substring(0, 2),
+                                to: parts[1].substring(2, 4)
+                            };
+                            originalLog('UCI bestmove found:', bestMove);
+                        }
+                    }
+                };
+                
+                try {
+                    // Run UCI engine with current position
+                    const fen = getCurrentFEN();
+                    originalLog('Sending FEN to UCI:', fen);
+                    uciEngine.callMain([]);
+                } catch (e) {
+                    originalLog('UCI engine completed execution');
+                }
+                
+                // Restore console.log
+                console.log = originalLog;
+                
+                originalLog('UCI output:', output);
+                
+                if (bestMove) {
+                    resolve(bestMove);
+                } else {
+                    originalLog('No UCI bestmove found, falling back to movedump random move');
+                    getMoves().then(moves => {
+                        if (moves.length > 0) {
+                            const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                            const [from, to] = randomMove.split('-');
+                            resolve({ from, to });
+                        } else {
+                            resolve(null);
+                        }
+                    });
+                }
+            });
+        }
+        
+        function getCurrentFEN() {
+            let fen = '';
+            for (let rank = 7; rank >= 0; rank--) {
+                let empty = 0;
+                for (let file = 0; file < 8; file++) {
+                    const square = fileRankToSquare(file, rank);
+                    const piece = board[square];
+                    if (piece) {
+                        if (empty > 0) {
+                            fen += empty;
+                            empty = 0;
+                        }
+                        fen += piece;
+                    } else {
+                        empty++;
+                    }
+                }
+                if (empty > 0) fen += empty;
+                if (rank > 0) fen += '/';
+            }
+            return `${fen} ${currentPlayer} - - 0 1`;
+        }
+
+        async function handleSquareClick(square) {
+            const piece = board[square];
+            
+            // Check if it's a valid move destination
+            if (selectedSquare && availableMoves.some(m => m.split('-')[1] === square)) {
+                await makeMove(selectedSquare, square);
+                return;
+            }
+            
+            // Clear selection if clicking same square
+            if (selectedSquare === square) {
+                clearSelection();
+                return;
+            }
+            
+            // Check if we can select this piece
+            if (piece) {
+                const isWhitePiece = piece === piece.toUpperCase();
+                const isBlackPiece = piece === piece.toLowerCase();
+                const isCurrentPlayerPiece = (currentPlayer === 'w' && isWhitePiece) || (currentPlayer === 'b' && isBlackPiece);
+                
+                // In playground mode, allow any piece
+                // In computer mode, only allow player's pieces on their turn
+                const canSelect = gameMode === 'playground' || 
+                                 (gameMode === 'computer' && isCurrentPlayerPiece && 
+                                  ((playerSide === 'white' && currentPlayer === 'w') ||
+                                   (playerSide === 'black' && currentPlayer === 'b')));
+                
+                if (canSelect && isCurrentPlayerPiece) {
+                    await selectSquare(square);
+                } else {
+                    clearSelection();
+                }
+            } else {
+                clearSelection();
+            }
+        }
+
+        async function selectSquare(square) {
+            clearSelection();
+            selectedSquare = square;
+            document.getElementById(square).classList.add('selected');
+            
+            const moves = await getMoves();
+            availableMoves = moves.filter(m => m.startsWith(square + '-'));
+            console.log('Available moves for', square, ':', availableMoves);
+            
+            availableMoves.forEach(move => {
+                const toSquare = move.split('-')[1];
+                console.log('Highlighting square:', toSquare);
+                const toEl = document.getElementById(toSquare);
+                if (toEl) {
+                    toEl.classList.add('move-option');
+                    console.log('Added move-option class to', toSquare);
+                } else {
+                    console.log('Element not found for square:', toSquare);
+                }
+            });
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.selected').forEach(el => {
+                el.classList.remove('selected');
+                console.log('Removed selected from', el.id);
+            });
+            document.querySelectorAll('.move-option').forEach(el => {
+                el.classList.remove('move-option');
+                console.log('Removed move-option from', el.id);
+            });
+            selectedSquare = null;
+            availableMoves = [];
+        }
+
+        async function makeMove(from, to) {
+            const piece = board[from];
+            const captured = board[to];
+            
+            const move = { from, to, piece, captured };
+            moveHistory.push(move);
+            
+            const moveNotation = `${from}-${to}${captured ? 'x' + captured : ''}`;
+            gameHistory.push(moveNotation);
+            
+            board[to] = piece;
+            delete board[from];
+            currentPlayer = currentPlayer === 'w' ? 'b' : 'w';
+            
+            clearSelection();
+            createBoard();
+            updateDisplay();
+            
+            // Computer move in vs computer mode
+            if (gameMode === 'computer') {
+                const isComputerTurn = (playerSide === 'white' && currentPlayer === 'b') ||
+                                      (playerSide === 'black' && currentPlayer === 'w');
+                if (isComputerTurn) {
+                    setTimeout(makeComputerMove, 1000);
+                }
+            }
+        }
+
+        async function makeComputerMove() {
+            const computerMove = await getComputerMove();
+            if (computerMove) {
+                await makeMove(computerMove.from, computerMove.to);
+            }
+        }
+
+        function updateDisplay() {
+            const statusEl = document.getElementById('status');
+            const playerText = currentPlayer === 'w' ? 'White' : 'Black';
+            
+            // Check for game end conditions
+            const moves = availableMoves.length > 0 ? availableMoves : [];
+            if (moves.length === 0 && selectedSquare === null) {
+                statusEl.textContent = `${playerText} - No moves available`;
+            } else {
+                statusEl.textContent = `${playerText} to move`;
+            }
+            
+            const modeInfo = document.getElementById('modeInfo');
+            if (gameMode === 'playground') {
+                modeInfo.textContent = 'Mode: Playground - Click any piece to explore';
+            } else {
+                const isPlayerTurn = (playerSide === 'white' && currentPlayer === 'w') || 
+                                    (playerSide === 'black' && currentPlayer === 'b');
+                const turnInfo = isPlayerTurn ? 'Your turn' : 'Computer thinking...';
+                modeInfo.textContent = `Mode: vs Computer - You are ${playerSide} - ${turnInfo}`;
+            }
+            
+            const historyEl = document.getElementById('moveHistory');
+            historyEl.innerHTML = gameHistory.map((move, index) => 
+                `<div class="move-item">${Math.floor(index/2) + 1}${index % 2 === 0 ? '.' : '...'} ${move.split('. ')[1] || move}</div>`
+            ).join('');
+        }
+
+        function newGame() {
+            board = parseFEN(startingFEN);
+            currentPlayer = 'w';
+            moveHistory = [];
+            gameHistory = [];
+            clearSelection();
+            createBoard();
+            updateDisplay();
+        }
+
+        function flipBoard() {
+            flipped = !flipped;
+            createBoard();
+        }
+
+        function takeBack() {
+            if (moveHistory.length === 0) return;
+            
+            // In computer mode, take back two moves (player + computer)
+            const movesToTakeBack = gameMode === 'computer' ? Math.min(2, moveHistory.length) : 1;
+            
+            for (let i = 0; i < movesToTakeBack; i++) {
+                if (moveHistory.length === 0) break;
+                
+                const lastMove = moveHistory.pop();
+                gameHistory.pop();
+                
+                board[lastMove.from] = lastMove.piece;
+                if (lastMove.captured) {
+                    board[lastMove.to] = lastMove.captured;
+                } else {
+                    delete board[lastMove.to];
+                }
+                currentPlayer = currentPlayer === 'w' ? 'b' : 'w';
+            }
+            
+            clearSelection();
+            createBoard();
+            updateDisplay();
+        }
+
+        // Initialize
+        initModules();
+    </script>
+</body>
+</html>
