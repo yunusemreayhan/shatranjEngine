@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>WASM Test</title></head>
+<body>
+<div id="output"></div>
+<script src="movedump.js"></script>
+<script>
+MoveDump().then(module => {
+    document.getElementById('output').innerHTML = 'WASM loaded successfully';
+}).catch(e => {
+    document.getElementById('output').innerHTML = 'WASM failed: ' + e;
+});
+</script>
+</body>
+</html>

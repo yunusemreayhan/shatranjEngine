@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.8)
+project(movedump_wasm)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Emscripten-specific flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DUSE_POPCNT -mavx2")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s WASM=1 -s EXPORTED_FUNCTIONS='[\"_main\"]' -s EXPORTED_RUNTIME_METHODS='[\"callMain\"]'")
+
+# Include directories
+include_directories(../../lib/shatranj_simple)
+include_directories(../../lib/stockfish)
+include_directories(../../lib/stockfish/custom)
+
+# Source files
+file(GLOB MOVEDUMP_SOURCES "main.cpp")
+file(GLOB LIB_SOURCES 
+    "../../lib/shatranj_simple/*.cpp"
+    "../../lib/stockfish/*.cpp"
+    "../../lib/stockfish/custom/*.cpp"
+)
+
+add_executable(movedump_wasm ${MOVEDUMP_SOURCES} ${LIB_SOURCES})

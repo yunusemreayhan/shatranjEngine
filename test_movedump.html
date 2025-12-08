@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shatranj MoveDump WebAssembly Test</title>
+</head>
+<body>
+    <h1>Shatranj MoveDump WebAssembly</h1>
+    
+    <div>
+        <label for="fen">Enter FEN:</label><br>
+        <input type="text" id="fen" value="rhfvshfr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSHFR w - - 0 1" style="width: 500px;">
+        <button onclick="generateMoves()">Generate Moves</button>
+    </div>
+    
+    <div id="output" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace;"></div>
+
+    <script src="movedump.js"></script>
+    <script>
+        let Module;
+        
+        MoveDump().then(function(module) {
+            Module = module;
+            console.log('MoveDump WebAssembly module loaded');
+        });
+        
+        function generateMoves() {
+            if (!Module) {
+                document.getElementById('output').textContent = 'Module not loaded yet';
+                return;
+            }
+            
+            const fen = document.getElementById('fen').value;
+            const output = document.getElementById('output');
+            
+            try {
+                // Capture stdout
+                let capturedOutput = '';
+                const originalLog = console.log;
+                console.log = function(msg) {
+                    capturedOutput += msg + '\n';
+                };
+                
+                // Call the main function with arguments
+                Module.callMain([fen]);
+                
+                // Restore console.log
+                console.log = originalLog;
+                
+                output.textContent = capturedOutput || 'No output captured';
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

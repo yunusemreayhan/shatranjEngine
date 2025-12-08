@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shatranj Simple UCI WASM Test</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        #output { background: #f0f0f0; padding: 10px; height: 300px; overflow-y: scroll; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Shatranj Simple UCI WebAssembly Test</h1>
+    
+    <button onclick="loadEngine()">Load Engine</button>
+    <button onclick="testUCI()">Test UCI</button>
+    <button onclick="clearOutput()">Clear</button>
+    
+    <div id="output"></div>
+    
+    <script>
+        let module = null;
+        
+        function log(message) {
+            const output = document.getElementById('output');
+            output.innerHTML += message + '\n';
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        async function loadEngine() {
+            try {
+                log('Loading Shatranj Simple UCI WebAssembly module...');
+                const ShatranjSimpleUCI = await import('./shatranj_simple_uci.js');
+                module = await ShatranjSimpleUCI.default();
+                log('✓ Module loaded successfully');
+            } catch (error) {
+                log('✗ Error loading module: ' + error.message);
+            }
+        }
+        
+        function testUCI() {
+            if (!module) {
+                log('Please load the engine first');
+                return;
+            }
+            
+            try {
+                log('Testing UCI engine...');
+                const result = module.callMain(['shatranj_simple_uci']);
+                log('UCI test result: ' + result);
+                log('✓ UCI engine test completed');
+            } catch (error) {
+                log('UCI test: ' + error.message);
+            }
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
