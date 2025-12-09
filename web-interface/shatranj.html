@@ -25,17 +25,17 @@
         .board-section { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .sidebar { width: 350px; background: #2d2d2d; padding: 20px; overflow-y: auto; }
         
-        .board-container { position: relative; }
+        .board-container { position: relative; padding-left: 30px; padding-bottom: 30px; }
         .board { display: grid; grid-template-columns: repeat(8, 60px); border: 3px solid #444; }
         .square { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 32px; cursor: pointer; transition: all 0.2s; }
         .light { background: #f0d9b5; color: #333; }
         .dark { background: #b58863; color: #333; }
-        .selected { box-shadow: inset 0 0 0 4px #ff6b6b !important; background-color: rgba(255, 107, 107, 0.3) !important; }
-        .move-option { box-shadow: inset 0 0 0 3px #4ecdc4 !important; background-color: rgba(78, 205, 196, 0.3) !important; }
+        .selected { box-shadow: inset 0 0 0 4px #ff6b6b !important; }
+        .move-option { box-shadow: inset 0 0 0 3px #4ecdc4 !important; }
         
-        .coords { position: absolute; color: #888; font-size: 12px; font-weight: bold; }
-        .rank-coord { left: -15px; }
-        .file-coord { bottom: -15px; }
+        .coords { position: absolute; color: #888; font-size: 12px; font-weight: bold; pointer-events: none; }
+        .rank-coord { left: 5px; width: 20px; height: 60px; display: flex; align-items: center; justify-content: center; }
+        .file-coord { bottom: 5px; width: 60px; height: 20px; display: flex; align-items: center; justify-content: center; }
         
         .controls { margin: 20px 0; }
         .btn { background: #4ecdc4; color: #fff; border: none; padding: 12px 20px; margin: 5px; border-radius: 6px; cursor: pointer; font-size: 14px; }
@@ -45,8 +45,7 @@
         .status { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
         
         .move-list { background: #333; border-radius: 8px; padding: 15px; max-height: 300px; overflow-y: auto; }
-        .move-item { padding: 5px 10px; margin: 2px 0; border-radius: 4px; cursor: pointer; }
-        .move-item:hover { background: #444; }
+        .move-item { padding: 5px 10px; margin: 2px 0; border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -57,11 +56,11 @@
         <div class="mode-selection">
             <div class="mode-card" onclick="selectMode('playground')">
                 <h3>🎯 Playground</h3>
-                <p>Explore moves and practice freely. Switch between sides anytime.</p>
+                <p>Explore moves and practice freely</p>
             </div>
             <div class="mode-card" onclick="selectMode('computer')">
                 <h3>🤖 vs Computer</h3>
-                <p>Play against the Shatranj engine. Choose your side and difficulty.</p>
+                <p>Play against the engine</p>
             </div>
         </div>
         
@@ -69,6 +68,43 @@
             <p>Choose your side:</p>
             <button class="side-btn" onclick="startGame('white')">Play as White</button>
             <button class="side-btn" onclick="startGame('black')">Play as Black</button>
+            <div style="margin-top: 20px;">
+                <label style="color: #fff;">Search Mode: </label>
+                <select id="searchMode" onchange="toggleSearchOptions()" style="padding: 8px; border-radius: 4px; background: #444; color: #fff; border: none; margin-bottom: 10px;">
+                    <option value="time">Time-based</option>
+                    <option value="depth">Depth-based</option>
+                </select>
+                <div id="timeOptions">
+                    <label style="color: #fff;">Think Time: </label>
+                    <select id="timeSelect" style="padding: 8px; border-radius: 4px; background: #444; color: #fff; border: none;">
+                        <option value="1">1 second</option>
+                        <option value="2">2 seconds</option>
+                        <option value="3" selected>3 seconds</option>
+                        <option value="5">5 seconds</option>
+                        <option value="10">10 seconds</option>
+                        <option value="30">30 seconds</option>
+                        <option value="60">60 seconds</option>
+                    </select>
+                </div>
+                <div id="depthOptions" style="display: none;">
+                    <label style="color: #fff;">Search Depth: </label>
+                    <select id="depthSelect" style="padding: 8px; border-radius: 4px; background: #444; color: #fff; border: none;">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="10">10</option>
+                        <option value="12">12</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                        <option value="25">25</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -76,9 +112,9 @@
         <div class="container">
             <div class="board-section">
                 <div class="controls">
-                    <button class="btn" onclick="showWelcome()">← Back to Menu</button>
+                    <button class="btn" onclick="showWelcome()">← Menu</button>
                     <button class="btn" onclick="newGame()">New Game</button>
-                    <button class="btn" onclick="flipBoard()">Flip Board</button>
+                    <button class="btn" onclick="flipBoard()">Flip</button>
                     <button class="btn" onclick="takeBack()">Take Back</button>
                 </div>
                 
@@ -114,24 +150,25 @@
         let moveHistory = [];
         let gameHistory = [];
         let flipped = false;
-        let moveDumpModule = null;
+        let moveDumpReady = false;
         let uciEngine = null;
+        let computerThinkTime = 3;
+        let computerSearchDepth = 3;
+        let searchMode = 'time';
+        let isComputerThinking = false;
 
         const pieceSymbols = {
             'P': '♙', 'H': '♘', 'F': '♗', 'R': '♖', 'V': '♕', 'S': '♔',
             'p': '♟', 'h': '♞', 'f': '♝', 'r': '♜', 'v': '♛', 's': '♚'
         };
 
-        const startingFEN = 'rhfvshfr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSHFR w - - 0 1';
+        const startingFEN = 'rhfvsfhr/pppppppp/8/8/8/8/PPPPPPPP/RHFVSFHR w - - 0 1';
 
         async function initModules() {
             try {
-                moveDumpModule = await MoveDump();
-                console.log('MoveDump loaded');
-                
-                const ShatranjSimpleUCI = (typeof Module !== 'undefined') ? Module : ShatranjSimpleUCI;
-                uciEngine = await ShatranjSimpleUCI();
-                console.log('UCI Engine loaded');
+                await MoveDump({ print: () => {}, printErr: () => {} });
+                moveDumpReady = true;
+                console.log('MoveDump ready');
             } catch (e) {
                 console.error('Failed to load modules:', e);
             }
@@ -146,17 +183,25 @@
             }
         }
 
+        function toggleSearchOptions() {
+            searchMode = document.getElementById('searchMode').value;
+            document.getElementById('timeOptions').style.display = searchMode === 'time' ? 'block' : 'none';
+            document.getElementById('depthOptions').style.display = searchMode === 'depth' ? 'block' : 'none';
+        }
+
         function startGame(side) {
             playerSide = side;
+            if (gameMode === 'computer') {
+                searchMode = document.getElementById('searchMode').value;
+                if (searchMode === 'time') {
+                    computerThinkTime = parseInt(document.getElementById('timeSelect').value);
+                } else {
+                    computerSearchDepth = parseInt(document.getElementById('depthSelect').value);
+                }
+            }
             document.getElementById('welcomeScreen').style.display = 'none';
             document.getElementById('gameScreen').style.display = 'flex';
-            
             newGame();
-            
-            // If playing as black in computer mode, computer (white) moves first
-            if (gameMode === 'computer' && playerSide === 'black') {
-                setTimeout(makeComputerMove, 1000);
-            }
         }
 
         function showWelcome() {
@@ -167,8 +212,7 @@
 
         function parseFEN(fen) {
             const parts = fen.split(' ');
-            const position = parts[0];
-            const rows = position.split('/');
+            const rows = parts[0].split('/');
             const newBoard = {};
             
             for (let rank = 0; rank < 8; rank++) {
@@ -198,13 +242,13 @@
             for (let i = 0; i < 8; i++) {
                 const rankCoord = document.createElement('div');
                 rankCoord.className = 'coords rank-coord';
-                rankCoord.style.top = `${i * 60 + 25}px`;
+                rankCoord.style.top = `${i * 60 + 30}px`;
                 rankCoord.textContent = flipped ? i + 1 : 8 - i;
                 coordsEl.appendChild(rankCoord);
                 
                 const fileCoord = document.createElement('div');
                 fileCoord.className = 'coords file-coord';
-                fileCoord.style.left = `${i * 60 + 25}px`;
+                fileCoord.style.left = `${i * 60 + 30}px`;
                 fileCoord.textContent = String.fromCharCode(97 + (flipped ? 7 - i : i));
                 coordsEl.appendChild(fileCoord);
             }
@@ -230,108 +274,61 @@
         }
 
         async function getMoves() {
-            if (!moveDumpModule) return [];
+            if (!moveDumpReady) return [];
             
             return new Promise((resolve) => {
                 const fen = getCurrentFEN();
-                console.log('Getting moves for FEN:', fen);
+                const moves = [];
                 
-                let output = '';
-                let moves = [];
-                
-                // Override console.log to capture movedump output
-                const originalLog = console.log;
-                console.log = function(...args) {
-                    const text = args.join(' ');
-                    output += text + '\n';
-                    
-                    // Parse moves from output
-                    if (text.match(/^[a-h][1-8]-[a-h][1-8]$/)) {
-                        moves.push(text.trim());
-                    }
-                };
-                
-                try {
-                    moveDumpModule.callMain([fen]);
-                } catch (e) {
-                    // Module exits normally
-                }
-                
-                // Restore console.log
-                console.log = originalLog;
-                
-                originalLog('MoveDump output captured:', output);
-                originalLog('Parsed moves from movedump:', moves);
-                
-                resolve(moves);
+                MoveDump({
+                    print: (text) => {
+                        if (text.match(/^[a-h][1-8]-[a-h][1-8]$/)) {
+                            moves.push(text.trim());
+                        }
+                    },
+                    printErr: () => {},
+                    arguments: [fen]
+                }).then(() => resolve(moves)).catch(() => resolve(moves));
             });
         }
         
         async function getComputerMove() {
-            if (!uciEngine) {
-                console.log('No UCI engine, using random move from movedump');
-                const moves = await getMoves();
-                if (moves.length > 0) {
-                    const randomMove = moves[Math.floor(Math.random() * moves.length)];
-                    const [from, to] = randomMove.split('-');
-                    return { from, to };
-                }
-                return null;
-            }
-            
             return new Promise((resolve) => {
-                console.log('Using UCI engine for computer move');
+                const moveSeq = gameHistory.map(m => {
+                    const parts = m.split('-');
+                    return parts[0] + parts[1].replace(/x.*/, '');
+                }).join(' ');
                 
-                let bestMove = null;
-                let output = '';
+                const worker = new Worker('uci-worker.js');
+                const startTime = Date.now();
                 
-                // Capture UCI output
-                const originalLog = console.log;
-                console.log = function(...args) {
-                    const text = args.join(' ');
-                    output += text + '\n';
-                    
-                    // Parse bestmove from UCI output
-                    if (text.startsWith('bestmove ')) {
-                        const parts = text.split(' ');
-                        if (parts[1] && parts[1].length >= 4) {
-                            bestMove = {
-                                from: parts[1].substring(0, 2),
-                                to: parts[1].substring(2, 4)
-                            };
-                            originalLog('UCI bestmove found:', bestMove);
-                        }
-                    }
+                if (searchMode === 'time') {
+                    console.log(`[Computer] Asking engine for position: ${moveSeq || 'startpos'} (time: ${computerThinkTime}s)`);
+                    worker.postMessage({ moveSeq, thinkTime: computerThinkTime });
+                } else {
+                    console.log(`[Computer] Asking engine for position: ${moveSeq || 'startpos'} (depth: ${computerSearchDepth})`);
+                    worker.postMessage({ moveSeq, depth: computerSearchDepth });
+                }
+                
+                worker.onmessage = (e) => {
+                    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                    console.log(`[Computer] Received move after ${elapsed}s:`, e.data);
+                    worker.terminate();
+                    resolve(e.data);
                 };
                 
-                try {
-                    // Run UCI engine with current position
-                    const fen = getCurrentFEN();
-                    originalLog('Sending FEN to UCI:', fen);
-                    uciEngine.callMain([]);
-                } catch (e) {
-                    originalLog('UCI engine completed execution');
-                }
+                worker.onerror = (err) => {
+                    console.error('[Computer] Worker error:', err);
+                    worker.terminate();
+                    resolve(null);
+                };
                 
-                // Restore console.log
-                console.log = originalLog;
-                
-                originalLog('UCI output:', output);
-                
-                if (bestMove) {
-                    resolve(bestMove);
-                } else {
-                    originalLog('No UCI bestmove found, falling back to movedump random move');
-                    getMoves().then(moves => {
-                        if (moves.length > 0) {
-                            const randomMove = moves[Math.floor(Math.random() * moves.length)];
-                            const [from, to] = randomMove.split('-');
-                            resolve({ from, to });
-                        } else {
-                            resolve(null);
-                        }
-                    });
-                }
+                const timeout = searchMode === 'time' ? computerThinkTime + 5 : 300;
+                setTimeout(() => {
+                    console.warn(`[Computer] Timeout after ${timeout}s, terminating worker`);
+                    worker.terminate();
+                    resolve(null);
+                }, timeout * 1000);
             });
         }
         
@@ -359,28 +356,32 @@
         }
 
         async function handleSquareClick(square) {
+            if (isComputerThinking) return;
+            
             const piece = board[square];
             
-            // Check if it's a valid move destination
             if (selectedSquare && availableMoves.some(m => m.split('-')[1] === square)) {
                 await makeMove(selectedSquare, square);
+                
+                if (gameMode === 'computer') {
+                    const isComputerTurn = (playerSide === 'white' && currentPlayer === 'b') ||
+                                          (playerSide === 'black' && currentPlayer === 'w');
+                    if (isComputerTurn) {
+                        setTimeout(makeComputerMove, 500);
+                    }
+                }
                 return;
             }
             
-            // Clear selection if clicking same square
             if (selectedSquare === square) {
                 clearSelection();
                 return;
             }
             
-            // Check if we can select this piece
             if (piece) {
                 const isWhitePiece = piece === piece.toUpperCase();
-                const isBlackPiece = piece === piece.toLowerCase();
-                const isCurrentPlayerPiece = (currentPlayer === 'w' && isWhitePiece) || (currentPlayer === 'b' && isBlackPiece);
+                const isCurrentPlayerPiece = (currentPlayer === 'w' && isWhitePiece) || (currentPlayer === 'b' && !isWhitePiece);
                 
-                // In playground mode, allow any piece
-                // In computer mode, only allow player's pieces on their turn
                 const canSelect = gameMode === 'playground' || 
                                  (gameMode === 'computer' && isCurrentPlayerPiece && 
                                   ((playerSide === 'white' && currentPlayer === 'w') ||
@@ -403,29 +404,17 @@
             
             const moves = await getMoves();
             availableMoves = moves.filter(m => m.startsWith(square + '-'));
-            console.log('Available moves for', square, ':', availableMoves);
             
             availableMoves.forEach(move => {
                 const toSquare = move.split('-')[1];
-                console.log('Highlighting square:', toSquare);
                 const toEl = document.getElementById(toSquare);
-                if (toEl) {
-                    toEl.classList.add('move-option');
-                    console.log('Added move-option class to', toSquare);
-                } else {
-                    console.log('Element not found for square:', toSquare);
-                }
+                if (toEl) toEl.classList.add('move-option');
             });
         }
 
         function clearSelection() {
-            document.querySelectorAll('.selected').forEach(el => {
-                el.classList.remove('selected');
-                console.log('Removed selected from', el.id);
-            });
-            document.querySelectorAll('.move-option').forEach(el => {
-                el.classList.remove('move-option');
-                console.log('Removed move-option from', el.id);
+            document.querySelectorAll('.selected, .move-option').forEach(el => {
+                el.classList.remove('selected', 'move-option');
             });
             selectedSquare = null;
             availableMoves = [];
@@ -435,11 +424,8 @@
             const piece = board[from];
             const captured = board[to];
             
-            const move = { from, to, piece, captured };
-            moveHistory.push(move);
-            
-            const moveNotation = `${from}-${to}${captured ? 'x' + captured : ''}`;
-            gameHistory.push(moveNotation);
+            moveHistory.push({ from, to, piece, captured });
+            gameHistory.push(`${from}-${to}${captured ? 'x' : ''}`);
             
             board[to] = piece;
             delete board[from];
@@ -448,49 +434,37 @@
             clearSelection();
             createBoard();
             updateDisplay();
-            
-            // Computer move in vs computer mode
-            if (gameMode === 'computer') {
-                const isComputerTurn = (playerSide === 'white' && currentPlayer === 'b') ||
-                                      (playerSide === 'black' && currentPlayer === 'w');
-                if (isComputerTurn) {
-                    setTimeout(makeComputerMove, 1000);
-                }
-            }
         }
 
         async function makeComputerMove() {
-            const computerMove = await getComputerMove();
-            if (computerMove) {
-                await makeMove(computerMove.from, computerMove.to);
+            if (isComputerThinking) return;
+            isComputerThinking = true;
+            
+            const move = await getComputerMove();
+            if (move) {
+                await makeMove(move.from, move.to);
             }
+            
+            isComputerThinking = false;
         }
 
         function updateDisplay() {
             const statusEl = document.getElementById('status');
-            const playerText = currentPlayer === 'w' ? 'White' : 'Black';
-            
-            // Check for game end conditions
-            const moves = availableMoves.length > 0 ? availableMoves : [];
-            if (moves.length === 0 && selectedSquare === null) {
-                statusEl.textContent = `${playerText} - No moves available`;
-            } else {
-                statusEl.textContent = `${playerText} to move`;
-            }
+            statusEl.textContent = `${currentPlayer === 'w' ? 'White' : 'Black'} to move`;
             
             const modeInfo = document.getElementById('modeInfo');
             if (gameMode === 'playground') {
-                modeInfo.textContent = 'Mode: Playground - Click any piece to explore';
+                modeInfo.textContent = 'Mode: Playground';
             } else {
                 const isPlayerTurn = (playerSide === 'white' && currentPlayer === 'w') || 
                                     (playerSide === 'black' && currentPlayer === 'b');
-                const turnInfo = isPlayerTurn ? 'Your turn' : 'Computer thinking...';
-                modeInfo.textContent = `Mode: vs Computer - You are ${playerSide} - ${turnInfo}`;
+                const searchText = searchMode === 'time' ? `${computerThinkTime}s/move` : `depth ${computerSearchDepth}`;
+                modeInfo.textContent = `Mode: vs Computer (${searchText}, You: ${playerSide}) - ${isPlayerTurn ? 'Your turn' : 'Computer thinking...'}`;
             }
             
             const historyEl = document.getElementById('moveHistory');
-            historyEl.innerHTML = gameHistory.map((move, index) => 
-                `<div class="move-item">${Math.floor(index/2) + 1}${index % 2 === 0 ? '.' : '...'} ${move.split('. ')[1] || move}</div>`
+            historyEl.innerHTML = gameHistory.map((move, i) => 
+                `<div class="move-item">${Math.floor(i/2) + 1}${i % 2 === 0 ? '.' : '...'} ${move}</div>`
             ).join('');
         }
 
@@ -499,9 +473,14 @@
             currentPlayer = 'w';
             moveHistory = [];
             gameHistory = [];
+            isComputerThinking = false;
             clearSelection();
             createBoard();
             updateDisplay();
+            
+            if (gameMode === 'computer' && playerSide === 'black') {
+                setTimeout(makeComputerMove, 500);
+            }
         }
 
         function flipBoard() {
@@ -512,7 +491,6 @@
         function takeBack() {
             if (moveHistory.length === 0) return;
             
-            // In computer mode, take back two moves (player + computer)
             const movesToTakeBack = gameMode === 'computer' ? Math.min(2, moveHistory.length) : 1;
             
             for (let i = 0; i < movesToTakeBack; i++) {
@@ -535,7 +513,6 @@
             updateDisplay();
         }
 
-        // Initialize
         initModules();
     </script>
 </body>
