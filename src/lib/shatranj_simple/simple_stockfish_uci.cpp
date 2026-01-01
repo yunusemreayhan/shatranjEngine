@@ -79,6 +79,21 @@ void SimpleStockfishUCI::handle_position(const std::vector<std::string>& tokens)
                 }
             }
         }
+    } else if (tokens[1] == "fen" && tokens.size() >= 6) {
+        // Parse FEN: position fen <fen_string> moves <move1> <move2> ...
+        std::string fen = tokens[2] + " " + tokens[3] + " " + tokens[4] + " " + tokens[5];
+        engine_ = Shatranj();
+        engine_.GetBoard()->ApplyFEN(fen);
+        
+        // Handle moves if present
+        auto moves_it = std::find(tokens.begin(), tokens.end(), "moves");
+        if (moves_it != tokens.end()) {
+            for (auto it = moves_it + 1; it != tokens.end(); ++it) {
+                if (it->length() == 4) {
+                    engine_.Play(*it);
+                }
+            }
+        }
     }
 }
 
